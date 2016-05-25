@@ -1,10 +1,7 @@
 package org.metadatacenter.admin.task;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.metadatacenter.admin.config.CedarConfig;
+import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.model.folderserver.CedarFSFolder;
 import org.metadatacenter.server.neo4j.Neo4JProxy;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
 import org.metadatacenter.server.neo4j.Neo4jConfig;
@@ -13,6 +10,9 @@ import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class CreateFolderServerGlobalObjects implements CedarAdminTask {
@@ -38,7 +38,14 @@ public class CreateFolderServerGlobalObjects implements CedarAdminTask {
   private Neo4JProxy neo4JProxy;
   private Neo4jConfig neoConfig;
   private Logger logger = LoggerFactory.getLogger(CreateFolderServerGlobalObjects.class);
-  private static ObjectMapper MAPPER = new ObjectMapper();
+  private static List<String> description;
+
+  static {
+    description = new ArrayList<>();
+    description.add("Creates global folders in the graph database: /, /Users, /Lost+Found");
+    description.add("Creates home folder for cedar-admin user");
+    description.add("Updates cedar-admin user profile in MongoDB, sets homeFolderId");
+  }
 
   @Override
   public void setArguments(String[] args) {
@@ -54,15 +61,15 @@ public class CreateFolderServerGlobalObjects implements CedarAdminTask {
     transactionURL = config.getNeo4jConfig().getRest().getTransactionUrl();
     authString = config.getNeo4jConfig().getRest().getAuthString();
 
-    rootFolderPath = "/";
-    rootFolderDescription = "CEDAR Root Folder";
-    usersFolderPath = "/Users";
-    usersFolderDescription = "CEDAR Users";
-    lostAndFoundFolderPath = "/Lost+Found";
-    lostAndFoundFolderDescription = "CEDAR Lost and Found resources";
-    linkedDataIdPathBase = "https://repo.metadatacenter.orgx/";
-    linkedDataIdPathSuffixFolders = "folders/";
-    linkedDataIdPathSuffixUsers = "users/";
+    rootFolderPath = config.getFolderStructureConfig().getRootFolder().getPath();
+    rootFolderDescription = config.getFolderStructureConfig().getRootFolder().getDescription();
+    usersFolderPath = config.getFolderStructureConfig().getUsersFolder().getPath();
+    usersFolderDescription = config.getFolderStructureConfig().getUsersFolder().getDescription();
+    lostAndFoundFolderPath = config.getFolderStructureConfig().getLostAndFoundFolder().getPath();
+    lostAndFoundFolderDescription = config.getFolderStructureConfig().getLostAndFoundFolder().getDescription();
+    linkedDataIdPathBase = config.getLinkedDataConfig().getBase();
+    linkedDataIdPathSuffixFolders = CedarNodeType.FOLDER.getPrefix() + "/";
+    linkedDataIdPathSuffixUsers = CedarNodeType.USER.getPrefix() + "/";
   }
 
   @Override
@@ -95,25 +102,17 @@ public class CreateFolderServerGlobalObjects implements CedarAdminTask {
       logger.error("Unable to ensure the existence of global objects, exiting!");
       return -1;
     } else {
-      Neo4JUserSession neo4JSession = Neo4JUserSession.get(neo4JProxy, adminUser, userIdPrefix);
+      Neo4JUserSession neo4JSession = Neo4JUserSession.get(neo4JProxy, userService, adminUser, userIdPrefix, false);
       neo4JSession.ensureGlobalObjectsExists();
-      CedarFSFolder createdFolder = neo4JSession.ensureUserHomeExists();
-      if (createdFolder != null) {
-        ObjectNode homeModification = MAPPER.createObjectNode();
-        homeModification.put("homeFolderId", createdFolder.getId());
-        logger.info("homeModification: " + homeModification);
-        try {
-          userService.updateUser(adminUser.getUserId(), homeModification);
-          logger.info("User updated");
-        } catch (Exception e) {
-          logger.error("Error while updating the user:", e);
-        }
-      }
-
+      neo4JSession = Neo4JUserSession.get(neo4JProxy, userService, adminUser, userIdPrefix, true);
     }
 
     return 0;
   }
 
+  @Override
+  public List<String> getDescription() {
+    return description;
+  }
 
 }

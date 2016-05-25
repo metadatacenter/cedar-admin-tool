@@ -1,6 +1,9 @@
 package org.metadatacenter.admin.task;
 
-import org.metadatacenter.admin.config.CedarConfig;
+
+import org.metadatacenter.config.CedarConfig;
+
+import java.util.List;
 
 public interface CedarAdminTask {
 
@@ -9,5 +12,7 @@ public interface CedarAdminTask {
   void init(CedarConfig config);
 
   int execute();
+
+  List<String> getDescription();
 
 }

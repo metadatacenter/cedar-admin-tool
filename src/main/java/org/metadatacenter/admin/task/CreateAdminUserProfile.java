@@ -16,10 +16,11 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.admin.config.CedarConfig;
+import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.constant.KeycloakConstants;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.security.model.user.CedarUser;
+import org.metadatacenter.server.security.model.user.CedarUserRole;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
@@ -28,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class CreateAdminUserProfile implements CedarAdminTask {
@@ -42,6 +45,13 @@ public class CreateAdminUserProfile implements CedarAdminTask {
   private String keycloakClientId;
   private static UserService userService;
   private Logger logger = LoggerFactory.getLogger(CreateAdminUserProfile.class);
+  private static List<String> description;
+
+  static {
+    description = new ArrayList<>();
+    description.add("Reads cedar-admin user details from Keycloak.");
+    description.add("Creates cedar-admin user profile in MongoDB.");
+  }
 
   @Override
   public void setArguments(String[] args) {
@@ -115,8 +125,12 @@ public class CreateAdminUserProfile implements CedarAdminTask {
 
 
   private void createAdminUserProfileInMongoDb(UserRepresentation userRepresentation) {
+    List<CedarUserRole> roles = new ArrayList<>();
+    roles.add(CedarUserRole.TEMPLATE_CREATOR);
+    roles.add(CedarUserRole.TEMPLATE_INSTANTIATOR);
+    roles.add(CedarUserRole.BUILT_IN_SYSTEM_ADMINISTRATOR);
     CedarUser user = CedarUserUtil.createUserFromBlueprint(adminUserUUID,
-        userRepresentation.getFirstName() + " " + userRepresentation.getLastName());
+        userRepresentation.getFirstName() + " " + userRepresentation.getLastName(), roles);
 
     try {
       CedarUser u = userService.createUser(user);
@@ -136,5 +150,9 @@ public class CreateAdminUserProfile implements CedarAdminTask {
     return 0;
   }
 
+  @Override
+  public List<String> getDescription() {
+    return description;
+  }
 
 }

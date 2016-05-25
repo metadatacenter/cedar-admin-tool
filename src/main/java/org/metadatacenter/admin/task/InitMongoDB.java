@@ -6,11 +6,14 @@ import com.mongodb.client.model.IndexOptions;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
-import org.metadatacenter.admin.config.CedarConfig;
+import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.util.MongoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class InitMongoDB implements CedarAdminTask {
@@ -23,6 +26,13 @@ public class InitMongoDB implements CedarAdminTask {
   private String usersCollectionName;
   private MongoClient mongoClient;
   private Logger logger = LoggerFactory.getLogger(InitMongoDB.class);
+  private static List<String> description;
+
+  static {
+    description = new ArrayList<>();
+    description.add("Initializes MongoDB collections.");
+    description.add("Adds constraints to the different collections.");
+  }
 
   @Override
   public void setArguments(String[] args) {
@@ -62,5 +72,9 @@ public class InitMongoDB implements CedarAdminTask {
     return 0;
   }
 
+  @Override
+  public List<String> getDescription() {
+    return description;
+  }
 
 }
