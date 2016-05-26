@@ -51,6 +51,7 @@ public class CreateAdminUserProfile implements CedarAdminTask {
     description = new ArrayList<>();
     description.add("Reads cedar-admin user details from Keycloak.");
     description.add("Creates cedar-admin user profile in MongoDB.");
+    description.add("The value of homeFolderId for cedar-admin will be 'null' after this step.");
   }
 
   @Override
