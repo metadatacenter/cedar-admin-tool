@@ -80,7 +80,7 @@
       <groupId>net.jmob</groupId>
       <artifactId>guice.conf</artifactId>
     </dependency>
-    
+
   </dependencies>
 
   <build>
@@ -138,10 +138,6 @@
               <resources>
                 <resource>
                   <directory>src/main/resources/bin</directory>
-                  <filtering>true</filtering>
-                </resource>
-                <resource>
-                  <directory>src/main/resources</directory>
                   <filtering>true</filtering>
                 </resource>
               </resources>

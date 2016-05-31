@@ -1,12 +1,8 @@
 package org.metadatacenter.admin;
 
-import org.metadatacenter.admin.task.CedarAdminTask;
-import org.metadatacenter.admin.task.CreateAdminUserProfile;
-import org.metadatacenter.admin.task.CreateFolderServerGlobalObjects;
-import org.metadatacenter.admin.task.InitMongoDB;
+import org.metadatacenter.admin.task.*;
 import org.metadatacenter.config.CedarConfig;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,6 +13,7 @@ public class CedarAdmin {
   static {
     taskMap = new LinkedHashMap<>();
     taskMap.put("initMongoDB", InitMongoDB.class);
+    taskMap.put("getAdminUserKeycloakProfile", GetAdminUserKeycloakProfile.class);
     taskMap.put("createAdminUserProfile", CreateAdminUserProfile.class);
     taskMap.put("createFolderServerGlobalObjects", CreateFolderServerGlobalObjects.class);
   }
@@ -53,6 +50,7 @@ public class CedarAdmin {
   public static void main(String[] args) {
 
     //args = new String[]{"initMongoDB"};
+    args = new String[]{"getAdminUserKeycloakProfile"};
     //args = new String[]{"createAdminUserProfile"};
     //args = new String[]{"createFolderServerGlobalObjects"};
 
