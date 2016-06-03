@@ -12,6 +12,8 @@ public class CedarAdmin {
 
   static {
     taskMap = new LinkedHashMap<>();
+    taskMap.put("wipeMongoData", WipeMongoData.class);
+    taskMap.put("wipeNeo4jData", WipeNeo4jData.class);
     taskMap.put("initMongoDB", InitMongoDB.class);
     taskMap.put("getAdminUserKeycloakProfile", GetAdminUserKeycloakProfile.class);
     taskMap.put("createAdminUserProfile", CreateAdminUserProfile.class);
@@ -38,7 +40,7 @@ public class CedarAdmin {
       if (t != null) {
         System.out.println("\t\tDetails:");
         for (String desc : t.getDescription()) {
-          System.out.println("\t\t" + desc);
+          System.out.println("\t\t* " + desc);
         }
         System.out.println();
       }
@@ -49,10 +51,12 @@ public class CedarAdmin {
 
   public static void main(String[] args) {
 
+    //args = new String[]{"wipeMongoData"};
     //args = new String[]{"initMongoDB"};
-    args = new String[]{"getAdminUserKeycloakProfile"};
+    //args = new String[]{"getAdminUserKeycloakProfile"};
     //args = new String[]{"createAdminUserProfile"};
     //args = new String[]{"createFolderServerGlobalObjects"};
+    //args = new String[]{"wipeNeo4jData"};
 
     if (args == null || args.length == 0) {
       showUsageAndExit();
@@ -66,6 +70,7 @@ public class CedarAdmin {
           System.out.println("ERROR: Unknown command: " + firstArg + "\n");
           showUsageAndExit();
         } else {
+          System.out.println("Command  :  " + firstArg);
           CedarAdminTask task = null;
           try {
             task = taskClass.newInstance();
@@ -75,6 +80,8 @@ public class CedarAdmin {
           if (task != null) {
             CedarConfig config = CedarConfig.getInstance();
             task.setArguments(args);
+            System.out.println("Arguments: " + task.getArguments());
+            System.out.println("------------------------------------");
             task.init(config);
             System.exit(task.execute());
           }

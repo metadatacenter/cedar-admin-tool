@@ -6,7 +6,6 @@ import org.metadatacenter.config.CedarConfig;
 import java.util.List;
 
 public interface CedarAdminTask {
-
   void setArguments(String[] args);
 
   void init(CedarConfig config);
@@ -14,5 +13,7 @@ public interface CedarAdminTask {
   int execute();
 
   List<String> getDescription();
+
+  List<String> getArguments();
 
 }

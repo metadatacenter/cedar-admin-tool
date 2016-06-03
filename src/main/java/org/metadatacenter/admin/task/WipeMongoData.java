@@ -2,9 +2,7 @@ package org.metadatacenter.admin.task;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.IndexOptions;
 import org.bson.BsonDocument;
-import org.bson.BsonInt32;
 import org.bson.Document;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
@@ -12,7 +10,7 @@ import org.metadatacenter.util.MongoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InitMongoDB extends AbstractCedarAdminTask {
+public class WipeMongoData extends AbstractCedarAdminTask {
 
   private String mongoDatabaseName;
   private String templateElementsCollectionName;
@@ -21,11 +19,12 @@ public class InitMongoDB extends AbstractCedarAdminTask {
   private String templatesCollectionName;
   private String usersCollectionName;
   private MongoClient mongoClient;
-  private Logger logger = LoggerFactory.getLogger(InitMongoDB.class);
+  private Logger logger = LoggerFactory.getLogger(WipeMongoData.class);
+  public static final String CONFIRM = "confirm";
 
-  public InitMongoDB() {
-    description.add("Initializes MongoDB collections.");
-    description.add("Adds constraints to the different collections.");
+  public WipeMongoData() {
+    description.add("Deletes all documents from the handled MongoDB collections.");
+    description.add("Needs second parameter '" + CONFIRM + "' to run.");
   }
 
   @Override
@@ -38,25 +37,26 @@ public class InitMongoDB extends AbstractCedarAdminTask {
     usersCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue());
   }
 
-  private void createUniqueIndex(String collectionName, String fieldName) {
-    logger.info("Creating unique index on: " + collectionName + "." + fieldName);
-    MongoCollection<Document> collection = mongoClient.getDatabase(mongoDatabaseName).getCollection(collectionName);
 
-    BsonDocument fields = new BsonDocument();
-    fields.append(fieldName, new BsonInt32(1));
-    IndexOptions opt = new IndexOptions();
-    opt.unique(true);
-    collection.createIndex(fields, opt);
+  private void emptyCollection(String collectionName) {
+    logger.info("Deleting all data from collection: " + collectionName + ".");
+    MongoCollection<Document> collection = mongoClient.getDatabase(mongoDatabaseName).getCollection(collectionName);
+    BsonDocument allFilter = new BsonDocument();
+    collection.deleteMany(allFilter);
   }
 
   @Override
   public int execute() {
+    if (arguments.size() != 2 || !CONFIRM.equals(arguments.get(1))) {
+      System.out.println("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
+      return -1;
+    }
     mongoClient = MongoFactory.getClient();
-    createUniqueIndex(templateElementsCollectionName, "@id");
-    createUniqueIndex(templateFieldCollectionName, "@id");
-    createUniqueIndex(templateInstancesCollectionName, "@id");
-    createUniqueIndex(templatesCollectionName, "@id");
-    createUniqueIndex(usersCollectionName, "userId");
+    emptyCollection(templateElementsCollectionName);
+    emptyCollection(templateFieldCollectionName);
+    emptyCollection(templateInstancesCollectionName);
+    emptyCollection(templatesCollectionName);
+    emptyCollection(usersCollectionName);
 
     return 0;
   }
