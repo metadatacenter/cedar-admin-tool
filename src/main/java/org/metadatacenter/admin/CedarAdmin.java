@@ -18,6 +18,7 @@ public class CedarAdmin {
     taskMap.put("getAdminUserKeycloakProfile", GetAdminUserKeycloakProfile.class);
     taskMap.put("createAdminUserProfile", CreateAdminUserProfile.class);
     taskMap.put("createFolderServerGlobalObjects", CreateFolderServerGlobalObjects.class);
+    taskMap.put("exportResources", ExportResources.class);
   }
 
   private static void showTitle() {
@@ -57,6 +58,8 @@ public class CedarAdmin {
     //args = new String[]{"createAdminUserProfile"};
     //args = new String[]{"createFolderServerGlobalObjects"};
     //args = new String[]{"wipeNeo4jData"};
+    //args = new String[]{"exportResources"};
+
 
     if (args == null || args.length == 0) {
       showUsageAndExit();

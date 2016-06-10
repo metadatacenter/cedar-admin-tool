@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractNeo4JWritingTask extends AbstractCedarAdminTask {
 
+  protected CedarUser adminUser;
   private Logger logger = LoggerFactory.getLogger(AbstractNeo4JWritingTask.class);
 
   protected Neo4JUserSession buildCedarAdminNeo4JSession(CedarConfig cedarConfig, boolean createHome) {
@@ -33,11 +34,9 @@ public abstract class AbstractNeo4JWritingTask extends AbstractCedarAdminTask {
     neoConfig.setLostAndFoundFolderDescription(cedarConfig.getFolderStructureConfig().getLostAndFoundFolder()
         .getDescription());
 
-    String folderIdPrefix = cedarConfig.getLinkedDataPrefix(CedarNodeType.FOLDER);
-    String userIdPrefix = cedarConfig.getLinkedDataPrefix(CedarNodeType.USER);
-    Neo4JProxy neo4JProxy = new Neo4JProxy(neoConfig, folderIdPrefix);
+    String genericIdPrefix = cedarConfig.getLinkedDataConfig().getBase();
+    Neo4JProxy neo4JProxy = new Neo4JProxy(neoConfig, genericIdPrefix);
 
-    CedarUser adminUser = null;
     try {
       adminUser = userService.findUser(adminUserUUID);
     } catch (Exception ex) {
@@ -48,7 +47,7 @@ public abstract class AbstractNeo4JWritingTask extends AbstractCedarAdminTask {
       logger.error("The requested task was not completed!");
       return null;
     } else {
-      return Neo4JUserSession.get(neo4JProxy, userService, adminUser, userIdPrefix, createHome);
+      return Neo4JUserSession.get(neo4JProxy, userService, adminUser, createHome);
     }
   }
 }
