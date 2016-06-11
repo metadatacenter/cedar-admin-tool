@@ -26,12 +26,20 @@ public class GetAdminUserKeycloakProfile extends AbstractKeycloakReadingTask {
     cedarAdminUserPassword = config.getKeycloakConfig().getAdminUser().getPassword();
     keycloakClientId = config.getKeycloakConfig().getClientId();
 
+    System.out.println("adminUserUUID         : " + adminUserUUID);
+    System.out.println("cedarAdminUserName    : " + cedarAdminUserName);
+    System.out.println("cedarAdminUserPassword: " + cedarAdminUserPassword);
+    System.out.println("keycloakClientId      : " + keycloakClientId);
+
     InputStream keycloakConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream(KeycloakConstants
         .JSON);
     KeycloakDeployment keycloakDeployment = KeycloakDeploymentBuilder.build(keycloakConfig);
 
     keycloakRealmName = keycloakDeployment.getRealm();
     keycloakBaseURI = keycloakDeployment.getAuthServerBaseUrl();
+
+    System.out.println("keycloakRealmName     : " + keycloakRealmName);
+    System.out.println("keycloakBaseURI       : " + keycloakBaseURI);
   }
 
 
@@ -39,9 +47,9 @@ public class GetAdminUserKeycloakProfile extends AbstractKeycloakReadingTask {
   public int execute() {
     UserRepresentation userRepresentation = getAdminUserFromKeycloak();
     if (userRepresentation == null) {
-      logger.error(cedarAdminUserName + " user was not found on Keycloak");
+      System.out.println(cedarAdminUserName + " user was not found on Keycloak");
     } else {
-      logger.debug(cedarAdminUserName + " user was found on Keycloak");
+      System.out.println(cedarAdminUserName + " user was found on Keycloak");
       System.out.println("First name: " + userRepresentation.getFirstName());
       System.out.println("Last name : " + userRepresentation.getLastName());
       System.out.println("Id        : " + userRepresentation.getId());

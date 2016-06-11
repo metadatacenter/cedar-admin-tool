@@ -11,10 +11,10 @@ import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractNeo4JWritingTask extends AbstractCedarAdminTask {
+public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
 
   protected CedarUser adminUser;
-  private Logger logger = LoggerFactory.getLogger(AbstractNeo4JWritingTask.class);
+  private Logger logger = LoggerFactory.getLogger(AbstractNeo4JAccessTask.class);
 
   protected Neo4JUserSession buildCedarAdminNeo4JSession(CedarConfig cedarConfig, boolean createHome) {
     UserService userService = new UserServiceMongoDB(

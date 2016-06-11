@@ -5,7 +5,7 @@ import org.metadatacenter.server.neo4j.Neo4JUserSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WipeNeo4jData extends AbstractNeo4JWritingTask {
+public class WipeNeo4jData extends AbstractNeo4JAccessTask {
 
   private CedarConfig cedarConfig;
   private Logger logger = LoggerFactory.getLogger(WipeNeo4jData.class);

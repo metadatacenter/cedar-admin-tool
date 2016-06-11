@@ -27,10 +27,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExportResources extends AbstractNeo4JWritingTask {
+public class ExportResources extends AbstractNeo4JAccessTask {
 
   public static final String FOLDER_INFO = "folder.info.json";
   public static final String DEFAULT_SORT = "name";
+  private static final int EXPORT_MAX_COUNT = 10000;
 
   private CedarConfig cedarConfig;
   private Neo4JUserSession adminNeo4JSession;
@@ -89,7 +90,7 @@ public class ExportResources extends AbstractNeo4JWritingTask {
       String uuid = adminNeo4JSession.getFolderUUID(id);
       Path createdFolder = createFolder(path, uuid);
       createFolderDescriptor(createdFolder, folder);
-      List<CedarFSNode> folderContents = adminNeo4JSession.findFolderContents(id, nodeTypeList, Integer.MAX_VALUE, 0,
+      List<CedarFSNode> folderContents = adminNeo4JSession.findFolderContents(id, nodeTypeList, EXPORT_MAX_COUNT, 0,
           sortList);
       for (CedarFSNode child : folderContents) {
         serializeAndWalkFolder(createdFolder, child);
