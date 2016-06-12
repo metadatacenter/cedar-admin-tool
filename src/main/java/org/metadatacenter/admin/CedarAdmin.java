@@ -13,10 +13,10 @@ public class CedarAdmin {
   static {
     taskMap = new LinkedHashMap<>();
     taskMap.put("wipeMongoData", WipeMongoData.class);
-    taskMap.put("wipeNeo4jData", WipeNeo4jData.class);
     taskMap.put("initMongoDB", InitMongoDB.class);
     taskMap.put("getAdminUserKeycloakProfile", GetAdminUserKeycloakProfile.class);
     taskMap.put("createAdminUserProfile", CreateAdminUserProfile.class);
+    taskMap.put("wipeNeo4jData", WipeNeo4jData.class);
     taskMap.put("createFolderServerGlobalObjects", CreateFolderServerGlobalObjects.class);
     taskMap.put("exportResources", ExportResources.class);
   }
