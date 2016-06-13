@@ -47,6 +47,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-template-operations</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-common</artifactId>
     </dependency>

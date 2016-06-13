@@ -3,4 +3,4 @@
 .idea
 *.iml
 .DS_Store
-keycloak.json
+keycloak*.json
