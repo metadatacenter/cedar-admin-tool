@@ -3,19 +3,18 @@ package org.metadatacenter.admin.task;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.commons.codec.net.URLCodec;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.util.EntityUtils;
+import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.constant.HttpConnectionConstants;
-import org.metadatacenter.constant.HttpConstants;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.CedarFSFolder;
 import org.metadatacenter.model.folderserver.CedarFSNode;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
+import org.metadatacenter.server.service.TemplateElementService;
+import org.metadatacenter.server.service.TemplateInstanceService;
+import org.metadatacenter.server.service.TemplateService;
+import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
+import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
+import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,9 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
   private List<String> sortList;
-  private String authString;
+  private static TemplateService<String, JsonNode> templateService;
+  private static TemplateElementService<String, JsonNode> templateElementService;
+  private static TemplateInstanceService<String, JsonNode> templateInstanceService;
   private Logger logger = LoggerFactory.getLogger(ExportResources.class);
 
   public ExportResources() {
@@ -70,10 +71,24 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     sortList = new ArrayList<>();
     sortList.add(DEFAULT_SORT);
 
-    adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
+    templateElementService = new TemplateElementServiceMongoDB(
+        cedarConfig.getMongoConfig().getDatabaseName(),
+        cedarConfig.getMongoCollectionName(CedarNodeType.ELEMENT),
+        cedarConfig.getLinkedDataPrefix(CedarNodeType.ELEMENT));
 
-    String apiKey = adminUser.getFirstActiveApiKey();
-    authString = HttpConstants.HTTP_AUTH_HEADER_APIKEY_PREFIX + apiKey;
+    templateService = new TemplateServiceMongoDB(
+        cedarConfig.getMongoConfig().getDatabaseName(),
+        cedarConfig.getMongoCollectionName(CedarNodeType.TEMPLATE),
+        cedarConfig.getLinkedDataPrefix(CedarNodeType.TEMPLATE),
+        templateElementService);
+
+    templateInstanceService = new TemplateInstanceServiceMongoDB(
+        cedarConfig.getMongoConfig().getDatabaseName(),
+        cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE),
+        cedarConfig.getLinkedDataPrefix(CedarNodeType.INSTANCE));
+
+
+    adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
 
     String rootPath = adminNeo4JSession.getRootPath();
     CedarFSFolder rootFolder = adminNeo4JSession.findFolderByPath(rootPath);
@@ -126,12 +141,11 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    String content = getTemplateServerContent(id, nodeType);
-    if (content != null) {
+    JsonNode jsonNode = getTemplateServerContent(id, nodeType);
+    if (jsonNode != null) {
       String name = uuid + ".content.json";
       Path createdFile = path.resolve(name);
       try {
-        JsonNode jsonNode = prettyMapper.readTree(content);
         Files.write(createdFile, prettyMapper.writeValueAsString(jsonNode).getBytes(StandardCharsets.UTF_8));
       } catch (IOException e) {
         e.printStackTrace();
@@ -139,24 +153,21 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     }
   }
 
-  private String getTemplateServerContent(String id, CedarNodeType nodeType) {
+  private JsonNode getTemplateServerContent(String id, CedarNodeType nodeType) {
+    JsonNode response = null;
     try {
-      String url = cedarConfig.getServers().getTemplate().getBase() + nodeType.getPrefix() + "/" + new URLCodec()
-          .encode(id);
-      System.out.println(url);
-      Request proxyRequest = Request.Get(url)
-          .connectTimeout(HttpConnectionConstants.CONNECTION_TIMEOUT)
-          .socketTimeout(HttpConnectionConstants.SOCKET_TIMEOUT);
-      proxyRequest.addHeader(HttpHeaders.AUTHORIZATION, authString);
-      HttpResponse proxyResponse = proxyRequest.execute().returnResponse();
-      HttpEntity entity = proxyResponse.getEntity();
-      if (entity != null) {
-        return EntityUtils.toString(entity);
+      if (nodeType == CedarNodeType.ELEMENT) {
+        response = templateElementService.findTemplateElement(id);
+      } else if (nodeType == CedarNodeType.TEMPLATE) {
+        response = templateService.findTemplate(id);
+      } else if (nodeType == CedarNodeType.INSTANCE) {
+        response = templateInstanceService.findTemplateInstance(id);
       }
-    } catch (Exception e) {
-      play.Logger.error("Error while reading " + nodeType.getValue(), e);
+    } catch (IOException | ProcessingException e) {
+      System.out.println("There was an error retrieving content for: " + nodeType + ":" + id);
+      System.out.println(e.getMessage());
     }
-    return null;
+    return response;
   }
 
 
