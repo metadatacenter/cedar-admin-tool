@@ -19,6 +19,7 @@ public class CedarAdmin {
     taskMap.put("wipeNeo4jData", WipeNeo4jData.class);
     taskMap.put("createFolderServerGlobalObjects", CreateFolderServerGlobalObjects.class);
     taskMap.put("exportResources", ExportResources.class);
+    taskMap.put("regenerateSearchIndex", RegenerateSearchIndex.class);
   }
 
   private static void showTitle() {
