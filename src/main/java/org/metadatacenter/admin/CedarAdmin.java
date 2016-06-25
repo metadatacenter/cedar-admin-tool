@@ -1,6 +1,7 @@
 package org.metadatacenter.admin;
 
 import org.metadatacenter.admin.task.*;
+import org.metadatacenter.admin.task.importflatfolder.ImportFlatFolder;
 import org.metadatacenter.config.CedarConfig;
 
 import java.util.LinkedHashMap;
@@ -20,6 +21,7 @@ public class CedarAdmin {
     taskMap.put("createFolderServerGlobalObjects", CreateFolderServerGlobalObjects.class);
     taskMap.put("exportResources", ExportResources.class);
     taskMap.put("regenerateSearchIndex", RegenerateSearchIndex.class);
+    taskMap.put("importFlatFolder", ImportFlatFolder.class);
   }
 
   private static void showTitle() {
@@ -60,6 +62,10 @@ public class CedarAdmin {
     //args = new String[]{"createFolderServerGlobalObjects"};
     //args = new String[]{"wipeNeo4jData"};
     //args = new String[]{"exportResources"};
+    /*args = new String[]{"importFlatFolder",
+        "/Users/egyedia/Development/git_repos/CEDAR/import/",
+        "https://repo.metadatacenter.orgx/folders/600f75c6-389b-458c-9a4b-465fa89fd0a3",
+        "8c99c2ae-8633-47d4-a049-0dce14795a45"};*/
 
 
     if (args == null || args.length == 0) {

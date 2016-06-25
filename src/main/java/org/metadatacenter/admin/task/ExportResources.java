@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.CedarFSFolder;
@@ -28,7 +29,6 @@ import java.util.List;
 
 public class ExportResources extends AbstractNeo4JAccessTask {
 
-  public static final String FOLDER_INFO = "folder.info.json";
   public static final String DEFAULT_SORT = "name";
   private static final int EXPORT_MAX_COUNT = 10000;
 
@@ -73,19 +73,16 @@ public class ExportResources extends AbstractNeo4JAccessTask {
 
     templateElementService = new TemplateElementServiceMongoDB(
         cedarConfig.getMongoConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.ELEMENT),
-        cedarConfig.getLinkedDataPrefix(CedarNodeType.ELEMENT));
+        cedarConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
 
     templateService = new TemplateServiceMongoDB(
         cedarConfig.getMongoConfig().getDatabaseName(),
         cedarConfig.getMongoCollectionName(CedarNodeType.TEMPLATE),
-        cedarConfig.getLinkedDataPrefix(CedarNodeType.TEMPLATE),
         templateElementService);
 
     templateInstanceService = new TemplateInstanceServiceMongoDB(
         cedarConfig.getMongoConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE),
-        cedarConfig.getLinkedDataPrefix(CedarNodeType.INSTANCE));
+        cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
 
     adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
@@ -122,7 +119,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   }
 
   private void createFolderDescriptor(Path path, CedarFSFolder folder) {
-    Path folderInfo = path.resolve(FOLDER_INFO);
+    Path folderInfo = path.resolve(ImportExportConstants.FOLDER_INFO);
     try {
       Files.write(folderInfo, prettyMapper.writeValueAsString(folder).getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
@@ -134,7 +131,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     String id = node.getId();
     CedarNodeType nodeType = node.getType();
     String uuid = adminNeo4JSession.getResourceUUID(id, nodeType);
-    String infoName = uuid + ".info.json";
+    String infoName = uuid + ImportExportConstants.INFO_SUFFIX;
     Path createdInfoFile = path.resolve(infoName);
     try {
       Files.write(createdInfoFile, prettyMapper.writeValueAsString(node).getBytes(StandardCharsets.UTF_8));
@@ -143,7 +140,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     }
     JsonNode jsonNode = getTemplateServerContent(id, nodeType);
     if (jsonNode != null) {
-      String name = uuid + ".content.json";
+      String name = uuid + ImportExportConstants.CONTENT_SUFFIX;
       Path createdFile = path.resolve(name);
       try {
         Files.write(createdFile, prettyMapper.writeValueAsString(jsonNode).getBytes(StandardCharsets.UTF_8));
