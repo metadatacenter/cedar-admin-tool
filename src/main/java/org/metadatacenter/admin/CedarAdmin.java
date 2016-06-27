@@ -3,6 +3,7 @@ package org.metadatacenter.admin;
 import org.metadatacenter.admin.task.*;
 import org.metadatacenter.admin.task.importflatfolder.ImportFlatFolder;
 import org.metadatacenter.admin.util.AdminOutput;
+import org.metadatacenter.admin.util.Color;
 import org.metadatacenter.config.CedarConfig;
 
 import java.util.LinkedHashMap;
@@ -37,7 +38,7 @@ public class CedarAdmin {
     out.printIndented("cedar-admin-tools command parameters...");
     out.printTitle("Available commands:");
     for (String key : taskMap.keySet()) {
-      out.printIndented(key);
+      out.printIndented(key, Color.BRIGHT);
       CedarAdminTask t = null;
       try {
         t = taskMap.get(key).newInstance();
