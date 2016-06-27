@@ -13,8 +13,6 @@ import org.metadatacenter.server.security.model.user.CedarUserRole;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +26,6 @@ public class CreateAdminUserProfile extends AbstractKeycloakReadingTask {
   private BlueprintUserProfile blueprintUserProfile;
   private BlueprintUIPreferences blueprintUIPreferences;
   private static UserService userService;
-  private Logger logger = LoggerFactory.getLogger(CreateAdminUserProfile.class);
 
   public CreateAdminUserProfile() {
     description.add("Reads cedar-admin user details from Keycloak.");
@@ -71,7 +68,7 @@ public class CreateAdminUserProfile extends AbstractKeycloakReadingTask {
     try {
       CedarUser u = userService.createUser(user);
     } catch (IOException e) {
-      logger.error("Error while creating " + cedarAdminUserName + " user", e);
+      out.error("Error while creating " + cedarAdminUserName + " user", e);
     }
   }
 
@@ -79,7 +76,7 @@ public class CreateAdminUserProfile extends AbstractKeycloakReadingTask {
   public int execute() {
     UserRepresentation userRepresentation = getAdminUserFromKeycloak();
     if (userRepresentation == null) {
-      logger.error(cedarAdminUserName + " user was not found on Keycloak");
+      out.error(cedarAdminUserName + " user was not found on Keycloak");
     } else {
       createAdminUserProfileInMongoDb(userRepresentation);
     }

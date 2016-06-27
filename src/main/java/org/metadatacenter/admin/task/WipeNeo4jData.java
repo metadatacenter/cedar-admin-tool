@@ -24,7 +24,7 @@ public class WipeNeo4jData extends AbstractNeo4JAccessTask {
   @Override
   public int execute() {
     if (arguments.size() != 2 || !CONFIRM.equals(arguments.get(1))) {
-      System.out.println("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
+      out.warn("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
       return -1;
     }
 

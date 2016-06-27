@@ -9,8 +9,6 @@ import org.bson.Document;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.util.MongoFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class InitMongoDB extends AbstractCedarAdminTask {
 
@@ -21,7 +19,6 @@ public class InitMongoDB extends AbstractCedarAdminTask {
   private String templatesCollectionName;
   private String usersCollectionName;
   private MongoClient mongoClient;
-  private Logger logger = LoggerFactory.getLogger(InitMongoDB.class);
 
   public InitMongoDB() {
     description.add("Initializes MongoDB collections.");
@@ -39,7 +36,7 @@ public class InitMongoDB extends AbstractCedarAdminTask {
   }
 
   private void createUniqueIndex(String collectionName, String fieldName) {
-    logger.info("Creating unique index on: " + collectionName + "." + fieldName);
+    out.info("Creating unique index on: " + collectionName + "." + fieldName);
     MongoCollection<Document> collection = mongoClient.getDatabase(mongoDatabaseName).getCollection(collectionName);
 
     BsonDocument fields = new BsonDocument();

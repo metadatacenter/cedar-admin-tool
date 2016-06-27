@@ -39,7 +39,7 @@ public class WipeMongoData extends AbstractCedarAdminTask {
 
 
   private void emptyCollection(String collectionName) {
-    logger.info("Deleting all data from collection: " + collectionName + ".");
+    out.info("Deleting all data from collection: " + collectionName + ".");
     MongoCollection<Document> collection = mongoClient.getDatabase(mongoDatabaseName).getCollection(collectionName);
     BsonDocument allFilter = new BsonDocument();
     collection.deleteMany(allFilter);
@@ -48,7 +48,7 @@ public class WipeMongoData extends AbstractCedarAdminTask {
   @Override
   public int execute() {
     if (arguments.size() != 2 || !CONFIRM.equals(arguments.get(1))) {
-      System.out.println("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
+      out.warn("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
       return -1;
     }
     mongoClient = MongoFactory.getClient();

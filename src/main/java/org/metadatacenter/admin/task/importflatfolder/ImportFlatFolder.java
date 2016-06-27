@@ -11,8 +11,6 @@ import org.metadatacenter.server.neo4j.Neo4JUserSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +25,6 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
   private CedarConfig cedarConfig;
   private Neo4JUserSession adminNeo4JSession;
   private UserService userService;
-
-  private Logger logger = LoggerFactory.getLogger(ImportFlatFolder.class);
 
   public ImportFlatFolder() {
     description.add("Imports the contents of a local folder into a virtual folder using a given owner");
@@ -50,7 +46,7 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
   @Override
   public int execute() {
     if (arguments.size() != 4) {
-      System.out.println("You need to specify all 3 arguments");
+      out.warn("You need to specify all 3 arguments");
       return -1;
     }
 
@@ -58,19 +54,19 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
     String folderId = arguments.get(2);
     String userUUID = arguments.get(3);
 
-    System.out.println("Input parameters:");
-    System.out.println("sourceFolder: " + sourceFolder);
-    System.out.println("folderId    : " + folderId);
-    System.out.println("userUUID    : " + userUUID);
+    out.println("Input parameters:");
+    out.println("sourceFolder: " + sourceFolder);
+    out.println("folderId    : " + folderId);
+    out.println("userUUID    : " + userUUID);
 
     Path sourcePath = Paths.get(sourceFolder);
     File sourceDir = sourcePath.toFile();
     if (!sourceDir.exists()) {
-      System.out.println("The sourceFolder does not exist!");
+      out.error("The sourceFolder does not exist!");
       return -2;
     }
     if (!sourceDir.isDirectory()) {
-      System.out.println("The local source folder specified by sourceFolder is not a folder!");
+      out.error("The local source folder specified by sourceFolder is not a folder!");
       return -3;
     }
 
@@ -78,7 +74,7 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
 
     CedarFSFolder targetFolder = adminNeo4JSession.findFolderById(folderId);
     if (targetFolder == null) {
-      System.out.println("The remote target folder specified by folderId does not exist!");
+      out.error("The remote target folder specified by folderId does not exist!");
       return -4;
     }
 
@@ -89,14 +85,12 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
     CedarUser newOwner = null;
     try {
       newOwner = userService.findUser(userUUID);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ProcessingException e) {
-      e.printStackTrace();
+    } catch (IOException | ProcessingException e) {
+      out.error(e);
     }
 
     if (newOwner == null) {
-      System.out.println("The new owner specified by userId does not exist!");
+      out.error("The new owner specified by userId does not exist!");
       return -5;
     }
 
@@ -110,7 +104,7 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
     }
 
     if (adminUser == null) {
-      System.out.println("The cedar-admin user can not be loaded!");
+      out.println("The cedar-admin user can not be loaded!");
       return -6;
     }*/
 
@@ -123,18 +117,18 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
             importList.add(path);
           });
     } catch (IOException e) {
-      e.printStackTrace();
+      out.error(e);
     }
 
-    ImportWorker importWorker = new ImportWorker(cedarConfig, userUUID, newOwner, folderId);
+    ImportWorker importWorker = new ImportWorker(out, cedarConfig, userUUID, newOwner, folderId);
 
-    for(Map.Entry<String, ImportFileDescriptor> ifd : importList.getFiles().entrySet()) {
+    for (Map.Entry<String, ImportFileDescriptor> ifd : importList.getFiles().entrySet()) {
       ImportFileDescriptor desc = ifd.getValue();
       if (desc.isComplete()) {
-        System.out.println("Importing :" + desc);
-        importWorker.importFile(ifd.getKey(), desc);
+        out.info("Importing :" + desc);
+        importWorker.importFile(desc);
       } else {
-        System.out.println("Skipping  :" + desc);
+        out.info("Skipping  :" + desc);
       }
     }
 

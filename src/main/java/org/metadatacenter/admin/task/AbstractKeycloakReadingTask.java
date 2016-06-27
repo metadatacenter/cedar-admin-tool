@@ -14,8 +14,6 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -27,7 +25,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
   protected String cedarAdminUserPassword;
   protected String keycloakClientId;
   protected String cedarAdminUserName;
-  private Logger logger = LoggerFactory.getLogger(AbstractKeycloakReadingTask.class);
+
 
   protected UserRepresentation getAdminUserFromKeycloak() {
 
@@ -41,7 +39,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
           beanOrClass, String propertyName) throws IOException, JsonProcessingException {
         if ("access_token".equals(propertyName)) {
           if (beanOrClass instanceof AccessTokenResponse) {
-            logger.info("Found token, injecting it.");
+            out.info("Found token, injecting it.");
             AccessTokenResponse atr = (AccessTokenResponse) beanOrClass;
             String text = ctxt.getParser().getText();
             atr.setToken(text);
@@ -50,7 +48,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
         } else {
           boolean success = super.handleUnknownProperty(ctxt, deserializer, beanOrClass, propertyName);
           if (success) {
-            logger.info("Skipping property:" + propertyName + "=>" + ctxt.getParser().getText());
+            out.info("Skipping property:" + propertyName + "=>" + ctxt.getParser().getText());
           }
           return true;
         }

@@ -1,6 +1,6 @@
 package org.metadatacenter.admin.task;
 
-
+import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
 
 import java.util.List;
@@ -16,4 +16,5 @@ public interface CedarAdminTask {
 
   List<String> getArguments();
 
+  void setOutput(AdminOutput out);
 }

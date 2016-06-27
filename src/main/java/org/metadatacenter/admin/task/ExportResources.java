@@ -10,14 +10,15 @@ import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.CedarFSFolder;
 import org.metadatacenter.model.folderserver.CedarFSNode;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
+import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.TemplateElementService;
 import org.metadatacenter.server.service.TemplateInstanceService;
 import org.metadatacenter.server.service.TemplateService;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
+import org.metadatacenter.util.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +41,8 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   private static TemplateService<String, JsonNode> templateService;
   private static TemplateElementService<String, JsonNode> templateElementService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
-  private Logger logger = LoggerFactory.getLogger(ExportResources.class);
+  private static UserServiceMongoDB userService;
+
 
   public ExportResources() {
     description.add("Exports folders, resources, users into a directory structure");
@@ -56,7 +58,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   @Override
   public int execute() {
     String exportDir = cedarConfig.getImportExportConfig().getExportDir();
-    System.out.println("Export dir:=>" + exportDir + "<=");
+    out.println("Export dir:=>" + exportDir + "<=");
 
     prettyMapper = new ObjectMapper();
     prettyMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -84,16 +86,26 @@ public class ExportResources extends AbstractNeo4JAccessTask {
         cedarConfig.getMongoConfig().getDatabaseName(),
         cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
+    userService = new UserServiceMongoDB(
+        cedarConfig.getMongoConfig().getDatabaseName(),
+        cedarConfig.getMongoCollectionName(CedarNodeType.USER));
 
     adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
 
     String rootPath = adminNeo4JSession.getRootPath();
     CedarFSFolder rootFolder = adminNeo4JSession.findFolderByPath(rootPath);
 
-    Path exportPath = Paths.get(exportDir).resolve("resources");
-    serializeAndWalkFolder(exportPath, rootFolder);
+    out.info("Exporting resources");
+    Path resourceExportPath = Paths.get(exportDir).resolve("resources");
+    serializeAndWalkFolder(resourceExportPath, rootFolder);
+
+    out.info("Exporting users");
+    Path userExportPath = Paths.get(exportDir).resolve("users");
+    serializeUsers(userExportPath);
+
     return 0;
   }
+
 
   private void serializeAndWalkFolder(Path path, CedarFSNode node) {
     if (node instanceof CedarFSFolder) {
@@ -123,7 +135,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     try {
       Files.write(folderInfo, prettyMapper.writeValueAsString(folder).getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      e.printStackTrace();
+      out.error("There was an error writing the info for folder info: " + folderInfo, e);
     }
   }
 
@@ -136,7 +148,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     try {
       Files.write(createdInfoFile, prettyMapper.writeValueAsString(node).getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      e.printStackTrace();
+      out.error("There was an error writing the info for: " + nodeType + ":" + id, e);
     }
     JsonNode jsonNode = getTemplateServerContent(id, nodeType);
     if (jsonNode != null) {
@@ -145,7 +157,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
       try {
         Files.write(createdFile, prettyMapper.writeValueAsString(jsonNode).getBytes(StandardCharsets.UTF_8));
       } catch (IOException e) {
-        e.printStackTrace();
+        out.error("There was an error writing the content for: " + nodeType + ":" + id, e);
       }
     }
   }
@@ -161,10 +173,31 @@ public class ExportResources extends AbstractNeo4JAccessTask {
         response = templateInstanceService.findTemplateInstance(id);
       }
     } catch (IOException | ProcessingException e) {
-      System.out.println("There was an error retrieving content for: " + nodeType + ":" + id);
-      System.out.println(e.getMessage());
+      out.error("There was an error retrieving content for: " + nodeType + ":" + id, e);
     }
     return response;
+  }
+
+
+  private void serializeUsers(Path path) {
+    try {
+      path.toFile().mkdirs();
+      List<CedarUser> all = userService.findAll();
+      out.info("Returned user count:" + all.size());
+      for (CedarUser u : all) {
+        String uuid = u.getUserId();
+        String contentName = uuid + ImportExportConstants.CONTENT_SUFFIX;
+        Path createdContentFile = path.resolve(contentName);
+        try {
+          String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(u));
+          Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+          out.error("There was an error writing the info for user: " + uuid + ":" + u.getScreenName(), e);
+        }
+      }
+    } catch (IOException | ProcessingException e) {
+      out.error(e);
+    }
   }
 
 

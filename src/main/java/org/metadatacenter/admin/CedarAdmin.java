@@ -2,6 +2,7 @@ package org.metadatacenter.admin;
 
 import org.metadatacenter.admin.task.*;
 import org.metadatacenter.admin.task.importflatfolder.ImportFlatFolder;
+import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
 
 import java.util.LinkedHashMap;
@@ -10,8 +11,10 @@ import java.util.Map;
 public class CedarAdmin {
 
   static Map<String, Class<? extends CedarAdminTask>> taskMap;
+  static AdminOutput out;
 
   static {
+    out = new AdminOutput();
     taskMap = new LinkedHashMap<>();
     taskMap.put("wipeMongoData", WipeMongoData.class);
     taskMap.put("initMongoDB", InitMongoDB.class);
@@ -25,31 +28,31 @@ public class CedarAdmin {
   }
 
   private static void showTitle() {
-    System.out.println("CEDAR Admin Tools");
+    out.println("CEDAR Admin Tools");
   }
 
   private static void showUsageAndExit() {
     showTitle();
-    System.out.println("\nUsage:");
-    System.out.println("\tcedar-admin-tools command parameters...");
-    System.out.println("\nAvailable commands:");
+    out.printTitle("Usage:");
+    out.printIndented("cedar-admin-tools command parameters...");
+    out.printTitle("Available commands:");
     for (String key : taskMap.keySet()) {
-      System.out.println("\t" + key);
+      out.printIndented(key);
       CedarAdminTask t = null;
       try {
         t = taskMap.get(key).newInstance();
       } catch (InstantiationException | IllegalAccessException e) {
-        e.printStackTrace();
+        out.error(e);
       }
       if (t != null) {
-        System.out.println("\t\tDetails:");
+        out.printIndented("Details:", 2);
         for (String desc : t.getDescription()) {
-          System.out.println("\t\t* " + desc);
+          out.printIndented("* " + desc, 2);
         }
-        System.out.println();
+        out.println();
       }
     }
-    System.out.println("\n");
+    out.println("\n");
     System.exit(-1);
   }
 
@@ -77,21 +80,22 @@ public class CedarAdmin {
       } else {
         Class<? extends CedarAdminTask> taskClass = taskMap.get(firstArg);
         if (taskClass == null) {
-          System.out.println("ERROR: Unknown command: " + firstArg + "\n");
+          out.error("Unknown command: " + firstArg + "\n");
           showUsageAndExit();
         } else {
-          System.out.println("Command  :  " + firstArg);
+          out.println("Command  :  " + firstArg);
           CedarAdminTask task = null;
           try {
             task = taskClass.newInstance();
           } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
+            out.error(e);
           }
           if (task != null) {
             CedarConfig config = CedarConfig.getInstance();
+            task.setOutput(out);
             task.setArguments(args);
-            System.out.println("Arguments: " + task.getArguments());
-            System.out.println("------------------------------------");
+            out.println("Arguments: " + task.getArguments());
+            out.printSeparator();
             task.init(config);
             System.exit(task.execute());
           }
