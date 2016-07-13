@@ -13,6 +13,7 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
 
   public UserProfileCreateAll() {
     description.add("Creates user profiles in Mongo based on all the registered user data from Keycloak.");
+    description.add("homeFolderId will be left null for the profiles.");
   }
 
   @Override
