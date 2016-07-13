@@ -1,24 +1,15 @@
 package org.metadatacenter.admin.task;
 
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.constant.KeycloakConstants;
-import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.security.model.user.CedarUserRole;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
-
-  private UserService userService;
 
   public UserProfileCreateAll() {
     description.add("Creates user profiles in Mongo based on all the registered user data from Keycloak.");
@@ -26,25 +17,8 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
 
   @Override
   public void init() {
-    adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
-
-    cedarAdminUserName = cedarConfig.getKeycloakConfig().getAdminUser().getUserName();
-    cedarAdminUserPassword = cedarConfig.getKeycloakConfig().getAdminUser().getPassword();
-    keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
-
-    InputStream keycloakConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream(KeycloakConstants
-        .JSON);
-    KeycloakDeployment keycloakDeployment = KeycloakDeploymentBuilder.build(keycloakConfig);
-
-    keycloakRealmName = keycloakDeployment.getRealm();
-    keycloakBaseURI = keycloakDeployment.getAuthServerBaseUrl();
-
-    userService = new UserServiceMongoDB(
-        cedarConfig.getMongoConfig().getDatabaseName(),
-        cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue()));
-
+    initKeycloak();
   }
-
 
   @Override
   public int execute() {
@@ -52,6 +26,7 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
     if (userRepresentations == null) {
       out.println("Users not found on Keycloak");
     } else {
+      UserService userService = getUserService();
       for (UserRepresentation ur : userRepresentations) {
         out.printSeparator();
 
@@ -78,6 +53,7 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
 
         try {
           CedarUser u = userService.createUser(user);
+          out.println("User created.");
         } catch (Exception e) {
           out.error("Error while creating user: " + ur.getEmail(), e);
         }

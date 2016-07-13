@@ -7,10 +7,8 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.metadatacenter.constant.HttpConnectionConstants;
 import org.metadatacenter.constant.HttpConstants;
-import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 
 public class RegenerateSearchIndex extends AbstractCedarAdminTask {
 
@@ -23,9 +21,7 @@ public class RegenerateSearchIndex extends AbstractCedarAdminTask {
 
   @Override
   public void init() {
-    UserService userService = new UserServiceMongoDB(
-        this.cedarConfig.getMongoConfig().getDatabaseName(),
-        this.cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue()));
+    UserService userService = getUserService();
     String adminUserUUID = this.cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
     try {
       adminUser = userService.findUser(adminUserUUID);

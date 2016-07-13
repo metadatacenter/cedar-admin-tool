@@ -13,10 +13,10 @@ import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.TemplateElementService;
 import org.metadatacenter.server.service.TemplateInstanceService;
 import org.metadatacenter.server.service.TemplateService;
+import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
-import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 import org.metadatacenter.util.json.JsonMapper;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   private static TemplateService<String, JsonNode> templateService;
   private static TemplateElementService<String, JsonNode> templateElementService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
-  private static UserServiceMongoDB userService;
+  private static UserService userService;
 
 
   public ExportResources() {
@@ -83,9 +83,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
         cedarConfig.getMongoConfig().getDatabaseName(),
         cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
-    userService = new UserServiceMongoDB(
-        cedarConfig.getMongoConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.USER));
+    userService = getUserService();
 
     adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
 

@@ -6,7 +6,6 @@ import com.mongodb.client.model.IndexOptions;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.util.MongoFactory;
 
@@ -29,9 +28,11 @@ public class InitMongoDB extends AbstractCedarAdminTask {
   public void init() {
     mongoDatabaseName = cedarConfig.getMongoConfig().getDatabaseName();
     templateFieldCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.FIELD.getValue());
-    templateElementsCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.ELEMENT.getValue());
+    templateElementsCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.ELEMENT.getValue
+        ());
     templatesCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.TEMPLATE.getValue());
-    templateInstancesCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.INSTANCE.getValue());
+    templateInstancesCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.INSTANCE
+        .getValue());
     usersCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue());
   }
 

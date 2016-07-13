@@ -2,6 +2,9 @@ package org.metadatacenter.admin.task;
 
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.server.service.UserService;
+import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,4 +42,11 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   public void setOutput(AdminOutput out) {
     this.out = out;
   }
+
+  protected UserService getUserService() {
+    return new UserServiceMongoDB(
+        cedarConfig.getMongoConfig().getDatabaseName(),
+        cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue()));
+  }
+
 }

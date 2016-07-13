@@ -1,11 +1,7 @@
 package org.metadatacenter.admin.task;
 
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.constant.KeycloakConstants;
 
-import java.io.InputStream;
 import java.util.List;
 
 public class UserProfileListAll extends AbstractKeycloakReadingTask {
@@ -16,18 +12,7 @@ public class UserProfileListAll extends AbstractKeycloakReadingTask {
 
   @Override
   public void init() {
-    adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
-
-    cedarAdminUserName = cedarConfig.getKeycloakConfig().getAdminUser().getUserName();
-    cedarAdminUserPassword = cedarConfig.getKeycloakConfig().getAdminUser().getPassword();
-    keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
-
-    InputStream keycloakConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream(KeycloakConstants
-        .JSON);
-    KeycloakDeployment keycloakDeployment = KeycloakDeploymentBuilder.build(keycloakConfig);
-
-    keycloakRealmName = keycloakDeployment.getRealm();
-    keycloakBaseURI = keycloakDeployment.getAuthServerBaseUrl();
+    initKeycloak();
   }
 
   @Override
