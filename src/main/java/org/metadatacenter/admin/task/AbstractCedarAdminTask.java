@@ -3,6 +3,10 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.server.neo4j.Neo4JProxy;
+import org.metadatacenter.server.neo4j.Neo4JUserSession;
+import org.metadatacenter.server.neo4j.Neo4jConfig;
+import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 
@@ -47,6 +51,24 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
     return new UserServiceMongoDB(
         cedarConfig.getMongoConfig().getDatabaseName(),
         cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue()));
+  }
+
+  protected Neo4JProxy buildNeo4JProxy() {
+    Neo4jConfig neoConfig = Neo4jConfig.fromCedarConfig(cedarConfig);
+
+    String genericIdPrefix = cedarConfig.getLinkedDataConfig().getBase();
+    return new Neo4JProxy(neoConfig, genericIdPrefix);
+  }
+
+  protected Neo4JUserSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user) {
+    UserService userService = getUserService();
+    return Neo4JUserSession.get(neo4JProxy, userService, user, false);
+  }
+
+  protected Neo4JUserSession buildNeo4JSession(CedarUser user) {
+    Neo4JProxy neo4JProxy = buildNeo4JProxy();
+    UserService userService = getUserService();
+    return Neo4JUserSession.get(neo4JProxy, userService, user, false);
   }
 
 }

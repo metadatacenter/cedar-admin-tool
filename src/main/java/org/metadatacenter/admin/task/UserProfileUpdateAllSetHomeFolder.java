@@ -1,21 +1,24 @@
 package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
+import org.metadatacenter.model.folderserver.CedarFSFolder;
+import org.metadatacenter.server.neo4j.IPathUtil;
+import org.metadatacenter.server.neo4j.Neo4JProxy;
+import org.metadatacenter.server.neo4j.Neo4JUserSession;
+import org.metadatacenter.server.neo4j.Neo4jConfig;
 import org.metadatacenter.server.security.CedarUserRolePermissionUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
-import org.metadatacenter.server.security.model.user.CedarUserRole;
-import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.util.json.JsonMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadingTask {
+public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTask {
 
-  public UserProfileUpdateAllUpdatePermissions() {
-    description.add("Updates user profiles in Mongo. The permissions will be recalculated and updated.");
+  public UserProfileUpdateAllSetHomeFolder() {
+    description.add("Updates user home folder id in Mongo.");
     description.add("The iteration is done on the Keycloak user list.");
+    description.add("The home folder is read from the folder server REST API.");
   }
 
   @Override
@@ -50,12 +53,22 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
         if (user == null && !exceptionWhileReading) {
           out.error("The user was not found for id:" + ur.getId());
         } else {
-          CedarUserRolePermissionUtil.expandRolesIntoPermissions(user);
-          try {
-            userService.updateUser(ur.getId(), JsonMapper.MAPPER.valueToTree(user));
-            out.println("The user was updated");
-          } catch (Exception e) {
-            out.error("Error while updating user: " + ur.getEmail(), e);
+          Neo4JProxy neo4JProxy = buildNeo4JProxy();
+          Neo4JUserSession neoSession = buildNeo4JSession(neo4JProxy, user);
+
+          String homeFolderPath = neoSession.getHomeFolderPath();
+          CedarFSFolder userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
+
+          if (userHomeFolder == null) {
+            out.error("Can not find home folder: " + homeFolderPath);
+          } else {
+            user.setHomeFolderId(userHomeFolder.getId());
+            try {
+              userService.updateUser(ur.getId(), JsonMapper.MAPPER.valueToTree(user));
+              out.println("The user was updated");
+            } catch (Exception e) {
+              out.error("Error while updating user: " + ur.getEmail(), e);
+            }
           }
         }
         out.printSeparator();

@@ -32,6 +32,7 @@ public class CedarAdmin {
     taskMap.put("userProfile-wipeAll", UserProfileWipeAll.class);
     taskMap.put("userProfile-createAll", UserProfileCreateAll.class);
     taskMap.put("userProfile-updateAll-updatePermissions", UserProfileUpdateAllUpdatePermissions.class);
+    taskMap.put("userProfile-updateAll-setHomeFolder", UserProfileUpdateAllSetHomeFolder.class);
 
   }
 
@@ -80,7 +81,8 @@ public class CedarAdmin {
     //args = new String[]{"userProfile-listAll"};
     //args = new String[]{"userProfile-wipeAll", AbstractCedarAdminTask.CONFIRM};
     //args = new String[]{"userProfile-createAll"};
-    args = new String[]{"userProfile-updateAll-updatePermissions"};
+    //args = new String[]{"userProfile-updateAll-updatePermissions"};
+    //args = new String[]{"userProfile-updateAll-setHomeFolder"};
 
 
     if (args == null || args.length == 0) {

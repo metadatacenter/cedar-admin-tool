@@ -16,16 +16,7 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
 
     String adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
 
-    Neo4jConfig neoConfig = new Neo4jConfig();
-    neoConfig.setTransactionUrl(cedarConfig.getNeo4jConfig().getRest().getTransactionUrl());
-    neoConfig.setAuthString(cedarConfig.getNeo4jConfig().getRest().getAuthString());
-    neoConfig.setRootFolderPath(cedarConfig.getFolderStructureConfig().getRootFolder().getPath());
-    neoConfig.setRootFolderDescription(cedarConfig.getFolderStructureConfig().getRootFolder().getDescription());
-    neoConfig.setUsersFolderPath(cedarConfig.getFolderStructureConfig().getUsersFolder().getPath());
-    neoConfig.setUsersFolderDescription(cedarConfig.getFolderStructureConfig().getUsersFolder().getDescription());
-    neoConfig.setLostAndFoundFolderPath(cedarConfig.getFolderStructureConfig().getLostAndFoundFolder().getPath());
-    neoConfig.setLostAndFoundFolderDescription(cedarConfig.getFolderStructureConfig().getLostAndFoundFolder()
-        .getDescription());
+    Neo4jConfig neoConfig = Neo4jConfig.fromCedarConfig(cedarConfig);
 
     String genericIdPrefix = cedarConfig.getLinkedDataConfig().getBase();
     Neo4JProxy neo4JProxy = new Neo4JProxy(neoConfig, genericIdPrefix);
