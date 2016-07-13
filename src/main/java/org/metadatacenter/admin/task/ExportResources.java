@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.CedarFSFolder;
 import org.metadatacenter.model.folderserver.CedarFSNode;
@@ -33,7 +32,6 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   public static final String DEFAULT_SORT = "name";
   private static final int EXPORT_MAX_COUNT = 10000;
 
-  private CedarConfig cedarConfig;
   private Neo4JUserSession adminNeo4JSession;
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
@@ -51,8 +49,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   }
 
   @Override
-  public void init(CedarConfig cedarConfig) {
-    this.cedarConfig = cedarConfig;
+  public void init() {
   }
 
   @Override

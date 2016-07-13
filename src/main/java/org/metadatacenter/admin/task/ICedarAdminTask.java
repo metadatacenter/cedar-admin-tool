@@ -5,10 +5,12 @@ import org.metadatacenter.config.CedarConfig;
 
 import java.util.List;
 
-public interface CedarAdminTask {
+public interface ICedarAdminTask {
   void setArguments(String[] args);
 
-  void init(CedarConfig config);
+  void injectConfig(CedarConfig cedarConfig);
+
+  void init();
 
   int execute();
 

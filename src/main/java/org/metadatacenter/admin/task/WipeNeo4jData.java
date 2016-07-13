@@ -1,15 +1,8 @@
 package org.metadatacenter.admin.task;
 
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class WipeNeo4jData extends AbstractNeo4JAccessTask {
-
-  private CedarConfig cedarConfig;
-  private Logger logger = LoggerFactory.getLogger(WipeNeo4jData.class);
-  public static final String CONFIRM = "confirm";
 
   public WipeNeo4jData() {
     description.add("Deletes all CEDAR nodes from the neo4j server.");
@@ -17,8 +10,7 @@ public class WipeNeo4jData extends AbstractNeo4JAccessTask {
   }
 
   @Override
-  public void init(CedarConfig config) {
-    this.cedarConfig = config;
+  public void init() {
   }
 
   @Override

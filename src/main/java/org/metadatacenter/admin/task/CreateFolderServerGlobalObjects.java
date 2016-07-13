@@ -1,11 +1,8 @@
 package org.metadatacenter.admin.task;
 
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
 
 public class CreateFolderServerGlobalObjects extends AbstractNeo4JAccessTask {
-
-  private CedarConfig cedarConfig;
 
   public CreateFolderServerGlobalObjects() {
     description.add("Creates global folders in the graph database: /, /Users, /Lost+Found");
@@ -14,8 +11,8 @@ public class CreateFolderServerGlobalObjects extends AbstractNeo4JAccessTask {
   }
 
   @Override
-  public void init(CedarConfig cedarConfig) {
-    this.cedarConfig = cedarConfig;
+  public void init() {
+
   }
 
   @Override

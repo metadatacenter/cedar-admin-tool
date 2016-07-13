@@ -4,7 +4,6 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.CedarFSFolder;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
@@ -22,7 +21,6 @@ import java.util.stream.Stream;
 
 public class ImportFlatFolder extends AbstractNeo4JAccessTask {
 
-  private CedarConfig cedarConfig;
   private Neo4JUserSession adminNeo4JSession;
   private UserService userService;
 
@@ -39,8 +37,8 @@ public class ImportFlatFolder extends AbstractNeo4JAccessTask {
   }
 
   @Override
-  public void init(CedarConfig cedarConfig) {
-    this.cedarConfig = cedarConfig;
+  public void init() {
+
   }
 
   @Override

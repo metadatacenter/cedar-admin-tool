@@ -26,13 +26,13 @@ public class InitMongoDB extends AbstractCedarAdminTask {
   }
 
   @Override
-  public void init(CedarConfig config) {
-    mongoDatabaseName = config.getMongoConfig().getDatabaseName();
-    templateFieldCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.FIELD.getValue());
-    templateElementsCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.ELEMENT.getValue());
-    templatesCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.TEMPLATE.getValue());
-    templateInstancesCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.INSTANCE.getValue());
-    usersCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue());
+  public void init() {
+    mongoDatabaseName = cedarConfig.getMongoConfig().getDatabaseName();
+    templateFieldCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.FIELD.getValue());
+    templateElementsCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.ELEMENT.getValue());
+    templatesCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.TEMPLATE.getValue());
+    templateInstancesCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.INSTANCE.getValue());
+    usersCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue());
   }
 
   private void createUniqueIndex(String collectionName, String fieldName) {

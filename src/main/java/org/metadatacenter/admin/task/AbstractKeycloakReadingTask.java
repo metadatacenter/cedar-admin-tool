@@ -16,6 +16,7 @@ import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.io.IOException;
+import java.util.List;
 
 public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask {
 
@@ -26,9 +27,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
   protected String keycloakClientId;
   protected String cedarAdminUserName;
 
-
-  protected UserRepresentation getAdminUserFromKeycloak() {
-
+  private JacksonJsonProvider getCustomizedJacksonJsonProvider() {
     ObjectMapper m = new ObjectMapper();
     JacksonJsonProvider jacksonJsonProvider =
         new JacksonJaxbJsonProvider();
@@ -54,6 +53,11 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
         }
       }
     });
+    return jacksonJsonProvider;
+  }
+
+  protected UserRepresentation getAdminUserFromKeycloak() {
+    JacksonJsonProvider jacksonJsonProvider = getCustomizedJacksonJsonProvider();
 
     ResteasyClient resteasyClient = new ResteasyClientBuilder().connectionPoolSize(10).register(jacksonJsonProvider)
         .build();
@@ -70,5 +74,24 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
     UserResource userResource = kc.realm(keycloakRealmName).users().get(adminUserUUID);
     return userResource.toRepresentation();
   }
+
+  protected List<UserRepresentation> listAllUsersFromKeycloak() {
+    JacksonJsonProvider jacksonJsonProvider = getCustomizedJacksonJsonProvider();
+
+    ResteasyClient resteasyClient = new ResteasyClientBuilder().connectionPoolSize(10).register(jacksonJsonProvider)
+        .build();
+
+    Keycloak kc = KeycloakBuilder.builder()
+        .serverUrl(keycloakBaseURI)
+        .realm(keycloakRealmName)
+        .username(cedarAdminUserName)
+        .password(cedarAdminUserPassword)
+        .clientId(keycloakClientId)
+        .resteasyClient(resteasyClient)
+        .build();
+
+    return kc.realm(keycloakRealmName).users().search(null, null, null);
+  }
+
 
 }
