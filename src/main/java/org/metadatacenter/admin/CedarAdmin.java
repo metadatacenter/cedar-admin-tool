@@ -34,6 +34,8 @@ public class CedarAdmin {
     taskMap.put("userProfile-updateAll-updatePermissions", UserProfileUpdateAllUpdatePermissions.class);
     taskMap.put("userProfile-updateAll-setHomeFolder", UserProfileUpdateAllSetHomeFolder.class);
 
+    taskMap.put("userHomeFolder-createAll", UserHomeFolderCreateAll.class);
+
   }
 
   private static void showTitle() {
@@ -83,6 +85,7 @@ public class CedarAdmin {
     //args = new String[]{"userProfile-createAll"};
     //args = new String[]{"userProfile-updateAll-updatePermissions"};
     //args = new String[]{"userProfile-updateAll-setHomeFolder"};
+    args = new String[]{"userHomeFolder-createAll"};
 
 
     if (args == null || args.length == 0) {

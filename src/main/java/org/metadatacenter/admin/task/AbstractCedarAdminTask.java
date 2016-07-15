@@ -61,8 +61,12 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   }
 
   protected Neo4JUserSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user) {
+    return buildNeo4JSession(neo4JProxy, user, false);
+  }
+
+  protected Neo4JUserSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user, boolean createHome) {
     UserService userService = getUserService();
-    return Neo4JUserSession.get(neo4JProxy, userService, user, false);
+    return Neo4JUserSession.get(neo4JProxy, userService, user, createHome);
   }
 
   protected Neo4JUserSession buildNeo4JSession(CedarUser user) {
