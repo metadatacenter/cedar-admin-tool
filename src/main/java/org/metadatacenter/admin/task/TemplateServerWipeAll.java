@@ -7,7 +7,7 @@ import org.bson.Document;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.util.MongoFactory;
 
-public class WipeMongoData extends AbstractCedarAdminTask {
+public class TemplateServerWipeAll extends AbstractCedarAdminTask {
 
   private String mongoDatabaseName;
   private String templateElementsCollectionName;
@@ -17,7 +17,7 @@ public class WipeMongoData extends AbstractCedarAdminTask {
   private String usersCollectionName;
   private MongoClient mongoClient;
 
-  public WipeMongoData() {
+  public TemplateServerWipeAll() {
     description.add("Deletes all documents from the handled MongoDB collections.");
     description.add("Needs second parameter '" + CONFIRM + "' to run.");
   }

@@ -9,7 +9,7 @@ import org.bson.Document;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.util.MongoFactory;
 
-public class InitMongoDB extends AbstractCedarAdminTask {
+public class TemplateServerInitDB extends AbstractCedarAdminTask {
 
   private String mongoDatabaseName;
   private String templateElementsCollectionName;
@@ -19,8 +19,8 @@ public class InitMongoDB extends AbstractCedarAdminTask {
   private String usersCollectionName;
   private MongoClient mongoClient;
 
-  public InitMongoDB() {
-    description.add("Initializes MongoDB collections.");
+  public TemplateServerInitDB() {
+    description.add("Initializes Template Server MongoDB collections.");
     description.add("Adds constraints to the different collections.");
   }
 

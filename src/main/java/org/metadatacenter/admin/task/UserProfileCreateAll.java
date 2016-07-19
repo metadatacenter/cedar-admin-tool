@@ -2,6 +2,7 @@ package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.server.security.model.user.CedarUser;
+import org.metadatacenter.server.security.model.user.CedarUserExtract;
 import org.metadatacenter.server.security.model.user.CedarUserRole;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
@@ -46,11 +47,8 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
           roles.add(CedarUserRole.FILESYSTEM_ADMINISTRATOR);
         }
 
-        CedarUser user = CedarUserUtil.createUserFromBlueprint(ur.getId(),
-            ur.getFirstName() + " " + ur.getLastName(),
-            roles,
-            cedarConfig.getBlueprintUserProfile(),
-            cedarConfig.getBlueprintUIPreferences());
+        CedarUserExtract cue = new CedarUserExtract(ur.getId(), ur.getFirstName(), ur.getLastName());
+        CedarUser user = CedarUserUtil.createUserFromBlueprint(cue, roles);
 
         try {
           CedarUser u = userService.createUser(user);

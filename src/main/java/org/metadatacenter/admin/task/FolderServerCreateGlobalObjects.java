@@ -2,12 +2,13 @@ package org.metadatacenter.admin.task;
 
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
 
-public class CreateFolderServerGlobalObjects extends AbstractNeo4JAccessTask {
+public class FolderServerCreateGlobalObjects extends AbstractNeo4JAccessTask {
 
-  public CreateFolderServerGlobalObjects() {
+  public FolderServerCreateGlobalObjects() {
     description.add("Creates global folders in the graph database: /, /Users, /Lost+Found");
-    description.add("Creates home folder for cedar-admin user");
-    description.add("Updates cedar-admin user profile in MongoDB, sets homeFolderId");
+    description.add("Creates home folder for 'cedar-admin' user");
+    description.add("Creates 'Everybody' group");
+    description.add("Updates 'cedar-admin' user profile in MongoDB, sets homeFolderId");
   }
 
   @Override

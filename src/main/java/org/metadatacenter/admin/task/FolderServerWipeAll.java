@@ -2,10 +2,10 @@ package org.metadatacenter.admin.task;
 
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
 
-public class WipeNeo4jData extends AbstractNeo4JAccessTask {
+public class FolderServerWipeAll extends AbstractNeo4JAccessTask {
 
-  public WipeNeo4jData() {
-    description.add("Deletes all CEDAR nodes from the neo4j server.");
+  public FolderServerWipeAll() {
+    description.add("Deletes all 'XCEDAR' nodes from the Neo4j server.");
     description.add("Needs second parameter '" + CONFIRM + "' to run.");
   }
 

@@ -17,16 +17,18 @@ public class CedarAdmin {
   static {
     out = new AdminOutput();
     taskMap = new LinkedHashMap<>();
-    taskMap.put("wipeMongoData", WipeMongoData.class);
-    taskMap.put("initMongoDB", InitMongoDB.class);
     taskMap.put("getAdminUserKeycloakProfile", GetAdminUserKeycloakProfile.class);
-    taskMap.put("wipeNeo4jData", WipeNeo4jData.class);
-    taskMap.put("createFolderServerGlobalObjects", CreateFolderServerGlobalObjects.class);
     taskMap.put("exportResources", ExportResources.class);
     taskMap.put("regenerateSearchIndex", RegenerateSearchIndex.class);
     taskMap.put("importFlatFolder", ImportFlatFolder.class);
 
     taskMap.put("importFlatFolder", ImportFlatFolder.class);
+
+    taskMap.put("templateServer-wipeAll", TemplateServerWipeAll.class);
+    taskMap.put("templateServer-initDB", TemplateServerInitDB.class);
+
+    taskMap.put("folderServer-wipeAll", FolderServerWipeAll.class);
+    taskMap.put("folderServer-createGlobalObjects", FolderServerCreateGlobalObjects.class);
 
     taskMap.put("userProfile-listAll", UserProfileListAll.class);
     taskMap.put("userProfile-wipeAll", UserProfileWipeAll.class);
@@ -85,7 +87,7 @@ public class CedarAdmin {
     //args = new String[]{"userProfile-createAll"};
     //args = new String[]{"userProfile-updateAll-updatePermissions"};
     //args = new String[]{"userProfile-updateAll-setHomeFolder"};
-    args = new String[]{"userHomeFolder-createAll"};
+    //args = new String[]{"userHomeFolder-createAll"};
 
 
     if (args == null || args.length == 0) {
