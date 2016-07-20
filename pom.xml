@@ -6,12 +6,12 @@
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.5.2</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-admin-tools</artifactId>
-  <version>0.1.0</version>
+  <version>0.5.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>CEDAR Admin Tools</name>
@@ -29,27 +29,33 @@
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-auth-operations</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-user-operations</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-folder-operations</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-project-config</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-template-operations</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
+
 
     <dependency>
       <groupId>org.keycloak</groupId>
