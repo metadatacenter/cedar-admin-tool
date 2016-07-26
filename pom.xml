@@ -37,7 +37,7 @@
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-auth-operations</artifactId>
+      <artifactId>cedar-project-config</artifactId>
       <version>${cedar.version}</version>
     </dependency>
 
@@ -55,16 +55,15 @@
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-project-config</artifactId>
+      <artifactId>cedar-template-operations</artifactId>
       <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-template-operations</artifactId>
+      <artifactId>cedar-auth-operations</artifactId>
       <version>${cedar.version}</version>
     </dependency>
-
 
     <dependency>
       <groupId>org.keycloak</groupId>
