@@ -7,9 +7,9 @@ import org.metadatacenter.constant.KeycloakConstants;
 
 import java.io.InputStream;
 
-public class GetAdminUserKeycloakProfile extends AbstractKeycloakReadingTask {
+public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
 
-  public GetAdminUserKeycloakProfile() {
+  public UserProfileGetAdmin() {
     description.add("Reads cedar-admin user details from Keycloak.");
   }
 

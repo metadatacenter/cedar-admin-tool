@@ -17,7 +17,6 @@ public class CedarAdmin {
   static {
     out = new AdminOutput();
     taskMap = new LinkedHashMap<>();
-    taskMap.put("getAdminUserKeycloakProfile", GetAdminUserKeycloakProfile.class);
     taskMap.put("exportResources", ExportResources.class);
     taskMap.put("regenerateSearchIndex", RegenerateSearchIndex.class);
     taskMap.put("importFlatFolder", ImportFlatFolder.class);
@@ -30,6 +29,7 @@ public class CedarAdmin {
     taskMap.put("folderServer-wipeAll", FolderServerWipeAll.class);
     taskMap.put("folderServer-createGlobalObjects", FolderServerCreateGlobalObjects.class);
 
+    taskMap.put("userProfile-get-admin", UserProfileGetAdmin.class);
     taskMap.put("userProfile-listAll", UserProfileListAll.class);
     taskMap.put("userProfile-wipeAll", UserProfileWipeAll.class);
     taskMap.put("userProfile-createAll", UserProfileCreateAll.class);
