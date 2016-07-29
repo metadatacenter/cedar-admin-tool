@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.5.6-SNAPSHOT</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-admin-tools</artifactId>
-  <version>0.1.0</version>
+  <version>0.5.6-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>CEDAR Admin Tools</name>
 
   <properties>
+
+    <cedar.version>0.5.6-SNAPSHOT</cedar.version>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -24,31 +26,43 @@
     <assembly.targetDir>${project.basedir}/dist</assembly.targetDir>
   </properties>
 
+  <scm>
+    <connection>scm:git:git@github.com:metadatacenter/cedar-admin-tools.git</connection>
+    <developerConnection>scm:git:git@github.com:metadatacenter/cedar-admin-tools.git</developerConnection>
+    <url>https://github.com/metadatacenter/cedar-admin-tools</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <dependencies>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-auth-operations</artifactId>
+      <artifactId>cedar-project-config</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-user-operations</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-folder-operations</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-project-config</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-template-operations</artifactId>
+      <version>${cedar.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-auth-operations</artifactId>
+      <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
