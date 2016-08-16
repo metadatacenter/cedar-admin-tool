@@ -5,19 +5,19 @@
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>0.5.3</version>
+    <version>0.5.6</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-admin-tools</artifactId>
-  <version>0.5.3</version>
+  <version>0.5.6</version>
   <packaging>jar</packaging>
 
   <name>CEDAR Admin Tools</name>
 
   <properties>
 
-    <cedar.version>0.5.3</cedar.version>
+    <cedar.version>0.5.6</cedar.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -30,14 +30,14 @@
     <connection>scm:git:git@github.com:metadatacenter/cedar-admin-tools.git</connection>
     <developerConnection>scm:git:git@github.com:metadatacenter/cedar-admin-tools.git</developerConnection>
     <url>https://github.com/metadatacenter/cedar-admin-tools</url>
-    <tag>release-0.5.3</tag>
+    <tag>release-0.5.6</tag>
   </scm>
 
   <dependencies>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-auth-operations</artifactId>
+      <artifactId>cedar-project-config</artifactId>
       <version>${cedar.version}</version>
     </dependency>
 
@@ -55,16 +55,15 @@
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-project-config</artifactId>
+      <artifactId>cedar-template-operations</artifactId>
       <version>${cedar.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-template-operations</artifactId>
+      <artifactId>cedar-auth-operations</artifactId>
       <version>${cedar.version}</version>
     </dependency>
-
 
     <dependency>
       <groupId>org.keycloak</groupId>
