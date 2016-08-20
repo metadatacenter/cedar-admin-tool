@@ -88,6 +88,7 @@ public class CedarAdmin {
     //args = new String[]{"userProfile-updateAll-updatePermissions"};
     //args = new String[]{"userProfile-updateAll-setHomeFolder"};
     //args = new String[]{"userHomeFolder-createAll"};
+    //args = new String[]{"folderServer-createGlobalObjects"};
 
 
     if (args == null || args.length == 0) {

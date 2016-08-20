@@ -19,7 +19,8 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
     Neo4jConfig neoConfig = Neo4jConfig.fromCedarConfig(cedarConfig);
 
     String genericIdPrefix = cedarConfig.getLinkedDataConfig().getBase();
-    Neo4JProxy neo4JProxy = new Neo4JProxy(neoConfig, genericIdPrefix);
+    String usersIdPrefix = cedarConfig.getLinkedDataConfig().getUsersBase();
+    Neo4JProxy neo4JProxy =  new Neo4JProxy(neoConfig, genericIdPrefix, usersIdPrefix);
 
     try {
       adminUser = userService.findUser(adminUserUUID);

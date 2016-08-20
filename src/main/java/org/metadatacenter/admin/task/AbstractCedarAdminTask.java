@@ -57,7 +57,8 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
     Neo4jConfig neoConfig = Neo4jConfig.fromCedarConfig(cedarConfig);
 
     String genericIdPrefix = cedarConfig.getLinkedDataConfig().getBase();
-    return new Neo4JProxy(neoConfig, genericIdPrefix);
+    String usersIdPrefix = cedarConfig.getLinkedDataConfig().getUsersBase();
+    return new Neo4JProxy(neoConfig, genericIdPrefix, usersIdPrefix);
   }
 
   protected Neo4JUserSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user) {

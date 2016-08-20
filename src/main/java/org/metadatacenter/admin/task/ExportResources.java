@@ -106,8 +106,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     if (node instanceof CedarFSFolder) {
       CedarFSFolder folder = (CedarFSFolder) node;
       String id = folder.getId();
-      String uuid = adminNeo4JSession.getFolderUUID(id);
-      Path createdFolder = createFolder(path, uuid);
+      Path createdFolder = createFolder(path, id);
       createFolderDescriptor(createdFolder, folder);
       List<CedarFSNode> folderContents = adminNeo4JSession.findFolderContents(id, nodeTypeList, EXPORT_MAX_COUNT, 0,
           sortList);
