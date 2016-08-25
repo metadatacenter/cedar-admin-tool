@@ -47,7 +47,8 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
           roles.add(CedarUserRole.FILESYSTEM_ADMINISTRATOR);
         }
 
-        CedarUserExtract cue = new CedarUserExtract(ur.getId(), ur.getFirstName(), ur.getLastName());
+        CedarUserExtract cue = new CedarUserExtract(ur.getId(), ur.getFirstName(), ur.getLastName(), null);
+        CedarUserUtil.fillScreenName(cue);
         CedarUser user = CedarUserUtil.createUserFromBlueprint(cue, roles);
 
         try {
