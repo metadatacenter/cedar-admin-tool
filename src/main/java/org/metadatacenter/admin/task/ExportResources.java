@@ -17,6 +17,7 @@ import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
+import org.metadatacenter.util.CedarUserNameUtil;
 import org.metadatacenter.util.json.JsonMapper;
 
 import java.io.IOException;
@@ -179,14 +180,14 @@ public class ExportResources extends AbstractNeo4JAccessTask {
       List<CedarUser> all = userService.findAll();
       out.info("Returned user count:" + all.size());
       for (CedarUser u : all) {
-        String uuid = u.getUserId();
+        String uuid = u.getId();
         String contentName = uuid + ImportExportConstants.CONTENT_SUFFIX;
         Path createdContentFile = path.resolve(contentName);
         try {
           String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(u));
           Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-          out.error("There was an error writing the info for user: " + uuid + ":" + u.getScreenName(), e);
+          out.error("There was an error writing the info for user: " + uuid + ":" + CedarUserNameUtil.getDisplayName(u), e);
         }
       }
     } catch (IOException | ProcessingException e) {

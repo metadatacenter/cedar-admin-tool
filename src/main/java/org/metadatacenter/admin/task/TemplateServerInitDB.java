@@ -54,7 +54,7 @@ public class TemplateServerInitDB extends AbstractCedarAdminTask {
     createUniqueIndex(templateFieldCollectionName, "@id");
     createUniqueIndex(templateInstancesCollectionName, "@id");
     createUniqueIndex(templatesCollectionName, "@id");
-    createUniqueIndex(usersCollectionName, "userId");
+    createUniqueIndex(usersCollectionName, "id");
 
     return 0;
   }
