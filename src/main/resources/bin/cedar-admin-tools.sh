@@ -1,9 +1,9 @@
 #!/bin/sh
 clear
 echo ----------------------------------------------
-echo Launching CEDAR Admin tools 0.5.7-SNAPSHOT
+echo Launching CEDAR Admin tools ${version}-SNAPSHOT
 echo ----------------------------------------------
 echo
 DIRNAME=`dirname "$0"`
 
-java -jar $DIRNAME/cedar-admin-tools-0.5.7-SNAPSHOT.jar "$@"
+java -jar $DIRNAME/cedar-admin-tools-${version}.jar "$@"
