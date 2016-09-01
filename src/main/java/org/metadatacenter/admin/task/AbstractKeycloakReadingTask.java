@@ -9,13 +9,18 @@ import org.codehaus.jackson.map.JsonDeserializer;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.keycloak.adapters.KeycloakDeployment;
+import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.metadatacenter.constant.KeycloakConstants;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask {
 
@@ -26,9 +31,22 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
   protected String keycloakClientId;
   protected String cedarAdminUserName;
 
+  protected void initKeycloak() {
+    adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
 
-  protected UserRepresentation getAdminUserFromKeycloak() {
+    cedarAdminUserName = cedarConfig.getKeycloakConfig().getAdminUser().getUserName();
+    cedarAdminUserPassword = cedarConfig.getKeycloakConfig().getAdminUser().getPassword();
+    keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
 
+    InputStream keycloakConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream(KeycloakConstants
+        .JSON);
+    KeycloakDeployment keycloakDeployment = KeycloakDeploymentBuilder.build(keycloakConfig);
+
+    keycloakRealmName = keycloakDeployment.getRealm();
+    keycloakBaseURI = keycloakDeployment.getAuthServerBaseUrl();
+  }
+
+  private JacksonJsonProvider getCustomizedJacksonJsonProvider() {
     ObjectMapper m = new ObjectMapper();
     JacksonJsonProvider jacksonJsonProvider =
         new JacksonJaxbJsonProvider();
@@ -54,11 +72,16 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
         }
       }
     });
+    return jacksonJsonProvider;
+  }
+
+  protected Keycloak buildKeycloak() {
+    JacksonJsonProvider jacksonJsonProvider = getCustomizedJacksonJsonProvider();
 
     ResteasyClient resteasyClient = new ResteasyClientBuilder().connectionPoolSize(10).register(jacksonJsonProvider)
         .build();
 
-    Keycloak kc = KeycloakBuilder.builder()
+    return KeycloakBuilder.builder()
         .serverUrl(keycloakBaseURI)
         .realm(keycloakRealmName)
         .username(cedarAdminUserName)
@@ -66,9 +89,17 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
         .clientId(keycloakClientId)
         .resteasyClient(resteasyClient)
         .build();
+  }
 
+  protected UserRepresentation getAdminUserFromKeycloak() {
+    Keycloak kc = buildKeycloak();
     UserResource userResource = kc.realm(keycloakRealmName).users().get(adminUserUUID);
     return userResource.toRepresentation();
+  }
+
+  protected List<UserRepresentation> listAllUsersFromKeycloak() {
+    Keycloak kc = buildKeycloak();
+    return kc.realm(keycloakRealmName).users().search(null, null, null);
   }
 
 }

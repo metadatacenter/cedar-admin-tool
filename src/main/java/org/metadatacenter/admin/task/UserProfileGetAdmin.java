@@ -3,24 +3,23 @@ package org.metadatacenter.admin.task;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.constant.KeycloakConstants;
 
 import java.io.InputStream;
 
-public class GetAdminUserKeycloakProfile extends AbstractKeycloakReadingTask {
+public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
 
-  public GetAdminUserKeycloakProfile() {
+  public UserProfileGetAdmin() {
     description.add("Reads cedar-admin user details from Keycloak.");
   }
 
   @Override
-  public void init(CedarConfig config) {
-    adminUserUUID = config.getKeycloakConfig().getAdminUser().getUuid();
+  public void init() {
+    adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
 
-    cedarAdminUserName = config.getKeycloakConfig().getAdminUser().getUserName();
-    cedarAdminUserPassword = config.getKeycloakConfig().getAdminUser().getPassword();
-    keycloakClientId = config.getKeycloakConfig().getClientId();
+    cedarAdminUserName = cedarConfig.getKeycloakConfig().getAdminUser().getUserName();
+    cedarAdminUserPassword = cedarConfig.getKeycloakConfig().getAdminUser().getPassword();
+    keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
 
     out.println("adminUserUUID         : " + adminUserUUID);
     out.println("cedarAdminUserName    : " + cedarAdminUserName);

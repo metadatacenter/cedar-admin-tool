@@ -6,11 +6,10 @@ import com.mongodb.client.model.IndexOptions;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.util.MongoFactory;
 
-public class InitMongoDB extends AbstractCedarAdminTask {
+public class TemplateServerInitDB extends AbstractCedarAdminTask {
 
   private String mongoDatabaseName;
   private String templateElementsCollectionName;
@@ -20,19 +19,21 @@ public class InitMongoDB extends AbstractCedarAdminTask {
   private String usersCollectionName;
   private MongoClient mongoClient;
 
-  public InitMongoDB() {
-    description.add("Initializes MongoDB collections.");
+  public TemplateServerInitDB() {
+    description.add("Initializes Template Server MongoDB collections.");
     description.add("Adds constraints to the different collections.");
   }
 
   @Override
-  public void init(CedarConfig config) {
-    mongoDatabaseName = config.getMongoConfig().getDatabaseName();
-    templateFieldCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.FIELD.getValue());
-    templateElementsCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.ELEMENT.getValue());
-    templatesCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.TEMPLATE.getValue());
-    templateInstancesCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.INSTANCE.getValue());
-    usersCollectionName = config.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue());
+  public void init() {
+    mongoDatabaseName = cedarConfig.getMongoConfig().getDatabaseName();
+    templateFieldCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.FIELD.getValue());
+    templateElementsCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.ELEMENT.getValue
+        ());
+    templatesCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.TEMPLATE.getValue());
+    templateInstancesCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.INSTANCE
+        .getValue());
+    usersCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue());
   }
 
   private void createUniqueIndex(String collectionName, String fieldName) {
@@ -53,7 +54,7 @@ public class InitMongoDB extends AbstractCedarAdminTask {
     createUniqueIndex(templateFieldCollectionName, "@id");
     createUniqueIndex(templateInstancesCollectionName, "@id");
     createUniqueIndex(templatesCollectionName, "@id");
-    createUniqueIndex(usersCollectionName, "userId");
+    createUniqueIndex(usersCollectionName, "id");
 
     return 0;
   }
