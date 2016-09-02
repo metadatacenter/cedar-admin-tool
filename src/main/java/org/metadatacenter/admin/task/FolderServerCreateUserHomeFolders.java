@@ -11,9 +11,9 @@ import org.metadatacenter.util.json.JsonMapper;
 
 import java.util.List;
 
-public class UserHomeFolderCreateAll extends AbstractKeycloakReadingTask {
+public class FolderServerCreateUserHomeFolders extends AbstractKeycloakReadingTask {
 
-  public UserHomeFolderCreateAll() {
+  public FolderServerCreateUserHomeFolders() {
     description.add("Creates user home folders in Neo4J.");
     description.add("The iteration is done on the Keycloak user list.");
   }
