@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
-import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.CedarFSFolder;
 import org.metadatacenter.model.folderserver.CedarFSNode;
@@ -14,10 +13,11 @@ import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.TemplateElementService;
 import org.metadatacenter.server.service.TemplateInstanceService;
 import org.metadatacenter.server.service.TemplateService;
+import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
-import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
+import org.metadatacenter.util.CedarUserNameUtil;
 import org.metadatacenter.util.json.JsonMapper;
 
 import java.io.IOException;
@@ -33,7 +33,6 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   public static final String DEFAULT_SORT = "name";
   private static final int EXPORT_MAX_COUNT = 10000;
 
-  private CedarConfig cedarConfig;
   private Neo4JUserSession adminNeo4JSession;
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
@@ -41,7 +40,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   private static TemplateService<String, JsonNode> templateService;
   private static TemplateElementService<String, JsonNode> templateElementService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
-  private static UserServiceMongoDB userService;
+  private static UserService userService;
 
 
   public ExportResources() {
@@ -51,8 +50,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   }
 
   @Override
-  public void init(CedarConfig cedarConfig) {
-    this.cedarConfig = cedarConfig;
+  public void init() {
   }
 
   @Override
@@ -86,9 +84,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
         cedarConfig.getMongoConfig().getDatabaseName(),
         cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
-    userService = new UserServiceMongoDB(
-        cedarConfig.getMongoConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.USER));
+    userService = getUserService();
 
     adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
 
@@ -111,8 +107,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
     if (node instanceof CedarFSFolder) {
       CedarFSFolder folder = (CedarFSFolder) node;
       String id = folder.getId();
-      String uuid = adminNeo4JSession.getFolderUUID(id);
-      Path createdFolder = createFolder(path, uuid);
+      Path createdFolder = createFolder(path, id);
       createFolderDescriptor(createdFolder, folder);
       List<CedarFSNode> folderContents = adminNeo4JSession.findFolderContents(id, nodeTypeList, EXPORT_MAX_COUNT, 0,
           sortList);
@@ -185,14 +180,14 @@ public class ExportResources extends AbstractNeo4JAccessTask {
       List<CedarUser> all = userService.findAll();
       out.info("Returned user count:" + all.size());
       for (CedarUser u : all) {
-        String uuid = u.getUserId();
+        String uuid = u.getId();
         String contentName = uuid + ImportExportConstants.CONTENT_SUFFIX;
         Path createdContentFile = path.resolve(contentName);
         try {
           String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(u));
           Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-          out.error("There was an error writing the info for user: " + uuid + ":" + u.getScreenName(), e);
+          out.error("There was an error writing the info for user: " + uuid + ":" + CedarUserNameUtil.getDisplayName(u), e);
         }
       }
     } catch (IOException | ProcessingException e) {
