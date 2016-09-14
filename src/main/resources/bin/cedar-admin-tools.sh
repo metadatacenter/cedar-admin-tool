@@ -1,7 +1,7 @@
 #!/bin/sh
 clear
 echo ----------------------------------------------
-echo Launching CEDAR Admin tools ${version}-SNAPSHOT
+echo Launching CEDAR Admin tools ${version}
 echo ----------------------------------------------
 echo
 DIRNAME=`dirname "$0"`

@@ -17,12 +17,12 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class ImportFlatFolder extends AbstractNeo4JAccessTask {
+public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
   private Neo4JUserSession adminNeo4JSession;
   private UserService userService;
 
-  public ImportFlatFolder() {
+  public ImpexImportFlatFolder() {
     description.add("Imports the contents of a local folder into a virtual folder using a given owner");
     description.add("Parameters:");
     description.add(" 1) Filesystem path to a folder.");

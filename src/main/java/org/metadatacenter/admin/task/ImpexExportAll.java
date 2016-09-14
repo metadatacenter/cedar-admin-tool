@@ -28,7 +28,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExportResources extends AbstractNeo4JAccessTask {
+public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   public static final String DEFAULT_SORT = "name";
   private static final int EXPORT_MAX_COUNT = 10000;
@@ -43,7 +43,7 @@ public class ExportResources extends AbstractNeo4JAccessTask {
   private static UserService userService;
 
 
-  public ExportResources() {
+  public ImpexExportAll() {
     description.add("Exports folders, resources, users into a directory structure");
     description.add("The export is executed using the cedar-admin user");
     description.add("The export target is the $CEDAR_HOME/export folder");
