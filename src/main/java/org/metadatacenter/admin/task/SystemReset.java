@@ -1,14 +1,7 @@
 package org.metadatacenter.admin.task;
 
-import com.mongodb.client.MongoCollection;
-import org.bson.BsonDocument;
-import org.bson.Document;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.TaskExecutor;
 import org.metadatacenter.admin.util.TaskRegistry;
-import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.util.MongoFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +19,13 @@ public class SystemReset extends AbstractKeycloakReadingTask {
   @Override
   public void init() {
     commands = new ArrayList<>();
-    commands.add(new String[]{"templateServer-wipeAll", "confirm"});
-    commands.add(new String[]{"userProfile-createAll"});
-    commands.add(new String[]{"folderServer-wipeAll", "confirm"});
-    commands.add(new String[]{"folderServer-createGlobalObjects"});
-    commands.add(new String[]{"folderServer-createUserHomeFolders"});
+    commands.add(new String[]{TaskRegistry.TEMPLATE_SERVER_WIPE_ALL, CONFIRM});
+    commands.add(new String[]{TaskRegistry.USER_PROFILE_CREATE_ALL});
+    commands.add(new String[]{TaskRegistry.FOLDER_SERVER_WIPE_ALL, CONFIRM});
+    commands.add(new String[]{TaskRegistry.FOLDER_SERVER_CREATE_GLOBAL_OBJECTS});
+    commands.add(new String[]{TaskRegistry.FOLDER_SERVER_CREATE_USER_HOME_FOLDERS});
+    commands.add(new String[]{TaskRegistry.SEARCH_REGENERATE_INDEX});
   }
-
 
   @Override
   public int execute() {

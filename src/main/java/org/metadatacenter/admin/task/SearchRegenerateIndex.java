@@ -10,11 +10,11 @@ import org.metadatacenter.constant.HttpConstants;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 
-public class RegenerateSearchIndex extends AbstractCedarAdminTask {
+public class SearchRegenerateIndex extends AbstractCedarAdminTask {
 
   CedarUser adminUser;
 
-  public RegenerateSearchIndex() {
+  public SearchRegenerateIndex() {
     description.add("It makes a REST call to the Resource server to regenerate the Elasticsearch search index");
     description.add("Note that the Resource server must be running before executing this command");
   }
