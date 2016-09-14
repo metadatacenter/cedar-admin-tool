@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>0.7.2-SNAPSHOT</version>
+    <version>0.7.2</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
@@ -17,7 +17,7 @@
 
   <properties>
 
-    <cedar.version>0.7.2-SNAPSHOT</cedar.version>
+    <cedar.version>0.7.2</cedar.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
