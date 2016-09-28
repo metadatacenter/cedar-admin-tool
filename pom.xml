@@ -10,7 +10,7 @@
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-admin-tools</artifactId>
-  <version>0.8.2-SNAPSHOT</version>
+  <version>0.8.2</version>
   <packaging>jar</packaging>
 
   <name>CEDAR Admin Tools</name>
@@ -30,7 +30,7 @@
     <connection>scm:git:git@github.com:metadatacenter/cedar-admin-tools.git</connection>
     <developerConnection>scm:git:git@github.com:metadatacenter/cedar-admin-tools.git</developerConnection>
     <url>https://github.com/metadatacenter/cedar-admin-tools</url>
-    <tag>HEAD</tag>
+    <tag>release-0.8.2</tag>
   </scm>
 
   <dependencies>
