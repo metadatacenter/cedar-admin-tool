@@ -5,7 +5,7 @@ import com.mongodb.client.MongoCollection;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.util.MongoFactory;
+import org.metadatacenter.util.mongo.MongoFactory;
 
 public class TemplateServerWipeAll extends AbstractCedarAdminTask {
 

@@ -2,11 +2,8 @@ package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.model.folderserver.CedarFSFolder;
-import org.metadatacenter.server.neo4j.IPathUtil;
 import org.metadatacenter.server.neo4j.Neo4JProxy;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
-import org.metadatacenter.server.neo4j.Neo4jConfig;
-import org.metadatacenter.server.security.CedarUserRolePermissionUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.util.json.JsonMapper;

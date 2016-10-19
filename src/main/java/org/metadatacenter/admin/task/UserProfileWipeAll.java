@@ -1,7 +1,7 @@
 package org.metadatacenter.admin.task;
 
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.util.MongoFactory;
+import org.metadatacenter.util.mongo.MongoFactory;
 
 public class UserProfileWipeAll extends AbstractMongoTask {
 

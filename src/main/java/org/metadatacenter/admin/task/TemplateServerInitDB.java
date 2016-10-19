@@ -7,7 +7,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.util.MongoFactory;
+import org.metadatacenter.util.mongo.MongoFactory;
 
 public class TemplateServerInitDB extends AbstractCedarAdminTask {
 
