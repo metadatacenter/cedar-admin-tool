@@ -3,6 +3,7 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.neo4j.Neo4JProxy;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
 import org.metadatacenter.server.neo4j.Neo4jConfig;
@@ -61,16 +62,16 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
     return new Neo4JProxy(neoConfig, genericIdPrefix, usersIdPrefix);
   }
 
-  protected Neo4JUserSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user) {
+  protected FolderServiceSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user) {
     return buildNeo4JSession(neo4JProxy, user, false);
   }
 
-  protected Neo4JUserSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user, boolean createHome) {
+  protected FolderServiceSession buildNeo4JSession(Neo4JProxy neo4JProxy, CedarUser user, boolean createHome) {
     UserService userService = getUserService();
     return Neo4JUserSession.get(neo4JProxy, userService, user, createHome);
   }
 
-  protected Neo4JUserSession buildNeo4JSession(CedarUser user) {
+  protected FolderServiceSession buildNeo4JSession(CedarUser user) {
     Neo4JProxy neo4JProxy = buildNeo4JProxy();
     UserService userService = getUserService();
     return Neo4JUserSession.get(neo4JProxy, userService, user, false);

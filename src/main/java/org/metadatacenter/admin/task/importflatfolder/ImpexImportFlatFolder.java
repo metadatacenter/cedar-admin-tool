@@ -5,7 +5,7 @@ import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
 import org.metadatacenter.model.folderserver.FolderServerFolder;
-import org.metadatacenter.server.neo4j.Neo4JUserSession;
+import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 
@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 
 public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
-  private Neo4JUserSession adminNeo4JSession;
   private UserService userService;
 
   public ImpexImportFlatFolder() {
@@ -65,10 +64,9 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       out.error("The local source folder specified by sourceFolder is not a folder!");
       return -3;
     }
+    FolderServiceSession folderSession= createCedarFolderSession(cedarConfig);
 
-    adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
-
-    FolderServerFolder targetFolder = adminNeo4JSession.findFolderById(folderId);
+    FolderServerFolder targetFolder = folderSession.findFolderById(folderId);
     if (targetFolder == null) {
       out.error("The remote target folder specified by folderId does not exist!");
       return -4;
