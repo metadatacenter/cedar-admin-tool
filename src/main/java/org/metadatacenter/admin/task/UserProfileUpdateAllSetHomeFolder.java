@@ -1,7 +1,7 @@
 package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.model.folderserver.CedarFSFolder;
+import org.metadatacenter.model.folderserver.FolderServerFolder;
 import org.metadatacenter.server.neo4j.Neo4JProxy;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -54,7 +54,7 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
           Neo4JUserSession neoSession = buildNeo4JSession(neo4JProxy, user);
 
           String homeFolderPath = neoSession.getHomeFolderPath();
-          CedarFSFolder userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
+          FolderServerFolder userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
 
           if (userHomeFolder == null) {
             out.error("Can not find home folder: " + homeFolderPath);

@@ -4,7 +4,7 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
-import org.metadatacenter.model.folderserver.CedarFSFolder;
+import org.metadatacenter.model.folderserver.FolderServerFolder;
 import org.metadatacenter.server.neo4j.Neo4JUserSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
@@ -68,7 +68,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
     adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
 
-    CedarFSFolder targetFolder = adminNeo4JSession.findFolderById(folderId);
+    FolderServerFolder targetFolder = adminNeo4JSession.findFolderById(folderId);
     if (targetFolder == null) {
       out.error("The remote target folder specified by folderId does not exist!");
       return -4;
