@@ -9,7 +9,6 @@ public class UserProfileWipeAll extends AbstractMongoTask {
 
   public UserProfileWipeAll() {
     description.add("Deletes all user profiles from MongoDB.");
-    description.add("Needs second parameter '" + CONFIRM + "' to run.");
   }
 
   @Override
@@ -20,10 +19,10 @@ public class UserProfileWipeAll extends AbstractMongoTask {
 
   @Override
   public int execute() {
-    if (arguments.size() != 2 || !CONFIRM.equals(arguments.get(1))) {
-      out.warn("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
+    if (!getConfirmInput("Deleting all user profiles from MongoDB...")) {
       return -1;
     }
+
     mongoClient = MongoFactory.getClient();
     emptyCollection(usersCollectionName);
 

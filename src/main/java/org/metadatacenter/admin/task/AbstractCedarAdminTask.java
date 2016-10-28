@@ -11,6 +11,7 @@ import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,7 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   protected List<String> description = new ArrayList<>();
   protected AdminOutput out;
   protected CedarConfig cedarConfig;
-  public static final String CONFIRM = "confirm";
+  public static final String CONFIRM = "yes";
 
   @Override
   public void setArguments(String[] args) {
@@ -75,6 +76,21 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
     Neo4JProxy neo4JProxy = buildNeo4JProxy();
     UserService userService = getUserService();
     return Neo4JUserSession.get(neo4JProxy, userService, user, false);
+  }
+
+  protected boolean getConfirmInput(String message) {
+    Console c = System.console();
+    if (c == null) {
+      return false;
+    }
+    out.warn("You need to confirm your intent by entering '" + CONFIRM + "'!");
+    out.warn(message);
+    String yes = c.readLine("Do you really want to perform the operation: ");
+    boolean proceed =CONFIRM.equals(yes);
+    if (!proceed) {
+      out.error("You chose not to continue with the process! Process finished.");
+    }
+    return proceed;
   }
 
 }

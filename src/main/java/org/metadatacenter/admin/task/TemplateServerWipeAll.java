@@ -19,7 +19,6 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
 
   public TemplateServerWipeAll() {
     description.add("Deletes all documents from the handled MongoDB collections.");
-    description.add("Needs second parameter '" + CONFIRM + "' to run.");
   }
 
   @Override
@@ -44,10 +43,10 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
 
   @Override
   public int execute() {
-    if (arguments.size() != 2 || !CONFIRM.equals(arguments.get(1))) {
-      out.warn("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
+    if (!getConfirmInput("Deleting all documents from the handled MongoDB collections...")) {
       return -1;
     }
+
     mongoClient = MongoFactory.getClient();
     emptyCollection(templateElementsCollectionName);
     emptyCollection(templateFieldCollectionName);

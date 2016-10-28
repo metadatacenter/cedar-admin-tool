@@ -12,16 +12,15 @@ public class SystemReset extends AbstractKeycloakReadingTask {
 
   public SystemReset() {
     description.add("Wipes al data and recreates global data and user profiles.");
-    description.add("Works with Mongo and neo4j as well.");
-    description.add("Needs second parameter '" + CONFIRM + "' to run.");
+    description.add("Works with MongoDB and Neo4j as well.");
   }
 
   @Override
   public void init() {
     commands = new ArrayList<>();
-    commands.add(new String[]{TaskRegistry.TEMPLATE_SERVER_WIPE_ALL, CONFIRM});
+    commands.add(new String[]{TaskRegistry.TEMPLATE_SERVER_WIPE_ALL});
     commands.add(new String[]{TaskRegistry.USER_PROFILE_CREATE_ALL});
-    commands.add(new String[]{TaskRegistry.FOLDER_SERVER_WIPE_ALL, CONFIRM});
+    commands.add(new String[]{TaskRegistry.FOLDER_SERVER_WIPE_ALL});
     commands.add(new String[]{TaskRegistry.FOLDER_SERVER_CREATE_GLOBAL_OBJECTS});
     commands.add(new String[]{TaskRegistry.FOLDER_SERVER_CREATE_USER_HOME_FOLDERS});
     commands.add(new String[]{TaskRegistry.SEARCH_REGENERATE_INDEX});
@@ -29,8 +28,7 @@ public class SystemReset extends AbstractKeycloakReadingTask {
 
   @Override
   public int execute() {
-    if (arguments.size() != 2 || !CONFIRM.equals(arguments.get(1))) {
-      out.warn("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
+    if (!getConfirmInput("Performing system reset...")) {
       return -1;
     }
 
