@@ -1,11 +1,11 @@
 package org.metadatacenter.admin.task;
 
+import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.rest.context.CedarRequestContext;
+import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.FolderServiceSession;
-import org.metadatacenter.server.neo4j.Neo4JProxy;
-import org.metadatacenter.server.neo4j.Neo4JUserSession;
-import org.metadatacenter.server.neo4j.Neo4jConfig;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 
@@ -18,12 +18,6 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
 
     String adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
 
-    Neo4jConfig neoConfig = Neo4jConfig.fromCedarConfig(cedarConfig);
-
-    String genericIdPrefix = cedarConfig.getLinkedDataConfig().getBase();
-    String usersIdPrefix = cedarConfig.getLinkedDataConfig().getUsersBase();
-    Neo4JProxy neo4JProxy = new Neo4JProxy(neoConfig, genericIdPrefix, usersIdPrefix);
-
     try {
       adminUser = userService.findUser(adminUserUUID);
     } catch (Exception ex) {
@@ -34,7 +28,8 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
       out.error("The requested task was not completed!");
       return null;
     } else {
-      return Neo4JUserSession.get(neo4JProxy, userService, adminUser, createHome);
+      CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromUser(adminUser);
+      return CedarDataServices.getAdminServiceSession(cedarRequestContext);
     }
   }
 
@@ -43,12 +38,6 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
 
     String adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
 
-    Neo4jConfig neoConfig = Neo4jConfig.fromCedarConfig(cedarConfig);
-
-    String genericIdPrefix = cedarConfig.getLinkedDataConfig().getBase();
-    String usersIdPrefix = cedarConfig.getLinkedDataConfig().getUsersBase();
-    Neo4JProxy neo4JProxy = new Neo4JProxy(neoConfig, genericIdPrefix, usersIdPrefix);
-
     try {
       adminUser = userService.findUser(adminUserUUID);
     } catch (Exception ex) {
@@ -59,7 +48,8 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
       out.error("The requested task was not completed!");
       return null;
     } else {
-      return Neo4JUserSession.get(neo4JProxy, userService, adminUser, false);
+      CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromUser(adminUser);
+      return CedarDataServices.getFolderServiceSession(cedarRequestContext);
     }
   }
 }
