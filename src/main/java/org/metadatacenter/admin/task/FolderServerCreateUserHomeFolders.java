@@ -6,6 +6,7 @@ import org.metadatacenter.model.folderserver.FolderServerFolder;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.FolderServiceSession;
+import org.metadatacenter.server.UserServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 
@@ -51,18 +52,22 @@ public class FolderServerCreateUserHomeFolders extends AbstractKeycloakReadingTa
           out.error("The user was not found for id:" + ur.getId());
         } else {
           CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromUser(user);
-          FolderServiceSession neoSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
+          UserServiceSession userSession = CedarDataServices.getUserServiceSession(cedarRequestContext);
+          FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
 
-          String homeFolderPath = neoSession.getHomeFolderPath();
+          userSession.ensureUserExists();
+          folderSession.ensureUserHomeExists();
+
+          String homeFolderPath = folderSession.getHomeFolderPath();
 
           out.println("Home folder: " + homeFolderPath);
 
-          FolderServerFolder userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
+          FolderServerFolder userHomeFolder = folderSession.findFolderByPath(homeFolderPath);
 
           if (userHomeFolder != null) {
             out.warn("User home folder is already present.");
           } else {
-            userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
+            userHomeFolder = folderSession.findFolderByPath(homeFolderPath);
             if (userHomeFolder != null) {
               out.println("Success: user home was created.");
             } else {
