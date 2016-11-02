@@ -23,6 +23,7 @@ public class SystemReset extends AbstractKeycloakReadingTask {
     commands.add(new String[]{TaskRegistry.FOLDER_SERVER_WIPE_ALL});
     commands.add(new String[]{TaskRegistry.FOLDER_SERVER_CREATE_GLOBAL_OBJECTS});
     commands.add(new String[]{TaskRegistry.FOLDER_SERVER_CREATE_USER_HOME_FOLDERS});
+    commands.add(new String[]{TaskRegistry.USER_PROFILE_UPDATE_ALL_SET_HOME_FOLDER});
     commands.add(new String[]{TaskRegistry.SEARCH_REGENERATE_INDEX});
   }
 
