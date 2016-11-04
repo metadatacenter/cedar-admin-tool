@@ -15,7 +15,7 @@ public class AdminOutput {
     println(s, null);
   }
 
-  private void println(String s, Color color) {
+  public void println(String s, Color color) {
     if (color != null) {
       print((char) 27 + "[" + color.getValue() + "m");
     }
