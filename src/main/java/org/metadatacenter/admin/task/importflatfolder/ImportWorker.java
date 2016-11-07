@@ -2,7 +2,6 @@ package org.metadatacenter.admin.task.importflatfolder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
@@ -10,8 +9,6 @@ import org.apache.http.entity.ContentType;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.constant.HttpConnectionConstants;
-import org.metadatacenter.constant.HttpConstants;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.model.provenance.ProvenanceInfo;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -20,6 +17,11 @@ import org.metadatacenter.util.json.JsonUtils;
 import org.metadatacenter.util.provenance.ProvenanceUtil;
 
 import java.io.IOException;
+
+import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
+import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
+import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_APIKEY_PREFIX;
+import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 
 public class ImportWorker {
 
@@ -67,16 +69,16 @@ public class ImportWorker {
           out.println(contentNode);
 
           String apiKey = newOwner.getFirstActiveApiKey();
-          String authString = HttpConstants.HTTP_AUTH_HEADER_APIKEY_PREFIX + apiKey;
+          String authString = HTTP_AUTH_HEADER_APIKEY_PREFIX + apiKey;
           try {
             String url = cedarConfig.getServers().getResource().getBase() + nodeType.getPrefix() +
                 "?importMode=true&folderId=" + new URLCodec().encode(folderId);
             out.println("***IMPORT:" + url);
             Request request = Request.Post(url)
                 .bodyString(contentNode.toString(), ContentType.APPLICATION_JSON)
-                .connectTimeout(HttpConnectionConstants.CONNECTION_TIMEOUT)
-                .socketTimeout(HttpConnectionConstants.SOCKET_TIMEOUT)
-                .addHeader(HttpHeaders.AUTHORIZATION, authString);
+                .connectTimeout(CONNECTION_TIMEOUT)
+                .socketTimeout(SOCKET_TIMEOUT)
+                .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
             HttpResponse response = request.execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == HttpStatus.SC_CREATED) {
