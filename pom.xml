@@ -18,8 +18,6 @@
 
   <properties>
 
-    <cedar.version>0.8.3-SNAPSHOT</cedar.version>
-
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -35,6 +33,16 @@
   </scm>
 
   <dependencies>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-server-globals</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-server-utils-core</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
