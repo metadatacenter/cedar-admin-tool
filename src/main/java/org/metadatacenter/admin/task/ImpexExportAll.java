@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.model.folderserver.CedarFSFolder;
-import org.metadatacenter.model.folderserver.CedarFSNode;
-import org.metadatacenter.server.neo4j.Neo4JUserSession;
+import org.metadatacenter.model.folderserver.FolderServerFolder;
+import org.metadatacenter.model.folderserver.FolderServerNode;
+import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.TemplateElementService;
 import org.metadatacenter.server.service.TemplateInstanceService;
@@ -33,7 +33,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   public static final String DEFAULT_SORT = "name";
   private static final int EXPORT_MAX_COUNT = 10000;
 
-  private Neo4JUserSession adminNeo4JSession;
+  private FolderServiceSession folderSession;
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
   private List<String> sortList;
@@ -86,10 +86,10 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     userService = getUserService();
 
-    adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
+    folderSession = createCedarFolderSession(cedarConfig);
 
-    String rootPath = adminNeo4JSession.getRootPath();
-    CedarFSFolder rootFolder = adminNeo4JSession.findFolderByPath(rootPath);
+    String rootPath = folderSession.getRootPath();
+    FolderServerFolder rootFolder = folderSession.findFolderByPath(rootPath);
 
     out.info("Exporting resources");
     Path resourceExportPath = Paths.get(exportDir).resolve("resources");
@@ -103,15 +103,15 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   }
 
 
-  private void serializeAndWalkFolder(Path path, CedarFSNode node) {
-    if (node instanceof CedarFSFolder) {
-      CedarFSFolder folder = (CedarFSFolder) node;
+  private void serializeAndWalkFolder(Path path, FolderServerNode node) {
+    if (node instanceof FolderServerFolder) {
+      FolderServerFolder folder = (FolderServerFolder) node;
       String id = folder.getId();
       Path createdFolder = createFolder(path, id);
       createFolderDescriptor(createdFolder, folder);
-      List<CedarFSNode> folderContents = adminNeo4JSession.findFolderContents(id, nodeTypeList, EXPORT_MAX_COUNT, 0,
+      List<FolderServerNode> folderContents = folderSession.findFolderContents(id, nodeTypeList, EXPORT_MAX_COUNT, 0,
           sortList);
-      for (CedarFSNode child : folderContents) {
+      for (FolderServerNode child : folderContents) {
         serializeAndWalkFolder(createdFolder, child);
       }
     } else {
@@ -125,7 +125,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     return newFolder;
   }
 
-  private void createFolderDescriptor(Path path, CedarFSFolder folder) {
+  private void createFolderDescriptor(Path path, FolderServerFolder folder) {
     Path folderInfo = path.resolve(ImportExportConstants.FOLDER_INFO);
     try {
       Files.write(folderInfo, prettyMapper.writeValueAsString(folder).getBytes(StandardCharsets.UTF_8));
@@ -134,10 +134,10 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     }
   }
 
-  private void serializeResource(Path path, CedarFSNode node) {
+  private void serializeResource(Path path, FolderServerNode node) {
     String id = node.getId();
     CedarNodeType nodeType = node.getType();
-    String uuid = adminNeo4JSession.getResourceUUID(id, nodeType);
+    String uuid = folderSession.getResourceUUID(id, nodeType);
     String infoName = uuid + ImportExportConstants.INFO_SUFFIX;
     Path createdInfoFile = path.resolve(infoName);
     try {

@@ -1,12 +1,11 @@
 package org.metadatacenter.admin.task;
 
-import org.metadatacenter.server.neo4j.Neo4JUserSession;
+import org.metadatacenter.server.AdminServiceSession;
 
 public class FolderServerWipeAll extends AbstractNeo4JAccessTask {
 
   public FolderServerWipeAll() {
-    description.add("Deletes all 'XCEDAR' nodes from the Neo4j server.");
-    description.add("Needs second parameter '" + CONFIRM + "' to run.");
+    description.add("Deletes all 'CEDAR' nodes from the Neo4j server.");
   }
 
   @Override
@@ -15,13 +14,12 @@ public class FolderServerWipeAll extends AbstractNeo4JAccessTask {
 
   @Override
   public int execute() {
-    if (arguments.size() != 2 || !CONFIRM.equals(arguments.get(1))) {
-      out.warn("You need to confirm your intent by providing '" + CONFIRM + "' as the second argument!");
+    if (!getConfirmInput("Deleting all 'CEDAR' nodes from the Neo4j server...")) {
       return -1;
     }
 
-    Neo4JUserSession adminNeo4JSession = buildCedarAdminNeo4JSession(cedarConfig, false);
-    adminNeo4JSession.wipeAllData();
+    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig, false);
+    adminSession.wipeAllData();
 
     return 0;
   }

@@ -1,13 +1,14 @@
 package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.model.folderserver.CedarFSFolder;
-import org.metadatacenter.server.neo4j.Neo4JProxy;
-import org.metadatacenter.server.neo4j.Neo4JUserSession;
-import org.metadatacenter.server.security.CedarUserRolePermissionUtil;
+import org.metadatacenter.bridge.CedarDataServices;
+import org.metadatacenter.model.folderserver.FolderServerFolder;
+import org.metadatacenter.rest.context.CedarRequestContext;
+import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.FolderServiceSession;
+import org.metadatacenter.server.UserServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.util.json.JsonMapper;
 
 import java.util.List;
 
@@ -50,20 +51,23 @@ public class FolderServerCreateUserHomeFolders extends AbstractKeycloakReadingTa
         if (user == null && !exceptionWhileReading) {
           out.error("The user was not found for id:" + ur.getId());
         } else {
-          Neo4JProxy neo4JProxy = buildNeo4JProxy();
-          Neo4JUserSession neoSession = buildNeo4JSession(neo4JProxy, user);
+          CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromUser(user);
+          UserServiceSession userSession = CedarDataServices.getUserServiceSession(cedarRequestContext);
+          FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
 
-          String homeFolderPath = neoSession.getHomeFolderPath();
+          userSession.ensureUserExists();
+          folderSession.ensureUserHomeExists();
+
+          String homeFolderPath = folderSession.getHomeFolderPath();
 
           out.println("Home folder: " + homeFolderPath);
 
-          CedarFSFolder userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
+          FolderServerFolder userHomeFolder = folderSession.findFolderByPath(homeFolderPath);
 
           if (userHomeFolder != null) {
             out.warn("User home folder is already present.");
           } else {
-            neoSession = buildNeo4JSession(neo4JProxy, user, true);
-            userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
+            userHomeFolder = folderSession.findFolderByPath(homeFolderPath);
             if (userHomeFolder != null) {
               out.println("Success: user home was created.");
             } else {

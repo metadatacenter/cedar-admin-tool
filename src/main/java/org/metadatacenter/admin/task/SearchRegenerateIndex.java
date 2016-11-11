@@ -1,14 +1,17 @@
 package org.metadatacenter.admin.task;
 
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.metadatacenter.constant.HttpConnectionConstants;
 import org.metadatacenter.constant.HttpConstants;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
+
+import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
+import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
+import static org.metadatacenter.constant.HttpConstants.*;
+import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 
 public class SearchRegenerateIndex extends AbstractCedarAdminTask {
 
@@ -37,15 +40,15 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
   private void regenerateSearchIndex(boolean force) {
     out.info("Regenerating search index...");
     String apiKey = adminUser.getFirstActiveApiKey();
-    String authString = HttpConstants.HTTP_AUTH_HEADER_APIKEY_PREFIX + apiKey;
+    String authString = HTTP_AUTH_HEADER_APIKEY_PREFIX + apiKey;
     try {
       String url = cedarConfig.getServers().getResource().getRegenerateIndex();
       out.println(url);
       Request request = Request.Post(url)
           .bodyString("{\"force\":" + force + "}", ContentType.APPLICATION_JSON)
-          .connectTimeout(HttpConnectionConstants.CONNECTION_TIMEOUT)
-          .socketTimeout(HttpConnectionConstants.SOCKET_TIMEOUT)
-          .addHeader(HttpHeaders.AUTHORIZATION, authString);
+          .connectTimeout(CONNECTION_TIMEOUT)
+          .socketTimeout(SOCKET_TIMEOUT)
+          .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
       HttpResponse response = request.execute().returnResponse();
       int statusCode = response.getStatusLine().getStatusCode();
       if (statusCode == HttpStatus.SC_OK) {
