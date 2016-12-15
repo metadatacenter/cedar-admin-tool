@@ -52,7 +52,7 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
       HttpResponse response = request.execute().returnResponse();
       int statusCode = response.getStatusLine().getStatusCode();
       if (statusCode == HttpStatus.SC_OK) {
-        play.Logger.info("The search index has been successfully regenerated");
+        out.info("The search index has been successfully regenerated");
       } else {
         out.error("Error while regenerating search index. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");

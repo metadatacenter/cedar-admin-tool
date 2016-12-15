@@ -3,43 +3,43 @@ package org.metadatacenter.admin.util;
 public class AdminOutput {
 
 
-  public void println(Object o) {
-    if (o == null) {
+  public void println(Object object) {
+    if (object == null) {
       println("NULL");
     } else {
-      println(o.toString());
+      println(object.toString());
     }
   }
 
-  private void println(String s) {
-    println(s, null);
+  private void println(String message) {
+    println(message, null);
   }
 
-  public void println(String s, Color color) {
+  public void println(String message, Color color) {
     if (color != null) {
       print((char) 27 + "[" + color.getValue() + "m");
     }
-    print(s);
+    print(message);
     print("\n");
     if (color != null) {
       print((char) 27 + "[" + Color.CLEAR.getValue() + "m");
     }
   }
 
-  private void print(String s) {
-    System.out.print(s);
+  private void print(String message) {
+    System.out.print(message);
   }
 
   //--
 
-  public void error(String s) {
+  public void error(String message) {
     println();
-    println("ERROR: " + s, Color.RED);
+    println("ERROR: " + message, Color.RED);
     println();
   }
 
-  public void error(String s, Exception e) {
-    error(s);
+  public void error(String message, Exception e) {
+    error(message);
     error(e);
   }
 
@@ -47,14 +47,14 @@ public class AdminOutput {
     e.printStackTrace();
   }
 
-  public void warn(String s) {
+  public void warn(String message) {
     println();
-    println("WARNING: " + s, Color.YELLOW);
+    println("WARNING: " + message, Color.YELLOW);
     println();
   }
 
-  public void info(String s) {
-    System.out.println("INFO: " + s);
+  public void info(String message) {
+    System.out.println("INFO: " + message);
   }
 
   public void println() {
@@ -65,29 +65,29 @@ public class AdminOutput {
     System.out.println("----------------------------------------------------");
   }
 
-  public void printIndented(String s) {
-    printIndented(s, 1, null);
+  public void printIndented(String message) {
+    printIndented(message, 1, null);
   }
 
-  public void printIndented(String s, int times) {
-    printIndented(s, times, null);
+  public void printIndented(String message, int times) {
+    printIndented(message, times, null);
   }
 
-  public void printIndented(String s, Color color) {
-    printIndented(s, 1, color);
+  public void printIndented(String message, Color color) {
+    printIndented(message, 1, color);
   }
 
-  public void printIndented(String s, int times, Color color) {
+  public void printIndented(String message, int times, Color color) {
     for (int i = 0; i < times; i++) {
       print("\t");
     }
-    println(s, color);
+    println(message, color);
   }
 
 
-  public void printTitle(String s) {
+  public void printTitle(String message) {
     println();
-    println(s, Color.BRIGHT);
+    println(message, Color.BRIGHT);
   }
 
 }
