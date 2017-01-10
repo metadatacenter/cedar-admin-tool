@@ -3,12 +3,9 @@ package org.metadatacenter.admin.task;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.server.security.CedarUserRolePermissionUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
-import org.metadatacenter.server.security.model.user.CedarUserRole;
-import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.util.json.JsonMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadingTask {
