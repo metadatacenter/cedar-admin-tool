@@ -6,7 +6,6 @@ import org.metadatacenter.server.security.model.user.CedarUserExtract;
 import org.metadatacenter.server.security.model.user.CedarUserRole;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.util.CedarUserNameUtil;
 
 import java.util.ArrayList;
 import java.util.List;
