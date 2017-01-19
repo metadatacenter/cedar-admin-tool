@@ -1,5 +1,6 @@
 package org.metadatacenter.admin.task;
 
+import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.server.AdminServiceSession;
 
 public class FolderServerWipeAll extends AbstractNeo4JAccessTask {
@@ -18,7 +19,13 @@ public class FolderServerWipeAll extends AbstractNeo4JAccessTask {
       return -1;
     }
 
-    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig, false);
+    AdminServiceSession adminSession = null;
+    try {
+      adminSession = createCedarAdminSession(cedarConfig, false);
+    } catch (CedarAccessException e) {
+      e.printStackTrace();
+      return -2;
+    }
     adminSession.wipeAllData();
 
     return 0;

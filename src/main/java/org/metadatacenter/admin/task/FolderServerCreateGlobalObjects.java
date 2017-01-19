@@ -1,5 +1,6 @@
 package org.metadatacenter.admin.task;
 
+import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.server.AdminServiceSession;
 
 public class FolderServerCreateGlobalObjects extends AbstractNeo4JAccessTask {
@@ -18,9 +19,20 @@ public class FolderServerCreateGlobalObjects extends AbstractNeo4JAccessTask {
 
   @Override
   public int execute() {
-    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig, false);
+    AdminServiceSession adminSession = null;
+    try {
+      adminSession = createCedarAdminSession(cedarConfig, false);
+    } catch (CedarAccessException e) {
+      e.printStackTrace();
+      return -1;
+    }
     adminSession.ensureGlobalObjectsExists();
-    AdminServiceSession adminSessionWithHome = createCedarAdminSession(cedarConfig, true);
+    try {
+      AdminServiceSession adminSessionWithHome = createCedarAdminSession(cedarConfig, true);
+    } catch (CedarAccessException e) {
+      e.printStackTrace();
+      return -2;
+    }
     return 0;
   }
 }

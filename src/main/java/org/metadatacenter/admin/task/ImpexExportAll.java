@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
+import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.FolderServerFolder;
 import org.metadatacenter.model.folderserver.FolderServerNode;
@@ -86,7 +87,12 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     userService = getUserService();
 
-    folderSession = createCedarFolderSession(cedarConfig);
+    try {
+      folderSession = createCedarFolderSession(cedarConfig);
+    } catch (CedarAccessException e) {
+      e.printStackTrace();
+      return -1;
+    }
 
     String rootPath = folderSession.getRootPath();
     FolderServerFolder rootFolder = folderSession.findFolderByPath(rootPath);

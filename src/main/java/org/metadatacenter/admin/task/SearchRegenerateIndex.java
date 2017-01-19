@@ -9,7 +9,6 @@ import org.metadatacenter.server.service.UserService;
 
 import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
 import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
-import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_APIKEY_PREFIX;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 
 public class SearchRegenerateIndex extends AbstractCedarAdminTask {
@@ -38,8 +37,7 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
 
   private void regenerateSearchIndex(boolean force) {
     out.info("Regenerating search index...");
-    String apiKey = adminUser.getFirstActiveApiKey();
-    String authString = HTTP_AUTH_HEADER_APIKEY_PREFIX + apiKey;
+    String authString = adminUser.getFirstApiKeyAuthHeader();
     try {
       String url = cedarConfig.getServers().getResource().getRegenerateIndex();
       out.println(url);
