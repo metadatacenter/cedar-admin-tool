@@ -193,7 +193,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
           String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(u));
           Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-          out.error("There was an error writing the info for user: " + uuid + ":" + CedarUserNameUtil.getDisplayName(u), e);
+          out.error("There was an error writing the info for user: " + uuid + ":" + CedarUserNameUtil.getDisplayName(cedarConfig, u), e);
         }
       }
     } catch (IOException | ProcessingException e) {
