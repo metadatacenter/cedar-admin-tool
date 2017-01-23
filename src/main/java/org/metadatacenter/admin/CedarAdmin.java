@@ -5,6 +5,7 @@ import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.admin.util.Color;
 import org.metadatacenter.admin.util.TaskExecutor;
 import org.metadatacenter.admin.util.TaskRegistry;
+import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
 
 public class CedarAdmin {
@@ -58,6 +59,7 @@ public class CedarAdmin {
           showUsageAndExit();
         } else {
           CedarConfig cedarConfig = CedarConfig.getInstance();
+          CedarDataServices.getInstance(cedarConfig);
 
           System.exit(TaskExecutor.executeOneTask(cedarConfig, firstArg, out, args));
         }
