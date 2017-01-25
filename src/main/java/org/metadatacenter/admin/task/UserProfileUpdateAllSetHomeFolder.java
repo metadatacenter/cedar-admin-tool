@@ -2,6 +2,7 @@ package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.bridge.CedarDataServices;
+import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.folderserver.FolderServerFolder;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
@@ -52,7 +53,13 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
         if (user == null && !exceptionWhileReading) {
           out.error("The user was not found for id:" + ur.getId());
         } else {
-          CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromUser(user);
+          CedarRequestContext cedarRequestContext = null;
+          try {
+            cedarRequestContext = CedarRequestContextFactory.fromUser(user);
+          } catch (CedarAccessException e) {
+            e.printStackTrace();
+            return -1;
+          }
           FolderServiceSession neoSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
 
           String homeFolderPath = neoSession.getHomeFolderPath();

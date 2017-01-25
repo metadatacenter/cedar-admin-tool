@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
 import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
-import static org.metadatacenter.constant.HttpConstants.HTTP_AUTH_HEADER_APIKEY_PREFIX;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 
 public class ImportWorker {
@@ -68,8 +67,7 @@ public class ImportWorker {
           JsonUtils.localizeAtIdsAndTemplateId(contentNode, cedarConfig.getLinkedDataUtil());
           out.println(contentNode);
 
-          String apiKey = newOwner.getFirstActiveApiKey();
-          String authString = HTTP_AUTH_HEADER_APIKEY_PREFIX + apiKey;
+          String authString = newOwner.getFirstApiKeyAuthHeader();
           try {
             String url = cedarConfig.getServers().getResource().getBase() + nodeType.getPrefix() +
                 "?importMode=true&folderId=" + new URLCodec().encode(folderId);

@@ -4,6 +4,7 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
+import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.folderserver.FolderServerFolder;
 import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -64,7 +65,13 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       out.error("The local source folder specified by sourceFolder is not a folder!");
       return -3;
     }
-    FolderServiceSession folderSession= createCedarFolderSession(cedarConfig);
+    FolderServiceSession folderSession = null;
+    try {
+      folderSession = createCedarFolderSession(cedarConfig);
+    } catch (CedarAccessException e) {
+      e.printStackTrace();
+      return -6;
+    }
 
     FolderServerFolder targetFolder = folderSession.findFolderById(folderId);
     if (targetFolder == null) {
@@ -84,20 +91,6 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       out.error("The new owner specified by userId does not exist!");
       return -5;
     }
-
-    /*String adminUserUUID = null;
-    CedarUser adminUser = null;
-    try {
-      adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
-      adminUser = userService.findUser(adminUserUUID);
-    } catch (Exception e) {
-      logger.error("Error while loading admin user by UUID:" + adminUserUUID);
-    }
-
-    if (adminUser == null) {
-      out.println("The cedar-admin user can not be loaded!");
-      return -6;
-    }*/
 
     ImportFileList importList = new ImportFileList();
 

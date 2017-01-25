@@ -6,7 +6,6 @@ import org.metadatacenter.server.security.model.user.CedarUserExtract;
 import org.metadatacenter.server.security.model.user.CedarUserRole;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.util.CedarUserNameUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
         }
 
         CedarUserExtract cue = new CedarUserExtract(ur.getId(), ur.getFirstName(), ur.getLastName(), ur.getEmail());
-        CedarUser user = CedarUserUtil.createUserFromBlueprint(cue, roles);
+        CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig, cue, roles);
 
         try {
           CedarUser u = userService.createUser(user);
