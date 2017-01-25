@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-admin-tools</artifactId>
-  <version>0.8.7-SNAPSHOT</version>
+  <version>0.9.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>CEDAR Admin Tools</name>
