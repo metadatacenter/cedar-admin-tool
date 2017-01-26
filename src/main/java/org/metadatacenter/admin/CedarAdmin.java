@@ -17,13 +17,13 @@ public class CedarAdmin {
   }
 
   private static void showTitle() {
-    out.println("CEDAR Admin Tools");
+    out.println("CEDAR Admin Tool");
   }
 
   private static void showUsageAndExit() {
     showTitle();
     out.printTitle("Usage:");
-    out.printIndented("cedar-admin-tools command parameters...");
+    out.printIndented("cedar-admin-tool command parameters...");
     out.printTitle("Available commands:");
     for (String key : TaskRegistry.getTaskKeys()) {
       out.printIndented(key, Color.BRIGHT);
