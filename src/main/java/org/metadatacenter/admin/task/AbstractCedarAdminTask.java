@@ -1,6 +1,7 @@
 package org.metadatacenter.admin.task;
 
 import org.metadatacenter.admin.util.AdminOutput;
+import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.service.UserService;
@@ -45,9 +46,7 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   }
 
   protected UserService getUserService() {
-    return new UserServiceMongoDB(
-        cedarConfig.getMongoConfig().getDatabaseName(),
-        cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue()));
+    return CedarDataServices.getUserService();
   }
 
   protected boolean getConfirmInput(String message) {
