@@ -10,6 +10,7 @@ import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.model.provenance.ProvenanceInfo;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.util.json.JsonMapper;
@@ -27,13 +28,15 @@ public class ImportWorker {
   private CedarConfig cedarConfig;
   private ProvenanceInfo provenanceInfo;
   private CedarUser newOwner;
+  private ProvenanceUtil provenanceUtil;
   private String folderId;
   private AdminOutput out;
 
   public ImportWorker(AdminOutput out, CedarConfig cedarConfig, String userUUID, CedarUser newOwner, String folderId) {
     this.out = out;
     this.cedarConfig = cedarConfig;
-    this.provenanceInfo = ProvenanceUtil.buildFromUUID(cedarConfig, userUUID);
+    provenanceUtil = new ProvenanceUtil(cedarConfig.buildLinkedDataUtil());
+    this.provenanceInfo = provenanceUtil.buildFromUUID(userUUID);
     this.newOwner = newOwner;
     this.folderId = folderId;
   }
@@ -63,8 +66,8 @@ public class ImportWorker {
         if (contentNode != null) {
           JsonUtils.removeField(contentNode, "_id");
           JsonUtils.removeField(contentNode, "parentId");
-          ProvenanceUtil.addProvenanceInfo(contentNode, provenanceInfo);
-          JsonUtils.localizeAtIdsAndTemplateId(contentNode, cedarConfig.getLinkedDataUtil());
+          provenanceUtil.addProvenanceInfo(contentNode, provenanceInfo);
+          JsonUtils.localizeAtIdsAndTemplateId(contentNode, cedarConfig.buildLinkedDataUtil());
           out.println(contentNode);
 
           String authString = newOwner.getFirstApiKeyAuthHeader();

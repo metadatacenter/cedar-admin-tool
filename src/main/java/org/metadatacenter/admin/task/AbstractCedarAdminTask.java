@@ -4,6 +4,7 @@ import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 
@@ -18,6 +19,7 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   protected List<String> description = new ArrayList<>();
   protected AdminOutput out;
   protected CedarConfig cedarConfig;
+  protected LinkedDataUtil linkedDataUtil;
   public static final String CONFIRM = "yes";
 
   @Override
@@ -29,6 +31,7 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   @Override
   public void injectConfig(CedarConfig cedarConfig) {
     this.cedarConfig = cedarConfig;
+    this.linkedDataUtil = cedarConfig.buildLinkedDataUtil();
   }
 
   @Override
