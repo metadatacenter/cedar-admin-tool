@@ -32,10 +32,10 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
   protected String cedarAdminUserName;
 
   protected void initKeycloak() {
-    adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
+    adminUserUUID = cedarConfig.getAdminUserConfig().getUuid();
 
-    cedarAdminUserName = cedarConfig.getKeycloakConfig().getAdminUser().getUserName();
-    cedarAdminUserPassword = cedarConfig.getKeycloakConfig().getAdminUser().getPassword();
+    cedarAdminUserName = cedarConfig.getAdminUserConfig().getUserName();
+    cedarAdminUserPassword = cedarConfig.getAdminUserConfig().getPassword();
     keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
 
     InputStream keycloakConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream(KeycloakConstants

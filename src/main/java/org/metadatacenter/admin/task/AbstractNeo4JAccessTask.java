@@ -18,7 +18,7 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
       CedarAccessException {
     UserService userService = getUserService();
 
-    String adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
+    String adminUserUUID = cedarConfig.getAdminUserConfig().getUuid();
 
     try {
       adminUser = userService.findUser(adminUserUUID);
@@ -38,7 +38,7 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
   protected FolderServiceSession createCedarFolderSession(CedarConfig cedarConfig) throws CedarAccessException {
     UserService userService = getUserService();
 
-    String adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
+    String adminUserUUID = cedarConfig.getAdminUserConfig().getUuid();
 
     try {
       adminUser = userService.findUser(adminUserUUID);
