@@ -23,7 +23,7 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
   @Override
   public void init() {
     UserService userService = getUserService();
-    String adminUserUUID = this.cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
+    String adminUserUUID = this.cedarConfig.getAdminUserConfig().getUuid();
     try {
       adminUser = userService.findUser(adminUserUUID);
     } catch (Exception e) {
