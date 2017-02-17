@@ -58,9 +58,12 @@ public class CedarAdmin {
           out.error("Unknown command: " + firstArg + "\n");
           showUsageAndExit();
         } else {
+          out.info("Reading config");
           CedarConfig cedarConfig = CedarConfig.getInstance();
-          CedarDataServices.getInstance(cedarConfig);
-
+          out.info("Building data services");
+          CedarDataServices.initializeUserService(cedarConfig);
+          CedarDataServices.initializeFolderServices(cedarConfig);
+          out.info("Executing task");
           System.exit(TaskExecutor.executeOneTask(cedarConfig, firstArg, out, args));
         }
       }

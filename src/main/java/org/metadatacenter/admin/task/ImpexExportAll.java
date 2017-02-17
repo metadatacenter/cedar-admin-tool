@@ -143,7 +143,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private void serializeResource(Path path, FolderServerNode node) {
     String id = node.getId();
     CedarNodeType nodeType = node.getType();
-    String uuid = folderSession.getResourceUUID(id, nodeType);
+    String uuid = linkedDataUtil.getUUID(id, nodeType);
     String infoName = uuid + ImportExportConstants.INFO_SUFFIX;
     Path createdInfoFile = path.resolve(infoName);
     try {

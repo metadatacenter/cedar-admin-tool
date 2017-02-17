@@ -18,10 +18,10 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
 
   @Override
   public void init() {
-    adminUserUUID = cedarConfig.getKeycloakConfig().getAdminUser().getUuid();
+    adminUserUUID = cedarConfig.getAdminUserConfig().getUuid();
 
-    cedarAdminUserName = cedarConfig.getKeycloakConfig().getAdminUser().getUserName();
-    cedarAdminUserPassword = cedarConfig.getKeycloakConfig().getAdminUser().getPassword();
+    cedarAdminUserName = cedarConfig.getAdminUserConfig().getUserName();
+    cedarAdminUserPassword = cedarConfig.getAdminUserConfig().getPassword();
     keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
     out.println();
     out.println("Data from config:", Color.YELLOW);

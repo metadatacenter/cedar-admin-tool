@@ -38,6 +38,7 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
         out.println("Email     : " + ur.getEmail());
 
         List<CedarUserRole> roles = null;
+        String apiKey = null;
         if (adminUserUUID.equals(ur.getId())) {
           roles = new ArrayList<>();
           roles.add(CedarUserRole.TEMPLATE_CREATOR);
@@ -45,10 +46,11 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
           roles.add(CedarUserRole.BUILT_IN_SYSTEM_ADMINISTRATOR);
           roles.add(CedarUserRole.ADMINISTRATOR);
           roles.add(CedarUserRole.FILESYSTEM_ADMINISTRATOR);
+          apiKey = cedarConfig.getAdminUserConfig().getApiKey();
         }
 
         CedarUserExtract cue = new CedarUserExtract(ur.getId(), ur.getFirstName(), ur.getLastName(), ur.getEmail());
-        CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig, cue, roles);
+        CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig, cue, apiKey, roles);
 
         try {
           CedarUser u = userService.createUser(user);
