@@ -9,7 +9,6 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.util.json.JsonMapper;
 
 import java.util.List;
 
@@ -63,6 +62,7 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
           FolderServiceSession neoSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
 
           String homeFolderPath = neoSession.getHomeFolderPath();
+          out.println("Home folder path:" + homeFolderPath);
           FolderServerFolder userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
 
           if (userHomeFolder == null) {
@@ -70,7 +70,7 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
           } else {
             user.setHomeFolderId(userHomeFolder.getId());
             try {
-              userService.updateUser(ur.getId(), JsonMapper.MAPPER.valueToTree(user));
+              userService.updateUser(ur.getId(), user);
               out.println("The user was updated");
             } catch (Exception e) {
               out.error("Error while updating user: " + ur.getEmail(), e);

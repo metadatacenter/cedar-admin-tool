@@ -4,7 +4,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.server.security.CedarUserRolePermissionUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.util.json.JsonMapper;
 
 import java.util.List;
 
@@ -49,7 +48,7 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
         } else {
           CedarUserRolePermissionUtil.expandRolesIntoPermissions(user);
           try {
-            userService.updateUser(ur.getId(), JsonMapper.MAPPER.valueToTree(user));
+            userService.updateUser(ur.getId(), user);
             out.println("The user was updated");
           } catch (Exception e) {
             out.error("Error while updating user: " + ur.getEmail(), e);
