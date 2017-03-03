@@ -61,6 +61,10 @@ public class CedarAdmin {
           out.info("Reading config");
           CedarConfig cedarConfig = CedarConfig.getInstance();
           out.info("Building data services");
+          CedarDataServices.initializeMongoClientFactoryForUsers(
+              cedarConfig.getUserServerConfig().getMongoConnection());
+          CedarDataServices.initializeMongoClientFactoryForDocuments(
+              cedarConfig.getTemplateServerConfig().getMongoConnection());
           CedarDataServices.initializeUserService(cedarConfig);
           CedarDataServices.initializeFolderServices(cedarConfig);
           out.info("Executing task");
