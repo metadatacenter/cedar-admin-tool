@@ -23,14 +23,14 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
   @Override
   public void init() {
     UserService userService = getUserService();
-    String adminUserUUID = this.cedarConfig.getAdminUserConfig().getUuid();
+    String adminUserId = cedarConfig.getAdminUserId();
     try {
-      adminUser = userService.findUser(adminUserUUID);
+      adminUser = userService.findUser(adminUserId);
     } catch (Exception e) {
-      out.error("Error while loading admin user by UUID:" + adminUserUUID);
+      out.error("Error while loading admin user by id:" + adminUserId);
     }
     if (adminUser == null) {
-      out.error("Admin user not found by UUID:" + adminUserUUID);
+      out.error("Admin user not found by id:" + adminUserId);
       out.error("The requested task was not completed!");
     }
   }

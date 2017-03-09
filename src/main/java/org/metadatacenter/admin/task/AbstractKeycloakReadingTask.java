@@ -25,6 +25,7 @@ import java.util.List;
 public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask {
 
   protected String adminUserUUID;
+  protected String adminUserId;
   protected String keycloakBaseURI;
   protected String keycloakRealmName;
   protected String cedarAdminUserPassword;
@@ -57,7 +58,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
           beanOrClass, String propertyName) throws IOException, JsonProcessingException {
         if ("access_token".equals(propertyName)) {
           if (beanOrClass instanceof AccessTokenResponse) {
-            out.info("Found token, injecting it.");
+            //out.info("Found token, injecting it.");
             AccessTokenResponse atr = (AccessTokenResponse) beanOrClass;
             String text = ctxt.getParser().getText();
             atr.setToken(text);

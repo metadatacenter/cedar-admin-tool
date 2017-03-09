@@ -33,7 +33,7 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
 
         out.println("First name: " + ur.getFirstName());
         out.println("Last name : " + ur.getLastName());
-        out.println("Id        : " + ur.getId());
+        out.println("UUID      : " + ur.getId());
         out.println("Email     : " + ur.getEmail());
 
         CedarSuperRole superRole = CedarSuperRole.NORMAL;
@@ -41,11 +41,13 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
           superRole = CedarSuperRole.BUILT_IN_ADMIN;
         }
 
-        CedarUserExtract cue = new CedarUserExtract(ur.getId(), ur.getFirstName(), ur.getLastName(), ur.getEmail());
+        String userId = linkedDataUtil.getUserId(ur.getId());
+        CedarUserExtract cue = new CedarUserExtract(userId, ur.getFirstName(), ur.getLastName(), ur.getEmail());
         CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue, superRole);
 
         try {
           CedarUser u = userService.createUser(user);
+          out.println("Id        : " + u.getId());
           out.println("User created.");
         } catch (Exception e) {
           out.error("Error while creating user: " + ur.getEmail(), e);

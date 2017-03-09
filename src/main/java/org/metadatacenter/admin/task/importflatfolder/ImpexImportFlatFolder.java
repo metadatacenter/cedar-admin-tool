@@ -48,12 +48,12 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
     String sourceFolder = arguments.get(1);
     String folderId = arguments.get(2);
-    String userUUID = arguments.get(3);
+    String userId = arguments.get(3);
 
     out.println("Input parameters:");
     out.println("sourceFolder: " + sourceFolder);
     out.println("folderId    : " + folderId);
-    out.println("userUUID    : " + userUUID);
+    out.println("userId    : " + userId);
 
     Path sourcePath = Paths.get(sourceFolder);
     File sourceDir = sourcePath.toFile();
@@ -82,7 +82,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     userService = getUserService();
     CedarUser newOwner = null;
     try {
-      newOwner = userService.findUser(userUUID);
+      newOwner = userService.findUser(userId);
     } catch (IOException | ProcessingException e) {
       out.error(e);
     }
@@ -104,7 +104,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       out.error(e);
     }
 
-    ImportWorker importWorker = new ImportWorker(out, cedarConfig, userUUID, newOwner, folderId);
+    ImportWorker importWorker = new ImportWorker(out, cedarConfig, newOwner, folderId);
 
     for (Map.Entry<String, ImportFileDescriptor> ifd : importList.getFiles().entrySet()) {
       ImportFileDescriptor desc = ifd.getValue();

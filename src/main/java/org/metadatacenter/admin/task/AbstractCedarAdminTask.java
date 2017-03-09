@@ -3,10 +3,8 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.service.UserService;
-import org.metadatacenter.server.service.mongodb.UserServiceMongoDB;
 
 import java.io.Console;
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   @Override
   public void injectConfig(CedarConfig cedarConfig) {
     this.cedarConfig = cedarConfig;
-    this.linkedDataUtil = cedarConfig.buildLinkedDataUtil();
+    this.linkedDataUtil = cedarConfig.getLinkedDataUtil();
   }
 
   @Override

@@ -37,40 +37,39 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
 
         out.println("First name: " + ur.getFirstName());
         out.println("Last name : " + ur.getLastName());
-        out.println("Id        : " + ur.getId());
+        out.println("UUID      : " + ur.getId());
         out.println("Email     : " + ur.getEmail());
 
         CedarUser user = null;
         boolean exceptionWhileReading = false;
+        String userId = linkedDataUtil.getUserId(ur.getId());
         try {
-          user = userService.findUser(ur.getId());
+          user = userService.findUser(userId);
         } catch (Exception e) {
           out.error("Error while reading user: " + ur.getEmail(), e);
           exceptionWhileReading = true;
         }
 
         if (user == null && !exceptionWhileReading) {
-          out.error("The user was not found for id:" + ur.getId());
+          out.error("The user was not found for id:" + userId);
         } else {
-          CedarRequestContext cedarRequestContext = null;
+          CedarRequestContext userRequestContext;
           try {
-            cedarRequestContext = CedarRequestContextFactory.fromUser(user);
+            userRequestContext = CedarRequestContextFactory.fromUser(user);
           } catch (CedarAccessException e) {
             e.printStackTrace();
             return -1;
           }
-          FolderServiceSession neoSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
+          FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(userRequestContext);
 
-          String homeFolderPath = neoSession.getHomeFolderPath();
-          out.println("Home folder path:" + homeFolderPath);
-          FolderServerFolder userHomeFolder = neoSession.findFolderByPath(homeFolderPath);
+          FolderServerFolder userHomeFolder = folderSession.findHomeFolderOf();
 
           if (userHomeFolder == null) {
-            out.error("Can not find home folder: " + homeFolderPath);
+            out.error("Can not find home folder for: " + userId);
           } else {
             user.setHomeFolderId(userHomeFolder.getId());
             try {
-              userService.updateUser(ur.getId(), user);
+              userService.updateUser(userId, user);
               out.println("The user was updated");
             } catch (Exception e) {
               out.error("Error while updating user: " + ur.getEmail(), e);

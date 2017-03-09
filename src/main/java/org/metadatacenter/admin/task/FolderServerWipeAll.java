@@ -19,9 +19,9 @@ public class FolderServerWipeAll extends AbstractNeo4JAccessTask {
       return -1;
     }
 
-    AdminServiceSession adminSession = null;
+    AdminServiceSession adminSession;
     try {
-      adminSession = createCedarAdminSession(cedarConfig, false);
+      adminSession = createCedarAdminSession(cedarConfig);
     } catch (CedarAccessException e) {
       e.printStackTrace();
       return -2;

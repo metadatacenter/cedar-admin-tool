@@ -19,6 +19,7 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
   @Override
   public void init() {
     adminUserUUID = cedarConfig.getAdminUserConfig().getUuid();
+    adminUserId = cedarConfig.getAdminUserId();
 
     cedarAdminUserName = cedarConfig.getAdminUserConfig().getUserName();
     cedarAdminUserPassword = cedarConfig.getAdminUserConfig().getPassword();
@@ -39,6 +40,10 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
 
     out.printIndented("keycloakRealmName     : " + keycloakRealmName);
     out.printIndented("keycloakBaseURI       : " + keycloakBaseURI);
+
+    out.println();
+    out.println("Computed data:", Color.YELLOW);
+    out.printIndented("adminUserId           : " + adminUserId);
   }
 
 
@@ -65,9 +70,9 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
     CedarUser user = null;
     boolean exceptionWhileReading = false;
     try {
-      user = userService.findUser(adminUserUUID);
+      user = userService.findUser(adminUserId);
     } catch (Exception e) {
-      out.error("Error while reading user for id: " + adminUserUUID, e);
+      out.error("Error while reading user for id: " + adminUserId, e);
       exceptionWhileReading = true;
     }
 
