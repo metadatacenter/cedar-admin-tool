@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 
 public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
-  private UserService userService;
-
   public ImpexImportFlatFolder() {
     description.add("Imports the contents of a local folder into a virtual folder using a given owner");
     description.add("Parameters:");
@@ -79,7 +77,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       return -4;
     }
 
-    userService = getUserService();
+    UserService userService = getUserService();
     CedarUser newOwner = null;
     try {
       newOwner = userService.findUser(userId);

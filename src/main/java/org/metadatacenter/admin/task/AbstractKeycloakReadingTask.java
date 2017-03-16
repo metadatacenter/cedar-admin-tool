@@ -1,6 +1,5 @@
 package org.metadatacenter.admin.task;
 
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.DeserializationContext;
@@ -55,7 +54,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
     m.getDeserializationConfig().addHandler(new DeserializationProblemHandler() {
       @Override
       public boolean handleUnknownProperty(DeserializationContext ctxt, JsonDeserializer<?> deserializer, Object
-          beanOrClass, String propertyName) throws IOException, JsonProcessingException {
+          beanOrClass, String propertyName) throws IOException {
         if ("access_token".equals(propertyName)) {
           if (beanOrClass instanceof AccessTokenResponse) {
             //out.info("Found token, injecting it.");

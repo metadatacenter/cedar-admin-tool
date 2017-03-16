@@ -11,7 +11,7 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 
 public class CedarAdmin {
 
-  static AdminOutput out;
+  static final AdminOutput out;
 
   static {
     out = new AdminOutput();

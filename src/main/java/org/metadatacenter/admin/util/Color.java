@@ -9,7 +9,7 @@ public enum Color {
   NOBRIGHT(21),
   CLEAR(0);
 
-  private int value;
+  private final int value;
 
   Color(int value) {
     this.value = value;

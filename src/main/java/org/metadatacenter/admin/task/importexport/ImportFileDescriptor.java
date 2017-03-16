@@ -32,14 +32,12 @@ public class ImportFileDescriptor {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("{");
-    sb.append("content: ");
-    sb.append(content == null ? "null" : content.toFile().getName());
-    sb.append(", ");
-    sb.append("info: ");
-    sb.append(info == null ? "null" : info.toFile().getName());
-    sb.append("}");
-    return sb.toString();
+    return "{" +
+        "content: " +
+        (content == null ? "null" : content.toFile().getName()) +
+        ", " +
+        "info: " +
+        (info == null ? "null" : info.toFile().getName()) +
+        "}";
   }
 }

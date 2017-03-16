@@ -24,12 +24,12 @@ import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATIO
 
 public class ImportWorker {
 
-  private CedarConfig cedarConfig;
-  private ProvenanceInfo provenanceInfo;
-  private CedarUser newOwner;
-  private ProvenanceUtil provenanceUtil;
-  private String folderId;
-  private AdminOutput out;
+  private final CedarConfig cedarConfig;
+  private final ProvenanceInfo provenanceInfo;
+  private final CedarUser newOwner;
+  private final ProvenanceUtil provenanceUtil;
+  private final String folderId;
+  private final AdminOutput out;
 
   public ImportWorker(AdminOutput out, CedarConfig cedarConfig, CedarUser newOwner, String folderId) {
     this.out = out;

@@ -14,7 +14,7 @@ import java.util.List;
 public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
 
   protected List<String> arguments;
-  protected List<String> description = new ArrayList<>();
+  protected final List<String> description = new ArrayList<>();
   protected AdminOutput out;
   protected CedarConfig cedarConfig;
   protected LinkedDataUtil linkedDataUtil;
