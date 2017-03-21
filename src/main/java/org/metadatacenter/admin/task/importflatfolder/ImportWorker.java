@@ -10,7 +10,6 @@ import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.model.provenance.ProvenanceInfo;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.util.json.JsonMapper;
@@ -25,18 +24,18 @@ import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATIO
 
 public class ImportWorker {
 
-  private CedarConfig cedarConfig;
-  private ProvenanceInfo provenanceInfo;
-  private CedarUser newOwner;
-  private ProvenanceUtil provenanceUtil;
-  private String folderId;
-  private AdminOutput out;
+  private final CedarConfig cedarConfig;
+  private final ProvenanceInfo provenanceInfo;
+  private final CedarUser newOwner;
+  private final ProvenanceUtil provenanceUtil;
+  private final String folderId;
+  private final AdminOutput out;
 
-  public ImportWorker(AdminOutput out, CedarConfig cedarConfig, String userUUID, CedarUser newOwner, String folderId) {
+  public ImportWorker(AdminOutput out, CedarConfig cedarConfig, CedarUser newOwner, String folderId) {
     this.out = out;
     this.cedarConfig = cedarConfig;
-    provenanceUtil = new ProvenanceUtil(cedarConfig.buildLinkedDataUtil());
-    this.provenanceInfo = provenanceUtil.buildFromUUID(userUUID);
+    this.provenanceUtil = new ProvenanceUtil();
+    this.provenanceInfo = provenanceUtil.build(newOwner);
     this.newOwner = newOwner;
     this.folderId = folderId;
   }
@@ -67,7 +66,7 @@ public class ImportWorker {
           JsonUtils.removeField(contentNode, "_id");
           JsonUtils.removeField(contentNode, "parentId");
           provenanceUtil.addProvenanceInfo(contentNode, provenanceInfo);
-          JsonUtils.localizeAtIdsAndTemplateId(contentNode, cedarConfig.buildLinkedDataUtil());
+          JsonUtils.localizeAtIdsAndTemplateId(contentNode, cedarConfig.getLinkedDataUtil());
           out.println(contentNode);
 
           String authString = newOwner.getFirstApiKeyAuthHeader();

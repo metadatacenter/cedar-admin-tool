@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class ImportFileList {
 
-  private Map<String, ImportFileDescriptor> files;
+  private final Map<String, ImportFileDescriptor> files;
 
   public ImportFileList() {
     files = new HashMap<>();

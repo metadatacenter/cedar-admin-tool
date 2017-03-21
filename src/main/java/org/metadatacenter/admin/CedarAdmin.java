@@ -7,10 +7,11 @@ import org.metadatacenter.admin.util.TaskExecutor;
 import org.metadatacenter.admin.util.TaskRegistry;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.rest.context.CedarRequestContextFactory;
 
 public class CedarAdmin {
 
-  static AdminOutput out;
+  static final AdminOutput out;
 
   static {
     out = new AdminOutput();
@@ -60,7 +61,12 @@ public class CedarAdmin {
         } else {
           out.info("Reading config");
           CedarConfig cedarConfig = CedarConfig.getInstance();
+          CedarRequestContextFactory.init(cedarConfig.getLinkedDataUtil());
           out.info("Building data services");
+          CedarDataServices.initializeMongoClientFactoryForUsers(
+              cedarConfig.getUserServerConfig().getMongoConnection());
+          CedarDataServices.initializeMongoClientFactoryForDocuments(
+              cedarConfig.getTemplateServerConfig().getMongoConnection());
           CedarDataServices.initializeUserService(cedarConfig);
           CedarDataServices.initializeFolderServices(cedarConfig);
           out.info("Executing task");

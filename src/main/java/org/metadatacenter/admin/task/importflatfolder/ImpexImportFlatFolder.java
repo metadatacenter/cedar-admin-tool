@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 
 public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
-  private UserService userService;
-
   public ImpexImportFlatFolder() {
     description.add("Imports the contents of a local folder into a virtual folder using a given owner");
     description.add("Parameters:");
@@ -48,12 +46,12 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
     String sourceFolder = arguments.get(1);
     String folderId = arguments.get(2);
-    String userUUID = arguments.get(3);
+    String userId = arguments.get(3);
 
     out.println("Input parameters:");
     out.println("sourceFolder: " + sourceFolder);
     out.println("folderId    : " + folderId);
-    out.println("userUUID    : " + userUUID);
+    out.println("userId    : " + userId);
 
     Path sourcePath = Paths.get(sourceFolder);
     File sourceDir = sourcePath.toFile();
@@ -79,10 +77,10 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       return -4;
     }
 
-    userService = getUserService();
+    UserService userService = getUserService();
     CedarUser newOwner = null;
     try {
-      newOwner = userService.findUser(userUUID);
+      newOwner = userService.findUser(userId);
     } catch (IOException | ProcessingException e) {
       out.error(e);
     }
@@ -104,7 +102,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       out.error(e);
     }
 
-    ImportWorker importWorker = new ImportWorker(out, cedarConfig, userUUID, newOwner, folderId);
+    ImportWorker importWorker = new ImportWorker(out, cedarConfig, newOwner, folderId);
 
     for (Map.Entry<String, ImportFileDescriptor> ifd : importList.getFiles().entrySet()) {
       ImportFileDescriptor desc = ifd.getValue();

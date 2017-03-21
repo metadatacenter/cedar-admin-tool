@@ -6,4 +6,4 @@ echo ----------------------------------------------
 echo
 DIRNAME=`dirname "$0"`
 
-java -jar $DIRNAME/cedar-admin-tool-${version}.jar "$@"
+java -jar ${DIRNAME}/cedar-admin-tool-${version}.jar "$@"

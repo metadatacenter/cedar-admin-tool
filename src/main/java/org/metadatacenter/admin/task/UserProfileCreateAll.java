@@ -1,13 +1,12 @@
 package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
+import org.metadatacenter.server.security.model.user.CedarSuperRole;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.security.model.user.CedarUserExtract;
-import org.metadatacenter.server.security.model.user.CedarUserRole;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
@@ -34,26 +33,21 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
 
         out.println("First name: " + ur.getFirstName());
         out.println("Last name : " + ur.getLastName());
-        out.println("Id        : " + ur.getId());
+        out.println("UUID      : " + ur.getId());
         out.println("Email     : " + ur.getEmail());
 
-        List<CedarUserRole> roles = null;
-        String apiKey = null;
+        CedarSuperRole superRole = CedarSuperRole.NORMAL;
         if (adminUserUUID.equals(ur.getId())) {
-          roles = new ArrayList<>();
-          roles.add(CedarUserRole.TEMPLATE_CREATOR);
-          roles.add(CedarUserRole.TEMPLATE_INSTANTIATOR);
-          roles.add(CedarUserRole.BUILT_IN_SYSTEM_ADMINISTRATOR);
-          roles.add(CedarUserRole.ADMINISTRATOR);
-          roles.add(CedarUserRole.FILESYSTEM_ADMINISTRATOR);
-          apiKey = cedarConfig.getAdminUserConfig().getApiKey();
+          superRole = CedarSuperRole.BUILT_IN_ADMIN;
         }
 
-        CedarUserExtract cue = new CedarUserExtract(ur.getId(), ur.getFirstName(), ur.getLastName(), ur.getEmail());
-        CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig, cue, apiKey, roles);
+        String userId = linkedDataUtil.getUserId(ur.getId());
+        CedarUserExtract cue = new CedarUserExtract(userId, ur.getFirstName(), ur.getLastName(), ur.getEmail());
+        CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue, superRole);
 
         try {
           CedarUser u = userService.createUser(user);
+          out.println("Id        : " + u.getId());
           out.println("User created.");
         } catch (Exception e) {
           out.error("Error while creating user: " + ur.getEmail(), e);
