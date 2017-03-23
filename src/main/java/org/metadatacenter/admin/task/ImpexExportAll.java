@@ -121,8 +121,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
       String id = folder.getId();
       Path createdFolder = createFolder(path, id);
       createFolderDescriptor(createdFolder, folder);
-      List<FolderServerNode> folderContents = folderSession.findFolderContents(id, nodeTypeList, EXPORT_MAX_COUNT, 0,
-          sortList);
+      List<FolderServerNode> folderContents = folderSession.findFolderContentsFiltered(id, nodeTypeList,
+          EXPORT_MAX_COUNT, 0, sortList);
       for (FolderServerNode child : folderContents) {
         serializeAndWalkFolder(createdFolder, child);
       }
