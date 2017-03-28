@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import com.mongodb.MongoClient;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
+import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.FolderServerFolder;
@@ -72,17 +74,21 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     sortList = new ArrayList<>();
     sortList.add(DEFAULT_SORT);
 
+    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+
     templateElementService = new TemplateElementServiceMongoDB(
-        cedarConfig.getMongoConfig().getDatabaseName(),
+        mongoClientForDocuments,
+        cedarConfig.getTemplateServerConfig().getDatabaseName(),
         cedarConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
 
     templateService = new TemplateServiceMongoDB(
-        cedarConfig.getMongoConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.TEMPLATE),
-        templateElementService);
+        mongoClientForDocuments,
+        cedarConfig.getTemplateServerConfig().getDatabaseName(),
+        cedarConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
 
     templateInstanceService = new TemplateInstanceServiceMongoDB(
-        cedarConfig.getMongoConfig().getDatabaseName(),
+        mongoClientForDocuments,
+        cedarConfig.getTemplateServerConfig().getDatabaseName(),
         cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
     userService = getUserService();
@@ -115,8 +121,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
       String id = folder.getId();
       Path createdFolder = createFolder(path, id);
       createFolderDescriptor(createdFolder, folder);
-      List<FolderServerNode> folderContents = folderSession.findFolderContents(id, nodeTypeList, EXPORT_MAX_COUNT, 0,
-          sortList);
+      List<FolderServerNode> folderContents = folderSession.findFolderContentsFiltered(id, nodeTypeList,
+          EXPORT_MAX_COUNT, 0, sortList);
       for (FolderServerNode child : folderContents) {
         serializeAndWalkFolder(createdFolder, child);
       }
@@ -193,7 +199,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
           String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(u));
           Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-          out.error("There was an error writing the info for user: " + uuid + ":" + CedarUserNameUtil.getDisplayName(cedarConfig, u), e);
+          out.error("There was an error writing the info for user: " + uuid + ":" + CedarUserNameUtil.getDisplayName
+              (cedarConfig, u), e);
         }
       }
     } catch (IOException | ProcessingException e) {

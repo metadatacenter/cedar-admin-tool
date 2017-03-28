@@ -1,7 +1,7 @@
 package org.metadatacenter.admin.task;
 
+import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.util.mongo.MongoFactory;
 
 public class UserProfileWipeAll extends AbstractMongoTask {
 
@@ -13,8 +13,8 @@ public class UserProfileWipeAll extends AbstractMongoTask {
 
   @Override
   public void init() {
-    mongoDatabaseName = cedarConfig.getMongoConfig().getDatabaseName();
-    usersCollectionName = cedarConfig.getMongoConfig().getCollections().get(CedarNodeType.USER.getValue());
+    mongoDatabaseName = cedarConfig.getUserServerConfig().getDatabaseName();
+    usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
   }
 
   @Override
@@ -23,7 +23,7 @@ public class UserProfileWipeAll extends AbstractMongoTask {
       return -1;
     }
 
-    mongoClient = MongoFactory.getClient();
+    mongoClient = CedarDataServices.getMongoClientFactoryForUsers().getClient();
     emptyCollection(usersCollectionName);
 
     return 0;

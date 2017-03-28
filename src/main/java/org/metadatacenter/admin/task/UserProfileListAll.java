@@ -25,7 +25,7 @@ public class UserProfileListAll extends AbstractKeycloakReadingTask {
         out.printSeparator();
         out.println("First name: " + ur.getFirstName());
         out.println("Last name : " + ur.getLastName());
-        out.println("Id        : " + ur.getId());
+        out.println("UUID      : " + ur.getId());
         out.println("Email     : " + ur.getEmail());
         out.println("Enabled   : " + ur.isEnabled());
         out.printSeparator();

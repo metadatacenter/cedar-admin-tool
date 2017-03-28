@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class TaskRegistry {
 
-  static Map<String, Class<? extends ICedarAdminTask>> taskMap;
+  static final Map<String, Class<? extends ICedarAdminTask>> taskMap;
 
   public static final String TEMPLATE_SERVER_WIPE_ALL = "templateServer-wipeAll";
 
