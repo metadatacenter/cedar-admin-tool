@@ -1,30 +1,28 @@
 package org.metadatacenter.admin.task;
 
-import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.DeserializationProblemHandler;
-import org.codehaus.jackson.map.JsonDeserializer;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.constant.KeycloakConstants;
+import org.metadatacenter.server.security.KeycloakDeploymentProvider;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask {
 
   protected String adminUserUUID;
-  protected String adminUserId;
   protected String keycloakBaseURI;
   protected String keycloakRealmName;
   protected String cedarAdminUserPassword;
@@ -38,9 +36,8 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
     cedarAdminUserPassword = cedarConfig.getAdminUserConfig().getPassword();
     keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
 
-    InputStream keycloakConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream(KeycloakConstants
-        .JSON);
-    KeycloakDeployment keycloakDeployment = KeycloakDeploymentBuilder.build(keycloakConfig);
+    KeycloakDeploymentProvider keycloakDeploymentProvider = new KeycloakDeploymentProvider();
+    KeycloakDeployment keycloakDeployment = keycloakDeploymentProvider.buildDeployment(cedarConfig.getKeycloakConfig());
 
     keycloakRealmName = keycloakDeployment.getRealm();
     keycloakBaseURI = keycloakDeployment.getAuthServerBaseUrl();
@@ -48,28 +45,24 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
 
   private JacksonJsonProvider getCustomizedJacksonJsonProvider() {
     ObjectMapper m = new ObjectMapper();
-    JacksonJsonProvider jacksonJsonProvider =
-        new JacksonJaxbJsonProvider();
+    JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider();
     jacksonJsonProvider.setMapper(m);
-    m.getDeserializationConfig().addHandler(new DeserializationProblemHandler() {
+
+    m.addHandler(new DeserializationProblemHandler() {
       @Override
-      public boolean handleUnknownProperty(DeserializationContext ctxt, JsonDeserializer<?> deserializer, Object
-          beanOrClass, String propertyName) throws IOException {
+      public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser jp, JsonDeserializer<?>
+          deserializer, Object beanOrClass, String propertyName) throws IOException {
+        out.info("Run into unknown property:" + propertyName + "=>" + ctxt.getParser().getText());
         if ("access_token".equals(propertyName)) {
           if (beanOrClass instanceof AccessTokenResponse) {
-            //out.info("Found token, injecting it.");
             AccessTokenResponse atr = (AccessTokenResponse) beanOrClass;
             String text = ctxt.getParser().getText();
             atr.setToken(text);
           }
-          return true;
         } else {
-          boolean success = super.handleUnknownProperty(ctxt, deserializer, beanOrClass, propertyName);
-          if (success) {
-            out.info("Skipping property:" + propertyName + "=>" + ctxt.getParser().getText());
-          }
-          return true;
+          super.handleUnknownProperty(ctxt, jp, deserializer, beanOrClass, propertyName);
         }
+        return true;
       }
     });
     return jacksonJsonProvider;

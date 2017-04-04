@@ -1,16 +1,13 @@
 package org.metadatacenter.admin.task;
 
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.Color;
-import org.metadatacenter.constant.KeycloakConstants;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 
-import java.io.InputStream;
-
 public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
+
+  private String adminUserId;
 
   public UserProfileGetAdmin() {
     description.add("Reads cedar-admin user details from Keycloak.");
@@ -21,23 +18,14 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
     adminUserUUID = cedarConfig.getAdminUserConfig().getUuid();
     adminUserId = cedarConfig.getAdminUserId();
 
-    cedarAdminUserName = cedarConfig.getAdminUserConfig().getUserName();
-    cedarAdminUserPassword = cedarConfig.getAdminUserConfig().getPassword();
-    keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
+    initKeycloak();
+
     out.println();
     out.println("Data from config:", Color.YELLOW);
     out.printIndented("adminUserUUID         : " + adminUserUUID);
     out.printIndented("cedarAdminUserName    : " + cedarAdminUserName);
     out.printIndented("cedarAdminUserPassword: " + cedarAdminUserPassword);
     out.printIndented("keycloakClientId      : " + keycloakClientId);
-
-    InputStream keycloakConfig = Thread.currentThread().getContextClassLoader().getResourceAsStream(KeycloakConstants
-        .JSON);
-    KeycloakDeployment keycloakDeployment = KeycloakDeploymentBuilder.build(keycloakConfig);
-
-    keycloakRealmName = keycloakDeployment.getRealm();
-    keycloakBaseURI = keycloakDeployment.getAuthServerBaseUrl();
-
     out.printIndented("keycloakRealmName     : " + keycloakRealmName);
     out.printIndented("keycloakBaseURI       : " + keycloakBaseURI);
 
