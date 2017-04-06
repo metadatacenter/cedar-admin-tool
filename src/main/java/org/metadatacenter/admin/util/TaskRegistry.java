@@ -21,6 +21,8 @@ public class TaskRegistry {
 
   public static final String FOLDER_SERVER_CREATE_USER_HOME_FOLDERS = "folderServer-createUserHomeFolders";
 
+  public static final String NGINX_CONFIG_GENERATE = "nginx-config-generate";
+
   public static final String USER_PROFILE_GET_ADMIN = "userProfile-get-admin";
 
   public static final String USER_PROFILE_LIST_ALL = "userProfile-listAll";
@@ -49,6 +51,8 @@ public class TaskRegistry {
     taskMap.put(FOLDER_SERVER_WIPE_ALL, FolderServerWipeAll.class);
     taskMap.put(FOLDER_SERVER_CREATE_GLOBAL_OBJECTS, FolderServerCreateGlobalObjects.class);
     taskMap.put(FOLDER_SERVER_CREATE_USER_HOME_FOLDERS, FolderServerCreateUserHomeFolders.class);
+
+    taskMap.put(NGINX_CONFIG_GENERATE, NginxConfigGenerate.class);
 
     taskMap.put(USER_PROFILE_GET_ADMIN, UserProfileGetAdmin.class);
     taskMap.put(USER_PROFILE_LIST_ALL, UserProfileListAll.class);
