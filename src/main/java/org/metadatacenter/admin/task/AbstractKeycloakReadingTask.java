@@ -15,6 +15,7 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.server.security.KeycloakDeploymentProvider;
 
 import java.io.IOException;
@@ -22,18 +23,17 @@ import java.util.List;
 
 public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask {
 
-  protected String adminUserUUID;
   protected String keycloakBaseURI;
   protected String keycloakRealmName;
-  protected String cedarAdminUserPassword;
   protected String keycloakClientId;
   protected String cedarAdminUserName;
+  protected String cedarAdminUserPassword;
+  protected String cedarAdminUserApiKey;
 
   protected void initKeycloak() {
-    adminUserUUID = cedarConfig.getAdminUserConfig().getUuid();
-
     cedarAdminUserName = cedarConfig.getAdminUserConfig().getUserName();
     cedarAdminUserPassword = cedarConfig.getAdminUserConfig().getPassword();
+    cedarAdminUserApiKey = cedarConfig.getAdminUserConfig().getApiKey();
     keycloakClientId = cedarConfig.getKeycloakConfig().getClientId();
 
     KeycloakDeploymentProvider keycloakDeploymentProvider = new KeycloakDeploymentProvider();
@@ -84,15 +84,24 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
         .build();
   }
 
-  protected UserRepresentation getAdminUserFromKeycloak() {
+  protected UserRepresentation getUserFromKeycloak(String userUUID) {
     Keycloak kc = buildKeycloak();
-    UserResource userResource = kc.realm(keycloakRealmName).users().get(adminUserUUID);
+    UserResource userResource = kc.realm(keycloakRealmName).users().get(userUUID);
     return userResource.toRepresentation();
   }
 
   protected List<UserRepresentation> listAllUsersFromKeycloak() {
     Keycloak kc = buildKeycloak();
     return kc.realm(keycloakRealmName).users().search(null, null, null);
+  }
+
+  protected void printOutUser(AdminOutput out, UserRepresentation ur) {
+    out.println("First name: " + ur.getFirstName());
+    out.println("Last name : " + ur.getLastName());
+    out.println("UUID      : " + ur.getId());
+    out.println("Username  : " + ur.getUsername());
+    out.println("Email     : " + ur.getEmail());
+    out.println("Enabled   : " + ur.isEnabled());
   }
 
 }

@@ -23,11 +23,7 @@ public class UserProfileListAll extends AbstractKeycloakReadingTask {
     } else {
       for (UserRepresentation ur : userRepresentations) {
         out.printSeparator();
-        out.println("First name: " + ur.getFirstName());
-        out.println("Last name : " + ur.getLastName());
-        out.println("UUID      : " + ur.getId());
-        out.println("Email     : " + ur.getEmail());
-        out.println("Enabled   : " + ur.isEnabled());
+        printOutUser(out, ur);
         out.printSeparator();
       }
     }

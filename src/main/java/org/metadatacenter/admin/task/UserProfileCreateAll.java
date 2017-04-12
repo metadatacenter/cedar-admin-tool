@@ -30,18 +30,17 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
       UserService userService = getUserService();
       for (UserRepresentation ur : userRepresentations) {
         out.printSeparator();
-
-        out.println("First name: " + ur.getFirstName());
-        out.println("Last name : " + ur.getLastName());
-        out.println("UUID      : " + ur.getId());
-        out.println("Email     : " + ur.getEmail());
+        printOutUser(out, ur);
 
         CedarSuperRole superRole = CedarSuperRole.NORMAL;
-        if (adminUserUUID.equals(ur.getId())) {
+        List<String> realmRoles = ur.getRealmRoles();
+
+        if (realmRoles != null && realmRoles.contains(CedarSuperRole.BUILT_IN_ADMIN.getValue())) {
           superRole = CedarSuperRole.BUILT_IN_ADMIN;
         }
 
-        String userId = linkedDataUtil.getUserId(ur.getId());
+        String userUUID = ur.getId();
+        String userId = linkedDataUtil.getUserId(userUUID);
         CedarUserExtract cue = new CedarUserExtract(userId, ur.getFirstName(), ur.getLastName(), ur.getEmail());
         CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue, superRole);
 
