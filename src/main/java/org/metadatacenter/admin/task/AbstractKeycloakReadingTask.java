@@ -14,11 +14,13 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.server.security.KeycloakDeploymentProvider;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask {
@@ -92,16 +94,27 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
 
   protected List<UserRepresentation> listAllUsersFromKeycloak() {
     Keycloak kc = buildKeycloak();
-    return kc.realm(keycloakRealmName).users().search(null, null, null);
+    List<UserRepresentation> users = kc.realm(keycloakRealmName).users().search(null, null, null);
+    for (UserRepresentation ur : users) {
+      UserResource userResource = kc.realm(keycloakRealmName).users().get(ur.getId());
+      List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listEffective();
+      List<String> realmRoles = new ArrayList<>();
+      for (RoleRepresentation rr : roleRepresentations) {
+        realmRoles.add(rr.getName());
+      }
+      ur.setRealmRoles(realmRoles);
+    }
+    return users;
   }
 
   protected void printOutUser(AdminOutput out, UserRepresentation ur) {
-    out.println("First name: " + ur.getFirstName());
-    out.println("Last name : " + ur.getLastName());
-    out.println("UUID      : " + ur.getId());
-    out.println("Username  : " + ur.getUsername());
-    out.println("Email     : " + ur.getEmail());
-    out.println("Enabled   : " + ur.isEnabled());
+    out.println("First name : " + ur.getFirstName());
+    out.println("Last name  : " + ur.getLastName());
+    out.println("UUID       : " + ur.getId());
+    out.println("Username   : " + ur.getUsername());
+    out.println("Email      : " + ur.getEmail());
+    out.println("Enabled    : " + ur.isEnabled());
+    out.println("Realm roles: " + ur.getRealmRoles());
   }
 
 }

@@ -105,7 +105,7 @@
 
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jackson-provider</artifactId>
+      <artifactId>resteasy-jackson2-provider</artifactId>
     </dependency>
 
     <dependency>
@@ -116,6 +116,12 @@
     <dependency>
       <groupId>net.jmob</groupId>
       <artifactId>guice.conf</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

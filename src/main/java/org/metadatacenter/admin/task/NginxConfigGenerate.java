@@ -15,7 +15,6 @@ public class NginxConfigGenerate extends AbstractCedarAdminTask {
   protected static final String LISTEN = "listen";
   protected static final String LOCATION = "location";
   private String cedarHome;
-  private String profile;
   private boolean isLocal;
   private String host;
   private String logHome;
@@ -56,10 +55,9 @@ public class NginxConfigGenerate extends AbstractCedarAdminTask {
   @Override
   public void init() {
     cedarHome = cedarConfig.getHome();
-    profile = cedarConfig.getProfile();
-    isLocal = profile != null && "local".equals(profile);
     host = cedarConfig.getHost();
     logHome = cedarHome + "log/";
+    isLocal = "metadatacenter.orgx".equals(host);
   }
 
   @Override
