@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>1.0.6</version>
+    <version>1.1.0</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-admin-tool</artifactId>
-  <version>1.0.6</version>
+  <version>1.1.0</version>
   <packaging>jar</packaging>
 
   <name>CEDAR Admin Tool</name>
@@ -28,7 +28,7 @@
     <connection>scm:git:git@github.com:metadatacenter/cedar-admin-tool.git</connection>
     <developerConnection>scm:git:git@github.com:metadatacenter/cedar-admin-tool.git</developerConnection>
     <url>https://github.com/metadatacenter/cedar-admin-tool</url>
-    <tag>release-1.0.6</tag>
+    <tag>release-1.1.0</tag>
   </scm>
 
   <dependencies>
@@ -70,6 +70,11 @@
 
     <dependency>
       <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-auth-operations-keycloak</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
       <artifactId>cedar-server-rest</artifactId>
     </dependency>
 
@@ -100,7 +105,7 @@
 
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jackson-provider</artifactId>
+      <artifactId>resteasy-jackson2-provider</artifactId>
     </dependency>
 
     <dependency>
@@ -111,6 +116,12 @@
     <dependency>
       <groupId>net.jmob</groupId>
       <artifactId>guice.conf</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

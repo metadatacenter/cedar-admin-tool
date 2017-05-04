@@ -23,14 +23,14 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
   @Override
   public void init() {
     UserService userService = getUserService();
-    String adminUserId = cedarConfig.getAdminUserId();
+    String adminUserApiKey = cedarConfig.getAdminUserConfig().getApiKey();
     try {
-      adminUser = userService.findUser(adminUserId);
+      adminUser = userService.findUserByApiKey(adminUserApiKey);
     } catch (Exception e) {
-      out.error("Error while loading admin user by id:" + adminUserId);
+      out.error("Error while loading admin user by apiKey:" + adminUserApiKey);
     }
     if (adminUser == null) {
-      out.error("Admin user not found by id:" + adminUserId);
+      out.error("Admin user not found by apiKey:" + adminUserApiKey);
       out.error("The requested task was not completed!");
     }
   }

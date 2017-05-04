@@ -7,6 +7,7 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.mongodb.MongoClient;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
+import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.FolderServerFolder;
@@ -76,20 +77,22 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
+    MongoConfig templateServerConfig = cedarConfig.getTemplateServerConfig();
+
     templateElementService = new TemplateElementServiceMongoDB(
         mongoClientForDocuments,
-        cedarConfig.getTemplateServerConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
 
     templateService = new TemplateServiceMongoDB(
         mongoClientForDocuments,
-        cedarConfig.getTemplateServerConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
 
     templateInstanceService = new TemplateInstanceServiceMongoDB(
         mongoClientForDocuments,
-        cedarConfig.getTemplateServerConfig().getDatabaseName(),
-        cedarConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
     userService = getUserService();
 

@@ -30,30 +30,38 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
       UserService userService = getUserService();
       for (UserRepresentation ur : userRepresentations) {
         out.printSeparator();
+        printOutUser(out, ur);
 
-        out.println("First name: " + ur.getFirstName());
-        out.println("Last name : " + ur.getLastName());
-        out.println("UUID      : " + ur.getId());
-        out.println("Email     : " + ur.getEmail());
-
-        CedarSuperRole superRole = CedarSuperRole.NORMAL;
-        if (adminUserUUID.equals(ur.getId())) {
-          superRole = CedarSuperRole.BUILT_IN_ADMIN;
+        CedarSuperRole superRole = null;
+        List<String> realmRoles = ur.getRealmRoles();
+        if (realmRoles != null) {
+          if (realmRoles.contains(CedarSuperRole.BUILT_IN_ADMIN.getValue())) {
+            superRole = CedarSuperRole.BUILT_IN_ADMIN;
+          } else if (realmRoles.contains(CedarSuperRole.NORMAL.getValue())) {
+            superRole = CedarSuperRole.NORMAL;
+          }
         }
 
-        String userId = linkedDataUtil.getUserId(ur.getId());
-        CedarUserExtract cue = new CedarUserExtract(userId, ur.getFirstName(), ur.getLastName(), ur.getEmail());
-        CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue, superRole);
+        if (superRole == null) {
+          out.error("The user '" + ur.getUsername() +
+              "' has no recognized roles. The user will not be created in MongoDB");
+        } else {
 
-        try {
-          CedarUser u = userService.createUser(user);
-          out.println("Id        : " + u.getId());
-          out.println("User created.");
-        } catch (Exception e) {
-          out.error("Error while creating user: " + ur.getEmail(), e);
+          String userUUID = ur.getId();
+          String userId = linkedDataUtil.getUserId(userUUID);
+          CedarUserExtract cue = new CedarUserExtract(userId, ur.getFirstName(), ur.getLastName(), ur.getEmail());
+          CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue, superRole);
+
+          try {
+            CedarUser u = userService.createUser(user);
+            out.println("Id        : " + u.getId());
+            out.println("User created.");
+          } catch (Exception e) {
+            out.error("Error while creating user: " + ur.getEmail(), e);
+          }
+
+          out.printSeparator();
         }
-
-        out.printSeparator();
       }
     }
     return 0;

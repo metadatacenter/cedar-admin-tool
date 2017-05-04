@@ -7,7 +7,11 @@ import org.metadatacenter.admin.util.TaskExecutor;
 import org.metadatacenter.admin.util.TaskRegistry;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
+import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+
+import java.util.Map;
 
 public class CedarAdmin {
 
@@ -60,7 +64,9 @@ public class CedarAdmin {
           showUsageAndExit();
         } else {
           out.info("Reading config");
-          CedarConfig cedarConfig = CedarConfig.getInstance();
+          SystemComponent systemComponent = SystemComponent.ADMIN_TOOL;
+          Map<String, String> environment = CedarEnvironmentVariableProvider.getFor(systemComponent);
+          CedarConfig cedarConfig = CedarConfig.getInstance(environment);
           CedarRequestContextFactory.init(cedarConfig.getLinkedDataUtil());
           out.info("Building data services");
           CedarDataServices.initializeMongoClientFactoryForUsers(
