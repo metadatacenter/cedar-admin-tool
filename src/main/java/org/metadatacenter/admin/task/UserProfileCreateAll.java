@@ -50,7 +50,8 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
           String userUUID = ur.getId();
           String userId = linkedDataUtil.getUserId(userUUID);
           CedarUserExtract cue = new CedarUserExtract(userId, ur.getFirstName(), ur.getLastName(), ur.getEmail());
-          CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue, superRole);
+          CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue,
+              superRole, cedarConfig, ur.getUsername());
 
           try {
             CedarUser u = userService.createUser(user);
