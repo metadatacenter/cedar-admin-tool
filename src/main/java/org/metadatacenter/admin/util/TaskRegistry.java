@@ -52,8 +52,6 @@ public class TaskRegistry {
     taskMap.put(FOLDER_SERVER_CREATE_GLOBAL_OBJECTS, FolderServerCreateGlobalObjects.class);
     taskMap.put(FOLDER_SERVER_CREATE_USER_HOME_FOLDERS, FolderServerCreateUserHomeFolders.class);
 
-    taskMap.put(NGINX_CONFIG_GENERATE, NginxConfigGenerate.class);
-
     taskMap.put(USER_PROFILE_GET_ADMIN, UserProfileGetAdmin.class);
     taskMap.put(USER_PROFILE_LIST_ALL, UserProfileListAll.class);
     taskMap.put(USER_PROFILE_WIPE_ALL, UserProfileWipeAll.class);
