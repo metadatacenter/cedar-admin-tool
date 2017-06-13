@@ -20,6 +20,8 @@ public class CedarConfigAdminToolTest {
 
     env.put(CedarEnvironmentVariable.CEDAR_HOME.getName(), "/home/cedar/");
 
+    env.put(CedarEnvironmentVariable.CEDAR_NET_GATEWAY.getName(), "127.0.0.1");
+
     env.put(CedarEnvironmentVariable.CEDAR_HOST.getName(), "metadatacenter.orgx");
 
     env.put(CedarEnvironmentVariable.CEDAR_ADMIN_USER_PASSWORD.getName(), "adminPassword");
@@ -33,6 +35,8 @@ public class CedarConfigAdminToolTest {
     env.put(CedarEnvironmentVariable.CEDAR_MONGO_APP_USER_PASSWORD.getName(), "password");
     env.put(CedarEnvironmentVariable.CEDAR_MONGO_HOST.getName(), "localhost");
     env.put(CedarEnvironmentVariable.CEDAR_MONGO_PORT.getName(), "27017");
+
+    env.put(CedarEnvironmentVariable.CEDAR_RESOURCE_HTTP_PORT.getName(), "9007");
 
     env.put(CedarEnvironmentVariable.CEDAR_SALT_API_KEY.getName(), "saltme");
 
