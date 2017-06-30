@@ -62,7 +62,7 @@ public class AdminOutput {
   }
 
   public void printSeparator() {
-    System.out.println("----------------------------------------------------");
+    System.out.println("--------------------------------------------------------------------------------");
   }
 
   public void printIndented(String message) {

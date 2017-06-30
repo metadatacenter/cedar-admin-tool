@@ -12,14 +12,17 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
+import org.metadatacenter.constant.CedarConstants;
 import org.metadatacenter.server.security.KeycloakDeploymentProvider;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,9 +97,10 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
 
   protected List<UserRepresentation> listAllUsersFromKeycloak() {
     Keycloak kc = buildKeycloak();
-    List<UserRepresentation> users = kc.realm(keycloakRealmName).users().search(null, null, null);
+    RealmResource realm = kc.realm(keycloakRealmName);
+    List<UserRepresentation> users = realm.users().search(null, 0, Integer.MAX_VALUE);
     for (UserRepresentation ur : users) {
-      UserResource userResource = kc.realm(keycloakRealmName).users().get(ur.getId());
+      UserResource userResource = realm.users().get(ur.getId());
       List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listEffective();
       List<String> realmRoles = new ArrayList<>();
       for (RoleRepresentation rr : roleRepresentations) {
@@ -108,6 +112,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
   }
 
   protected void printOutUser(AdminOutput out, UserRepresentation ur) {
+    Instant createdInstant = Instant.ofEpochMilli(ur.getCreatedTimestamp());
     out.println("First name : " + ur.getFirstName());
     out.println("Last name  : " + ur.getLastName());
     out.println("UUID       : " + ur.getId());
@@ -115,6 +120,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
     out.println("Email      : " + ur.getEmail());
     out.println("Enabled    : " + ur.isEnabled());
     out.println("Realm roles: " + ur.getRealmRoles());
+    out.println("Created    : " + CedarConstants.xsdDateTimeFormatter.format(createdInstant));
   }
 
 }
