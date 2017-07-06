@@ -3,9 +3,9 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.server.AdminServiceSession;
 
-public class FolderServerWipeAll extends AbstractNeo4JAccessTask {
+public class WorkspaceServerWipeAll extends AbstractNeo4JAccessTask {
 
-  public FolderServerWipeAll() {
+  public WorkspaceServerWipeAll() {
     description.add("Deletes all 'CEDAR' nodes from the Neo4j server.");
   }
 
