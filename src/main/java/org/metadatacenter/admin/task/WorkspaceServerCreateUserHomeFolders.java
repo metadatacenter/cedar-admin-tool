@@ -13,9 +13,9 @@ import org.metadatacenter.server.service.UserService;
 
 import java.util.List;
 
-public class FolderServerCreateUserHomeFolders extends AbstractKeycloakReadingTask {
+public class WorkspaceServerCreateUserHomeFolders extends AbstractKeycloakReadingTask {
 
-  public FolderServerCreateUserHomeFolders() {
+  public WorkspaceServerCreateUserHomeFolders() {
     description.add("Creates user home folders in Neo4J.");
     description.add("The iteration is done on the Keycloak user list.");
   }

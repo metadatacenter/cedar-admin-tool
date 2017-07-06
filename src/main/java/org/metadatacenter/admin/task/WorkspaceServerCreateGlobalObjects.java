@@ -3,9 +3,9 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.server.AdminServiceSession;
 
-public class FolderServerCreateGlobalObjects extends AbstractNeo4JAccessTask {
+public class WorkspaceServerCreateGlobalObjects extends AbstractNeo4JAccessTask {
 
-  public FolderServerCreateGlobalObjects() {
+  public WorkspaceServerCreateGlobalObjects() {
     description.add("Creates global folders in the graph database: /, /Users");
     description.add("Creates home folder for 'cedar-admin' user");
     description.add("Creates 'Everybody' group");
