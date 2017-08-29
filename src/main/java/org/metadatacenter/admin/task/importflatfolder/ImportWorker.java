@@ -19,7 +19,6 @@ import org.metadatacenter.util.provenance.ProvenanceUtil;
 import java.io.IOException;
 
 import static org.metadatacenter.constant.CedarQueryParameters.QP_FOLDER_ID;
-import static org.metadatacenter.constant.CedarQueryParameters.QP_IMPORT_MODE;
 import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
 import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
@@ -74,7 +73,7 @@ public class ImportWorker {
           String authString = newOwner.getFirstApiKeyAuthHeader();
           try {
             String url = cedarConfig.getServers().getResource().getBase() + nodeType.getPrefix() +
-                "?" + QP_IMPORT_MODE + "=true&" + QP_FOLDER_ID + "=" + new URLCodec().encode(folderId);
+                "?" + QP_FOLDER_ID + "=" + new URLCodec().encode(folderId);
             out.println("***IMPORT:" + url);
             Request request = Request.Post(url)
                 .bodyString(contentNode.toString(), ContentType.APPLICATION_JSON)
