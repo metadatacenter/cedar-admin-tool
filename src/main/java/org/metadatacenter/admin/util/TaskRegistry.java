@@ -17,6 +17,8 @@ public class TaskRegistry {
 
   public static final String WORKSPACE_SERVER_WIPE_ALL = "workspaceServer-wipeAll";
 
+  public static final String WORKSPACE_SERVER_INIT_DB = "workspaceServer-initDB";
+
   public static final String WORKSPACE_SERVER_CREATE_GLOBAL_OBJECTS = "workspaceServer-createGlobalObjects";
 
   public static final String WORKSPACE_SERVER_CREATE_USER_HOME_FOLDERS = "workspaceServer-createUserHomeFolders";
@@ -47,6 +49,7 @@ public class TaskRegistry {
     taskMap.put(TEMPLATE_SERVER_INIT_DB, TemplateServerInitDB.class);
 
     taskMap.put(WORKSPACE_SERVER_WIPE_ALL, WorkspaceServerWipeAll.class);
+    taskMap.put(WORKSPACE_SERVER_INIT_DB, WorkspaceServerInitDB.class);
     taskMap.put(WORKSPACE_SERVER_CREATE_GLOBAL_OBJECTS, WorkspaceServerCreateGlobalObjects.class);
     taskMap.put(WORKSPACE_SERVER_CREATE_USER_HOME_FOLDERS, WorkspaceServerCreateUserHomeFolders.class);
 
