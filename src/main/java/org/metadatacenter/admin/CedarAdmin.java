@@ -11,6 +11,7 @@ import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 public class CedarAdmin {
@@ -35,7 +36,7 @@ public class CedarAdmin {
       ICedarAdminTask t = null;
       try {
         t = TaskRegistry.getTaskForKey(key);
-      } catch (InstantiationException | IllegalAccessException e) {
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
         out.error(e);
       }
       if (t != null) {

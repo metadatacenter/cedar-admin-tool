@@ -28,7 +28,6 @@
     <connection>scm:git:git@github.com:metadatacenter/cedar-admin-tool.git</connection>
     <developerConnection>scm:git:git@github.com:metadatacenter/cedar-admin-tool.git</developerConnection>
     <url>https://github.com/metadatacenter/cedar-admin-tool</url>
-    <tag>release-1.3.2</tag>
   </scm>
 
   <dependencies>
