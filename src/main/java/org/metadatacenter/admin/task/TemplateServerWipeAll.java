@@ -11,8 +11,8 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
 
   private String mongoDatabaseName;
   private String templateElementsCollectionName;
-  private String templateFieldCollectionName;
-  //private String templateInstancesCollectionName;
+  //private String templateFieldCollectionName;
+  private String templateInstancesCollectionName;
   private String templatesCollectionName;
   private String usersCollectionName;
 
@@ -23,15 +23,15 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
   @Override
   public void init() {
     mongoDatabaseName = cedarConfig.getTemplateServerConfig().getDatabaseName();
-    templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
-        .getValue());
+    /*templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
+        .getValue());*/
     templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.ELEMENT
         .getValue
             ());
     templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.TEMPLATE
         .getValue());
-    /*templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.INSTANCE
-        .getValue());*/
+    templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.INSTANCE
+        .getValue());
     usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
   }
 
@@ -53,8 +53,8 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
     MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
 
     emptyCollection(mongoClientForDocuments, templateElementsCollectionName);
-    emptyCollection(mongoClientForDocuments, templateFieldCollectionName);
-    //emptyCollection(mongoClientForDocuments, templateInstancesCollectionName);
+    //emptyCollection(mongoClientForDocuments, templateFieldCollectionName);
+    emptyCollection(mongoClientForDocuments, templateInstancesCollectionName);
     emptyCollection(mongoClientForDocuments, templatesCollectionName);
     emptyCollection(mongoClientForUsers, usersCollectionName);
 
