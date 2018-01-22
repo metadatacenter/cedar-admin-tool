@@ -17,7 +17,7 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
   public UserProfileUpdateAllSetHomeFolder() {
     description.add("Updates user home folder id in Mongo.");
     description.add("The iteration is done on the Keycloak user list.");
-    description.add("The home folder is read from the folder server REST API.");
+    description.add("The home folder is read from the Workspace server REST API.");
   }
 
   @Override

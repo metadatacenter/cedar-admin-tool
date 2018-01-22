@@ -3,6 +3,8 @@ package org.metadatacenter.admin.util;
 import org.metadatacenter.admin.task.*;
 import org.metadatacenter.admin.task.importflatfolder.ImpexImportFlatFolder;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -75,7 +77,9 @@ public class TaskRegistry {
     return taskMap.get(key);
   }
 
-  public static ICedarAdminTask getTaskForKey(String key) throws IllegalAccessException, InstantiationException {
-    return getTaskClassForKey(key).newInstance();
+  public static ICedarAdminTask getTaskForKey(String key) throws IllegalAccessException, InstantiationException,
+      NoSuchMethodException, InvocationTargetException {
+    Constructor<? extends ICedarAdminTask> declaredConstructor = getTaskClassForKey(key).getDeclaredConstructor();
+    return declaredConstructor.newInstance();
   }
 }
