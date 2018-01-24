@@ -75,7 +75,7 @@ public class CedarAdmin {
           CedarDataServices.initializeMongoClientFactoryForDocuments(
               cedarConfig.getTemplateServerConfig().getMongoConnection());
           CedarDataServices.initializeUserService(cedarConfig);
-          CedarDataServices.initializeFolderServices(cedarConfig);
+          CedarDataServices.initializeWorkspaceServices(cedarConfig);
           out.info("Executing task");
           System.exit(TaskExecutor.executeOneTask(cedarConfig, firstArg, out, args));
         }
