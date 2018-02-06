@@ -15,8 +15,8 @@ public class ImportFileList {
 
   public void add(Path path) {
     String name = path.getFileName().toString();
-    if (name.endsWith(ImportExportConstants.INFO_SUFFIX)) {
-      String justName = name.substring(0, name.length() - ImportExportConstants.INFO_SUFFIX.length());
+    if (name.endsWith(ImportExportConstants.FOLDER_NODE_SUFFIX)) {
+      String justName = name.substring(0, name.length() - ImportExportConstants.FOLDER_NODE_SUFFIX.length());
       registerInfo(path, justName);
     }
     if (name.endsWith(ImportExportConstants.CONTENT_SUFFIX)) {

@@ -10,9 +10,12 @@ import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.model.folderserver.FolderServerFolder;
-import org.metadatacenter.model.folderserver.FolderServerNode;
+import org.metadatacenter.model.folderserver.*;
 import org.metadatacenter.server.FolderServiceSession;
+import org.metadatacenter.server.GraphServiceSession;
+import org.metadatacenter.server.GroupServiceSession;
+import org.metadatacenter.server.UserServiceSession;
+import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.TemplateElementService;
 import org.metadatacenter.server.service.TemplateInstanceService;
@@ -21,7 +24,6 @@ import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
-import org.metadatacenter.util.CedarUserNameUtil;
 import org.metadatacenter.util.json.JsonMapper;
 
 import java.io.IOException;
@@ -35,9 +37,12 @@ import java.util.List;
 public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   public static final String DEFAULT_SORT = "name";
-  private static final int EXPORT_MAX_COUNT = 10000;
+  private static final int EXPORT_MAX_COUNT = 1000000;
 
-  private FolderServiceSession folderSession;
+  private FolderServiceSession workspaceFolderSession;
+  private UserServiceSession workspaceUserSession;
+  private GroupServiceSession workspaceGroupSession;
+  private GraphServiceSession workspaceGraphSession;
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
   private List<String> sortList;
@@ -45,6 +50,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private static TemplateElementService<String, JsonNode> templateElementService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
   private static UserService userService;
+  private LinkedDataUtil linkedDataUtil;
 
 
   public ImpexExportAll() {
@@ -97,22 +103,32 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     userService = getUserService();
 
     try {
-      folderSession = createCedarFolderSession(cedarConfig);
+      workspaceFolderSession = createCedarFolderSession(cedarConfig);
+      workspaceUserSession = createCedarUserSession(cedarConfig);
+      workspaceGroupSession = createCedarGroupSession(cedarConfig);
+      workspaceGraphSession = createCedarGraphSession(cedarConfig);
     } catch (CedarAccessException e) {
       e.printStackTrace();
       return -1;
     }
 
-    String rootPath = folderSession.getRootPath();
-    FolderServerFolder rootFolder = folderSession.findFolderByPath(rootPath);
+    linkedDataUtil = cedarConfig.getLinkedDataUtil();
 
-    out.info("Exporting resources");
-    Path resourceExportPath = Paths.get(exportDir).resolve("resources");
-    serializeAndWalkFolder(resourceExportPath, rootFolder);
 
     out.info("Exporting users");
     Path userExportPath = Paths.get(exportDir).resolve("users");
     serializeUsers(userExportPath);
+
+    out.info("Exporting groups");
+    Path groupExportPath = Paths.get(exportDir).resolve("groups");
+    serializeGroups(groupExportPath);
+
+    String rootPath = workspaceFolderSession.getRootPath();
+    FolderServerFolder rootFolder = workspaceFolderSession.findFolderByPath(rootPath);
+
+    out.info("Exporting resources");
+    Path resourceExportPath = Paths.get(exportDir).resolve("resources");
+    serializeAndWalkFolder(resourceExportPath, rootFolder);
 
     return 0;
   }
@@ -122,9 +138,10 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     if (node instanceof FolderServerFolder) {
       FolderServerFolder folder = (FolderServerFolder) node;
       String id = folder.getId();
-      Path createdFolder = createFolder(path, id);
-      createFolderDescriptor(createdFolder, folder);
-      List<FolderServerNode> folderContents = folderSession.findFolderContentsFiltered(id, nodeTypeList,
+      String uuid = linkedDataUtil.getUUID(id, CedarNodeType.FOLDER);
+      Path createdFolder = createFolder(path, uuid);
+      serializeFolder(path, id, uuid, folder);
+      List<FolderServerNode> folderContents = workspaceFolderSession.findFolderContentsFiltered(id, nodeTypeList,
           EXPORT_MAX_COUNT, 0, sortList);
       for (FolderServerNode child : folderContents) {
         serializeAndWalkFolder(createdFolder, child);
@@ -140,36 +157,31 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     return newFolder;
   }
 
-  private void createFolderDescriptor(Path path, FolderServerFolder folder) {
-    Path folderInfo = path.resolve(ImportExportConstants.FOLDER_INFO);
-    try {
-      Files.write(folderInfo, prettyMapper.writeValueAsString(folder).getBytes(StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      out.error("There was an error writing the info for folder info: " + folderInfo, e);
-    }
+  private void serializeFolder(Path path, String id, String uuid, FolderServerFolder folder) {
+    saveJsonExport(path, uuid, ImportExportConstants.FOLDER_NODE_SUFFIX, folder);
+
+    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+
+    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
   }
 
   private void serializeResource(Path path, FolderServerNode node) {
     String id = node.getId();
     CedarNodeType nodeType = node.getType();
     String uuid = linkedDataUtil.getUUID(id, nodeType);
-    String infoName = uuid + ImportExportConstants.INFO_SUFFIX;
-    Path createdInfoFile = path.resolve(infoName);
-    try {
-      Files.write(createdInfoFile, prettyMapper.writeValueAsString(node).getBytes(StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      out.error("There was an error writing the info for: " + nodeType + ":" + id, e);
-    }
+
+    saveJsonExport(path, uuid, ImportExportConstants.NODE_SUFFIX, node);
+
     JsonNode jsonNode = getTemplateServerContent(id, nodeType);
-    if (jsonNode != null) {
-      String name = uuid + ImportExportConstants.CONTENT_SUFFIX;
-      Path createdFile = path.resolve(name);
-      try {
-        Files.write(createdFile, prettyMapper.writeValueAsString(jsonNode).getBytes(StandardCharsets.UTF_8));
-      } catch (IOException e) {
-        out.error("There was an error writing the content for: " + nodeType + ":" + id, e);
-      }
-    }
+    saveJsonExport(path, uuid, ImportExportConstants.CONTENT_SUFFIX, jsonNode);
+
+    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+
+    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
   }
 
   private JsonNode getTemplateServerContent(String id, CedarNodeType nodeType) {
@@ -192,22 +204,62 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private void serializeUsers(Path path) {
     try {
       path.toFile().mkdirs();
-      List<CedarUser> all = userService.findAll();
-      out.info("Returned user count:" + all.size());
-      for (CedarUser u : all) {
-        String uuid = u.getId();
-        String contentName = uuid + ImportExportConstants.CONTENT_SUFFIX;
-        Path createdContentFile = path.resolve(contentName);
-        try {
-          String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(u));
-          Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-          out.error("There was an error writing the info for user: " + uuid + ":" + CedarUserNameUtil.getDisplayName
-              (cedarConfig, u), e);
-        }
+      List<CedarUser> users = userService.findAll();
+      out.info("User count:" + users.size());
+      for (CedarUser u : users) {
+        serializeUser(path, u);
       }
     } catch (IOException | ProcessingException e) {
       out.error(e);
+    }
+  }
+
+  private void serializeUser(Path path, CedarUser u) {
+    String id = u.getId();
+    String uuid = linkedDataUtil.getUUID(id, CedarNodeType.USER);
+    saveJsonExport(path, uuid, ImportExportConstants.CONTENT_SUFFIX, u);
+
+    FolderServerUser workspaceUser = workspaceUserSession.getUser(id);
+    saveJsonExport(path, uuid, ImportExportConstants.NODE_SUFFIX, workspaceUser);
+
+    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+
+    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+  }
+
+  private void serializeGroups(Path path) {
+    path.toFile().mkdirs();
+    List<FolderServerGroup> groups = workspaceGroupSession.findGroups();
+    out.info("Group count:" + groups.size());
+    for (FolderServerGroup g : groups) {
+      serializeGroup(path, g);
+    }
+  }
+
+  private void serializeGroup(Path path, FolderServerGroup g) {
+    String id = g.getId();
+    String uuid = linkedDataUtil.getUUID(id, CedarNodeType.GROUP);
+    saveJsonExport(path, uuid, ImportExportConstants.NODE_SUFFIX, g);
+
+    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+
+    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+  }
+
+  private void saveJsonExport(Path homePath, String uuid, String suffix, Object o) {
+    Path wrapperDir = homePath.resolve(uuid);
+    wrapperDir.toFile().mkdirs();
+    String fileName = uuid + suffix;
+    Path createdContentFile = wrapperDir.resolve(fileName);
+    try {
+      String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(o));
+      Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
+    } catch (IOException e) {
+      out.error("There was an error writing " + fileName, e);
     }
   }
 
