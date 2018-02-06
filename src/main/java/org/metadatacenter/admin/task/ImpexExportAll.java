@@ -38,6 +38,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   public static final String DEFAULT_SORT = "name";
   private static final int EXPORT_MAX_COUNT = 1000000;
+  private static final int LOG_BY = 100;
 
   private FolderServiceSession workspaceFolderSession;
   private UserServiceSession workspaceUserSession;
@@ -128,27 +129,29 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     out.info("Exporting resources");
     Path resourceExportPath = Paths.get(exportDir).resolve("resources");
-    serializeAndWalkFolder(resourceExportPath, rootFolder);
+    walkFolder(resourceExportPath, rootFolder, 0);
 
     return 0;
   }
 
 
-  private void serializeAndWalkFolder(Path path, FolderServerNode node) {
+  private int walkFolder(Path path, FolderServerNode node, int idx) {
+    idx++;
     if (node instanceof FolderServerFolder) {
       FolderServerFolder folder = (FolderServerFolder) node;
       String id = folder.getId();
       String uuid = linkedDataUtil.getUUID(id, CedarNodeType.FOLDER);
       Path createdFolder = createFolder(path, uuid);
-      serializeFolder(path, id, uuid, folder);
+      serializeFolder(path, id, uuid, folder, idx);
       List<FolderServerNode> folderContents = workspaceFolderSession.findFolderContentsFiltered(id, nodeTypeList,
           EXPORT_MAX_COUNT, 0, sortList);
       for (FolderServerNode child : folderContents) {
-        serializeAndWalkFolder(createdFolder, child);
+        idx = walkFolder(createdFolder, child, idx);
       }
     } else {
-      serializeResource(path, node);
+      serializeResource(path, node, idx);
     }
+    return idx;
   }
 
   private Path createFolder(Path path, String name) {
@@ -157,7 +160,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     return newFolder;
   }
 
-  private void serializeFolder(Path path, String id, String uuid, FolderServerFolder folder) {
+  private void serializeFolder(Path path, String id, String uuid, FolderServerFolder folder, int idx) {
     saveJsonExport(path, uuid, ImportExportConstants.FOLDER_NODE_SUFFIX, folder);
 
     List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
@@ -165,9 +168,18 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
     saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    logProgress("folder", idx);
+
   }
 
-  private void serializeResource(Path path, FolderServerNode node) {
+  private void logProgress(String type, int idx) {
+    if (idx % LOG_BY == 0) {
+      out.info("Exporting " + type + ":" + idx);
+    }
+  }
+
+  private void serializeResource(Path path, FolderServerNode node, int idx) {
     String id = node.getId();
     CedarNodeType nodeType = node.getType();
     String uuid = linkedDataUtil.getUUID(id, nodeType);
@@ -182,6 +194,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
     saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    logProgress("resource", idx);
   }
 
   private JsonNode getTemplateServerContent(String id, CedarNodeType nodeType) {
