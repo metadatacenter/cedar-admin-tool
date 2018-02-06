@@ -26,13 +26,17 @@ import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
 import org.metadatacenter.util.json.JsonMapper;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
@@ -139,14 +143,14 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     idx++;
     if (node instanceof FolderServerFolder) {
       FolderServerFolder folder = (FolderServerFolder) node;
-      String id = folder.getId();
-      String uuid = linkedDataUtil.getUUID(id, CedarNodeType.FOLDER);
-      Path createdFolder = createFolder(path, uuid);
-      serializeFolder(path, id, uuid, folder, idx);
-      List<FolderServerNode> folderContents = workspaceFolderSession.findFolderContentsFiltered(id, nodeTypeList,
-          EXPORT_MAX_COUNT, 0, sortList);
-      for (FolderServerNode child : folderContents) {
-        idx = walkFolder(createdFolder, child, idx);
+      Path candidateFolder = serializeFolder(path, folder, idx);
+      List<FolderServerNode> folderContents = workspaceFolderSession.findFolderContentsFiltered(folder.getId(),
+          nodeTypeList, EXPORT_MAX_COUNT, 0, sortList);
+      if (!folderContents.isEmpty()) {
+        candidateFolder.toFile().mkdirs();
+        for (FolderServerNode child : folderContents) {
+          idx = walkFolder(candidateFolder, child, idx);
+        }
       }
     } else {
       serializeResource(path, node, idx);
@@ -154,23 +158,28 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     return idx;
   }
 
-  private Path createFolder(Path path, String name) {
-    Path newFolder = path.resolve(name);
-    newFolder.toFile().mkdirs();
-    return newFolder;
-  }
+  private Path serializeFolder(Path path, FolderServerFolder folder, int idx) {
+    String id = folder.getId();
+    String uuid = linkedDataUtil.getUUID(id, CedarNodeType.FOLDER);
 
-  private void serializeFolder(Path path, String id, String uuid, FolderServerFolder folder, int idx) {
-    saveJsonExport(path, uuid, ImportExportConstants.FOLDER_NODE_SUFFIX, folder);
+    String partition = uuid.substring(0, 2);
+    Path folderDir = path.resolve(partition);
+    Path wrapperDir = folderDir.resolve(uuid);
+    folderDir.toFile().mkdirs();
 
     List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
-
     List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    Map<String, Object> contents = new HashMap<>();
+    contents.put(ImportExportConstants.NODE_SUFFIX, folder);
+    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    createZippedContent(folderDir, uuid, contents);
 
     logProgress("folder", idx);
 
+    return wrapperDir;
   }
 
   private void logProgress(String type, int idx) {
@@ -184,16 +193,21 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     CedarNodeType nodeType = node.getType();
     String uuid = linkedDataUtil.getUUID(id, nodeType);
 
-    saveJsonExport(path, uuid, ImportExportConstants.NODE_SUFFIX, node);
+    String partition = uuid.substring(0, 2);
+    Path wrapperDir = path.resolve(partition);
+    wrapperDir.toFile().mkdirs();
 
-    JsonNode jsonNode = getTemplateServerContent(id, nodeType);
-    saveJsonExport(path, uuid, ImportExportConstants.CONTENT_SUFFIX, jsonNode);
-
+    JsonNode resource = getTemplateServerContent(id, nodeType);
     List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
-
     List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    Map<String, Object> contents = new HashMap<>();
+    contents.put(ImportExportConstants.CONTENT_SUFFIX, resource);
+    contents.put(ImportExportConstants.NODE_SUFFIX, node);
+    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    createZippedContent(wrapperDir, uuid, contents);
 
     logProgress("resource", idx);
   }
@@ -231,16 +245,22 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private void serializeUser(Path path, CedarUser u) {
     String id = u.getId();
     String uuid = linkedDataUtil.getUUID(id, CedarNodeType.USER);
-    saveJsonExport(path, uuid, ImportExportConstants.CONTENT_SUFFIX, u);
+
+    String partition = uuid.substring(0, 2);
+    Path wrapperDir = path.resolve(partition);
+    wrapperDir.toFile().mkdirs();
 
     FolderServerUser workspaceUser = workspaceUserSession.getUser(id);
-    saveJsonExport(path, uuid, ImportExportConstants.NODE_SUFFIX, workspaceUser);
-
     List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
-
     List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    Map<String, Object> contents = new HashMap<>();
+    contents.put(ImportExportConstants.CONTENT_SUFFIX, u);
+    contents.put(ImportExportConstants.NODE_SUFFIX, workspaceUser);
+    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    createZippedContent(wrapperDir, uuid, contents);
   }
 
   private void serializeGroups(Path path) {
@@ -255,26 +275,42 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private void serializeGroup(Path path, FolderServerGroup g) {
     String id = g.getId();
     String uuid = linkedDataUtil.getUUID(id, CedarNodeType.GROUP);
-    saveJsonExport(path, uuid, ImportExportConstants.NODE_SUFFIX, g);
+
+    String partition = uuid.substring(0, 2);
+    Path wrapperDir = path.resolve(partition);
+    wrapperDir.toFile().mkdirs();
 
     List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
-
     List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
-    saveJsonExport(path, uuid, ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    Map<String, Object> contents = new HashMap<>();
+    contents.put(ImportExportConstants.NODE_SUFFIX, g);
+    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
+
+    createZippedContent(wrapperDir, uuid, contents);
   }
 
-  private void saveJsonExport(Path homePath, String uuid, String suffix, Object o) {
-    Path wrapperDir = homePath.resolve(uuid);
-    wrapperDir.toFile().mkdirs();
-    String fileName = uuid + suffix;
-    Path createdContentFile = wrapperDir.resolve(fileName);
+  private void createZippedContent(Path wrapperDir, String uuid, Map<String, Object> contents) {
+    String fileName = uuid + ".zip";
     try {
-      String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(o));
-      Files.write(createdContentFile, s.getBytes(StandardCharsets.UTF_8));
+      FileOutputStream fos = new FileOutputStream(wrapperDir.resolve(fileName).toFile());
+      ZipOutputStream zipOut = new ZipOutputStream(fos);
+      for (String suffix : contents.keySet()) {
+        addZipJsonExport(zipOut, suffix, contents.get(suffix));
+      }
+      zipOut.close();
+      fos.close();
     } catch (IOException e) {
-      out.error("There was an error writing " + fileName, e);
+      e.printStackTrace();
     }
+  }
+
+  private void addZipJsonExport(ZipOutputStream zipOut, String suffix, Object o) throws IOException {
+    ZipEntry zipEntry = new ZipEntry(suffix);
+    zipOut.putNextEntry(zipEntry);
+    String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(o));
+    zipOut.write(s.getBytes(StandardCharsets.UTF_8));
   }
 
 
