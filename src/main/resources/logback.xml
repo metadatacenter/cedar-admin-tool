@@ -7,6 +7,7 @@
   </appender>
 
   <logger name="com.metadatacenter" level="TRACE"/>
+  <logger name="org.metadatacenter.server.neo4j.proxy.AbstractNeo4JProxy" level="DEBUG"/>
 
   <root level="warn">
     <appender-ref ref="STDOUT" />
