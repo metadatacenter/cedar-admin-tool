@@ -41,6 +41,8 @@ public class TaskRegistry {
 
   public static final String IMPEX_EXPORT_ALL = "impex-exportAll";
 
+  public static final String IMPEX_IMPORT_ALL = "impex-importAll";
+
   public static final String IMPEX_IMPORT_FLAT_FOLDER = "impex-importFlatFolder";
 
   public static final String SYSTEM_RESET = "system-reset";
@@ -64,6 +66,7 @@ public class TaskRegistry {
 
     taskMap.put(SEARCH_REGENERATE_INDEX, SearchRegenerateIndex.class);
     taskMap.put(IMPEX_EXPORT_ALL, ImpexExportAll.class);
+    taskMap.put(IMPEX_IMPORT_ALL, ImpexImportAll.class);
     taskMap.put(IMPEX_IMPORT_FLAT_FOLDER, ImpexImportFlatFolder.class);
 
     taskMap.put(SYSTEM_RESET, SystemReset.class);

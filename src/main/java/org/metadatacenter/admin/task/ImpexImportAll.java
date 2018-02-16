@@ -1,0 +1,266 @@
+package org.metadatacenter.admin.task;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFileFilter;
+import org.bson.BsonDocument;
+import org.bson.Document;
+import org.metadatacenter.admin.task.importexport.ImportExportConstants;
+import org.metadatacenter.bridge.CedarDataServices;
+import org.metadatacenter.config.MongoConfig;
+import org.metadatacenter.exception.security.CedarAccessException;
+import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.server.*;
+import org.metadatacenter.server.jsonld.LinkedDataUtil;
+import org.metadatacenter.server.security.model.user.CedarUser;
+import org.metadatacenter.server.service.TemplateElementService;
+import org.metadatacenter.server.service.TemplateInstanceService;
+import org.metadatacenter.server.service.TemplateService;
+import org.metadatacenter.server.service.UserService;
+import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
+import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
+import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
+import org.metadatacenter.util.json.JsonMapper;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.zip.ZipFile;
+
+public class ImpexImportAll extends AbstractNeo4JAccessTask {
+
+  public static final String DEFAULT_SORT = "name";
+  private static final int EXPORT_MAX_COUNT = 1000000;
+  private static final int LOG_BY = 100;
+
+  private FolderServiceSession workspaceFolderSession;
+  private UserServiceSession workspaceUserSession;
+  private GroupServiceSession workspaceGroupSession;
+  private GraphServiceSession workspaceGraphSession;
+  private ObjectMapper prettyMapper;
+  private List<CedarNodeType> nodeTypeList;
+  private List<String> sortList;
+  private static TemplateService<String, JsonNode> templateService;
+  private static TemplateElementService<String, JsonNode> templateElementService;
+  private static TemplateInstanceService<String, JsonNode> templateInstanceService;
+  private static UserService userService;
+  private LinkedDataUtil linkedDataUtil;
+
+
+  public ImpexImportAll() {
+    description.add("Imports usres, groups, folders and resources from  a directory structure");
+    description.add("The import is executed using the cedar-admin user");
+    description.add("The import source is the $CEDAR_HOME/import folder");
+  }
+
+  @Override
+  public void init() {
+  }
+
+  @Override
+  public int execute() {
+    String importDir = cedarConfig.getImportExportConfig().getImportDir();
+    out.println("Import dir:=>" + importDir + "<=");
+
+    prettyMapper = new ObjectMapper();
+    prettyMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+    nodeTypeList = new ArrayList<>();
+    nodeTypeList.add(CedarNodeType.FOLDER);
+    nodeTypeList.add(CedarNodeType.ELEMENT);
+    nodeTypeList.add(CedarNodeType.TEMPLATE);
+    nodeTypeList.add(CedarNodeType.INSTANCE);
+
+    sortList = new ArrayList<>();
+    sortList.add(DEFAULT_SORT);
+
+    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+
+    MongoConfig templateServerConfig = cedarConfig.getTemplateServerConfig();
+
+    templateElementService = new TemplateElementServiceMongoDB(
+        mongoClientForDocuments,
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
+
+    templateService = new TemplateServiceMongoDB(
+        mongoClientForDocuments,
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
+
+    templateInstanceService = new TemplateInstanceServiceMongoDB(
+        mongoClientForDocuments,
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
+
+    userService = getUserService();
+
+    linkedDataUtil = cedarConfig.getLinkedDataUtil();
+
+    out.info("Deleting data from MongoDB");
+    deleteAllMongoData();
+
+    out.info("Importing users into Mongo");
+    Path userImportPath = Paths.get(importDir).resolve("users");
+    processFolder(userImportPath, p -> importUserIntoMongo(p));
+
+    out.info("Deleting everything from Neo4J");
+    deleteAllNeo4JData();
+
+    try {
+      workspaceFolderSession = createCedarFolderSession(cedarConfig);
+      workspaceUserSession = createCedarUserSession(cedarConfig);
+      workspaceGroupSession = createCedarGroupSession(cedarConfig);
+      workspaceGraphSession = createCedarGraphSession(cedarConfig);
+    } catch (CedarAccessException e) {
+      e.printStackTrace();
+      return -1;
+    }
+
+    out.info("Importing users into Neo4j");
+    processFolder(userImportPath, p -> importUserIntoNeo(p));
+
+    out.info("Importing groups");
+    Path groupImportPath = Paths.get(importDir).resolve("groups");
+    processFolder(groupImportPath, p -> importGroup(p));
+
+    out.info("Importing resources");
+    Path resourceImportPath = Paths.get(importDir).resolve("resources");
+    processFolder(resourceImportPath, p -> importResource(p));
+
+    return 0;
+  }
+
+  private void deleteAllNeo4JData() {
+    AdminServiceSession adminSession = null;
+    try {
+      adminSession = createCedarAdminSession(cedarConfig);
+    } catch (CedarAccessException e) {
+      e.printStackTrace();
+    }
+    adminSession.wipeAllData();
+  }
+
+  private void deleteAllMongoData() {
+    String mongoDatabaseNameForDocuments = cedarConfig.getTemplateServerConfig().getDatabaseName();
+    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+
+    String mongoDatabaseNameForUsers = cedarConfig.getUserServerConfig().getDatabaseName();
+    MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
+
+    String templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.ELEMENT.getValue());
+    String templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.INSTANCE.getValue());
+    String templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.TEMPLATE.getValue());
+    String usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
+
+    emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateElementsCollectionName);
+    emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateInstancesCollectionName);
+    emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templatesCollectionName);
+    emptyCollection(mongoClientForUsers, mongoDatabaseNameForUsers, usersCollectionName);
+  }
+
+  protected void emptyCollection(MongoClient client, String databaseName, String collectionName) {
+    out.info("Deleting all data from collection: " + collectionName + ".");
+    MongoCollection<Document> collection = client.getDatabase(databaseName).getCollection(collectionName);
+    BsonDocument allFilter = new BsonDocument();
+    collection.deleteMany(allFilter);
+  }
+
+
+  private void processFolder(Path rootFolder, Function<Path, Integer> function) {
+    File root = rootFolder.toFile();
+    File[] files = root.listFiles((FileFilter) FileFileFilter.FILE);
+    if (files == null) {
+      return;
+    }
+    for (File file : files) {
+      function.apply(file.toPath());
+    }
+    File[] folders = root.listFiles((FileFilter) DirectoryFileFilter.DIRECTORY);
+    if (folders == null) {
+      return;
+    }
+    for (File dir : folders) {
+      processFolder(dir.toPath(), function);
+    }
+  }
+
+  private JsonNode getArchivedFile(Path p, String zipEntryName) {
+    ZipFile zf = null;
+    try {
+      zf = new ZipFile(p.toFile());
+      InputStream in = zf.getInputStream(zf.getEntry(zipEntryName));
+      return JsonMapper.MAPPER.readTree(in);
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (zf != null) {
+        try {
+          zf.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return null;
+  }
+
+  private Integer importUserIntoMongo(Path p) {
+    System.out.println("Import user:" + p);
+    String baseName = FilenameUtils.getBaseName(p.toString());
+    // Deserialize json files
+    JsonNode content = getArchivedFile(p, ImportExportConstants.CONTENT_SUFFIX);
+    // Import user into Mongo
+    CedarUser cedarUser = null;
+    try {
+      cedarUser = JsonMapper.MAPPER.treeToValue(content, CedarUser.class);
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+    try {
+      userService.createUser(cedarUser);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return 0;
+  }
+
+  private Integer importUserIntoNeo(Path p) {
+    System.out.println("Import user:" + p);
+    String baseName = FilenameUtils.getBaseName(p.toString());
+    // Deserialize json files
+    JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
+    //Import user into Neo
+    workspaceGraphSession.createUser(node);
+    return 0;
+  }
+
+
+  private Integer importGroup(Path p) {
+    System.out.println("Import group:" + p);
+    String baseName = FilenameUtils.getBaseName(p.toString());
+    // Deserialize json files
+    JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
+    //Import user into Neo
+    workspaceGraphSession.createGroup(node);
+    return 0;
+  }
+
+  private Integer importResource(Path p) {
+    System.out.println("Import resource:" + p);
+    return 0;
+  }
+
+}

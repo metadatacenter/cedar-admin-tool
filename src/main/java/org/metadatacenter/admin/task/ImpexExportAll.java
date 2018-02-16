@@ -59,7 +59,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
 
   public ImpexExportAll() {
-    description.add("Exports folders, resources, users into a directory structure");
+    description.add("Exports folders, resources, users and groups  into a directory structure");
     description.add("The export is executed using the cedar-admin user");
     description.add("The export target is the $CEDAR_HOME/export folder");
   }
