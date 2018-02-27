@@ -16,6 +16,8 @@ import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.model.RelationLabel;
+import org.metadatacenter.model.folderserver.FolderServerNode;
 import org.metadatacenter.server.*;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -36,7 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.zip.ZipFile;
 
 public class ImpexImportAll extends AbstractNeo4JAccessTask {
@@ -160,9 +162,12 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     String mongoDatabaseNameForUsers = cedarConfig.getUserServerConfig().getDatabaseName();
     MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
 
-    String templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.ELEMENT.getValue());
-    String templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.INSTANCE.getValue());
-    String templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.TEMPLATE.getValue());
+    String templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+        .ELEMENT.getValue());
+    String templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+        .INSTANCE.getValue());
+    String templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+        .TEMPLATE.getValue());
     String usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
 
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateElementsCollectionName);
@@ -179,21 +184,19 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   }
 
 
-  private void processFolder(Path rootFolder, Function<Path, Integer> function) {
+  private void processFolder(Path rootFolder, Consumer<Path> function) {
     File root = rootFolder.toFile();
     File[] files = root.listFiles((FileFilter) FileFileFilter.FILE);
-    if (files == null) {
-      return;
-    }
-    for (File file : files) {
-      function.apply(file.toPath());
+    if (files != null) {
+      for (File file : files) {
+        function.accept(file.toPath());
+      }
     }
     File[] folders = root.listFiles((FileFilter) DirectoryFileFilter.DIRECTORY);
-    if (folders == null) {
-      return;
-    }
-    for (File dir : folders) {
-      processFolder(dir.toPath(), function);
+    if (folders != null) {
+      for (File dir : folders) {
+        processFolder(dir.toPath(), function);
+      }
     }
   }
 
@@ -217,7 +220,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     return null;
   }
 
-  private Integer importUserIntoMongo(Path p) {
+  private void importUserIntoMongo(Path p) {
     System.out.println("Import user:" + p);
     String baseName = FilenameUtils.getBaseName(p.toString());
     // Deserialize json files
@@ -234,33 +237,72 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return 0;
   }
 
-  private Integer importUserIntoNeo(Path p) {
+  private void importUserIntoNeo(Path p) {
     System.out.println("Import user:" + p);
     String baseName = FilenameUtils.getBaseName(p.toString());
     // Deserialize json files
     JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
     //Import user into Neo
     workspaceGraphSession.createUser(node);
-    return 0;
   }
 
 
-  private Integer importGroup(Path p) {
+  private void importGroup(Path p) {
     System.out.println("Import group:" + p);
     String baseName = FilenameUtils.getBaseName(p.toString());
     // Deserialize json files
     JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
-    //Import user into Neo
+    //Import group into Neo
     workspaceGraphSession.createGroup(node);
-    return 0;
+    JsonNode incomingArcs = getArchivedFile(p, ImportExportConstants.INCOMING_SUFFIX);
+    createArcs(incomingArcs);
   }
 
-  private Integer importResource(Path p) {
+  private void importResource(Path p) {
     System.out.println("Import resource:" + p);
-    return 0;
+    String baseName = FilenameUtils.getBaseName(p.toString());
+    JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
+    FolderServerNode fsNode = importNodeIntoNeo(p, node);
+    if (fsNode.getType() != CedarNodeType.FOLDER) {
+      JsonNode content = getArchivedFile(p, ImportExportConstants.CONTENT_SUFFIX);
+      importResourceIntoMongo(p, content, fsNode.getType());
+    }
+    JsonNode incomingArcs = getArchivedFile(p, ImportExportConstants.INCOMING_SUFFIX);
+    createArcs(incomingArcs);
+  }
+
+  private FolderServerNode importNodeIntoNeo(Path p, JsonNode node) {
+    System.out.println("Import node    :" + p);
+    //Import resource into Neo
+    return workspaceGraphSession.createNode(node);
+  }
+
+  private void importResourceIntoMongo(Path p, JsonNode content, CedarNodeType type) {
+    try {
+      System.out.println("Import " + type + ":" + p);
+      if (type == CedarNodeType.ELEMENT) {
+        templateElementService.createTemplateElement(content);
+      } else if (type == CedarNodeType.TEMPLATE) {
+        templateService.createTemplate(content);
+      } else if (type == CedarNodeType.INSTANCE) {
+        templateInstanceService.createTemplateInstance(content);
+      } else {
+        System.out.println("Unknown resource type:" + type);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void createArcs(JsonNode incomingArcs) {
+    for (final JsonNode arc : incomingArcs) {
+      String sourceId = arc.get("sourceId").textValue();
+      String targetId = arc.get("targetId").textValue();
+      String label = arc.get("label").textValue();
+      workspaceGraphSession.createArc(sourceId, RelationLabel.forValue(label), targetId);
+    }
   }
 
 }
