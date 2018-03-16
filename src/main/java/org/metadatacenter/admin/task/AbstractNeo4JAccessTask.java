@@ -5,8 +5,7 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
-import org.metadatacenter.server.AdminServiceSession;
-import org.metadatacenter.server.FolderServiceSession;
+import org.metadatacenter.server.*;
 import org.metadatacenter.server.service.UserService;
 
 public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
@@ -21,5 +20,23 @@ public abstract class AbstractNeo4JAccessTask extends AbstractCedarAdminTask {
     UserService userService = getUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
     return CedarDataServices.getFolderServiceSession(cedarRequestContext);
+  }
+
+  protected UserServiceSession createCedarUserSession(CedarConfig cedarConfig) throws CedarAccessException {
+    UserService userService = getUserService();
+    CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
+    return CedarDataServices.getUserServiceSession(cedarRequestContext);
+  }
+
+  protected GroupServiceSession createCedarGroupSession(CedarConfig cedarConfig) throws CedarAccessException {
+    UserService userService = getUserService();
+    CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
+    return CedarDataServices.getGroupServiceSession(cedarRequestContext);
+  }
+
+  protected GraphServiceSession createCedarGraphSession(CedarConfig cedarConfig) throws CedarAccessException {
+    UserService userService = getUserService();
+    CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
+    return CedarDataServices.getGraphServiceSession(cedarRequestContext);
   }
 }
