@@ -17,6 +17,8 @@ import org.metadatacenter.server.GroupServiceSession;
 import org.metadatacenter.server.UserServiceSession;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
+import org.metadatacenter.server.security.model.user.ResourcePublicationStatusFilter;
+import org.metadatacenter.server.security.model.user.ResourceVersionFilter;
 import org.metadatacenter.server.service.TemplateElementService;
 import org.metadatacenter.server.service.TemplateInstanceService;
 import org.metadatacenter.server.service.TemplateService;
@@ -145,7 +147,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
       FolderServerFolder folder = (FolderServerFolder) node;
       Path candidateFolder = serializeFolder(path, folder, idx);
       List<FolderServerNode> folderContents = workspaceFolderSession.findFolderContentsFiltered(folder.getId(),
-          nodeTypeList, EXPORT_MAX_COUNT, 0, sortList);
+          nodeTypeList, ResourceVersionFilter.ALL, ResourcePublicationStatusFilter.ALL, EXPORT_MAX_COUNT, 0, sortList);
       if (!folderContents.isEmpty()) {
         candidateFolder.toFile().mkdirs();
         for (FolderServerNode child : folderContents) {
