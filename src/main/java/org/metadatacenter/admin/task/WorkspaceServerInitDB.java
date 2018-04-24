@@ -3,7 +3,7 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.neo4j.NodeLabel;
-import org.metadatacenter.server.neo4j.parameter.NodeProperty;
+import org.metadatacenter.server.neo4j.cypher.NodeProperty;
 
 public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
 
