@@ -19,11 +19,9 @@ import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.security.model.user.ResourcePublicationStatusFilter;
 import org.metadatacenter.server.security.model.user.ResourceVersionFilter;
-import org.metadatacenter.server.service.TemplateElementService;
-import org.metadatacenter.server.service.TemplateInstanceService;
-import org.metadatacenter.server.service.TemplateService;
-import org.metadatacenter.server.service.UserService;
+import org.metadatacenter.server.service.*;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
+import org.metadatacenter.server.service.mongodb.TemplateFieldServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
 import org.metadatacenter.util.json.JsonMapper;
@@ -53,8 +51,9 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
   private List<String> sortList;
-  private static TemplateService<String, JsonNode> templateService;
+  private static TemplateFieldService<String, JsonNode> templateFieldService;
   private static TemplateElementService<String, JsonNode> templateElementService;
+  private static TemplateService<String, JsonNode> templateService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
   private static UserService userService;
   private LinkedDataUtil linkedDataUtil;
@@ -91,6 +90,11 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
     MongoConfig templateServerConfig = cedarConfig.getTemplateServerConfig();
+
+    templateFieldService = new TemplateFieldServiceMongoDB(
+        mongoClientForDocuments,
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
 
     templateElementService = new TemplateElementServiceMongoDB(
         mongoClientForDocuments,
@@ -217,7 +221,9 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private JsonNode getTemplateServerContent(String id, CedarNodeType nodeType) {
     JsonNode response = null;
     try {
-      if (nodeType == CedarNodeType.ELEMENT) {
+      if (nodeType == CedarNodeType.FIELD) {
+        response = templateFieldService.findTemplateField(id);
+      } else if (nodeType == CedarNodeType.ELEMENT) {
         response = templateElementService.findTemplateElement(id);
       } else if (nodeType == CedarNodeType.TEMPLATE) {
         response = templateService.findTemplate(id);

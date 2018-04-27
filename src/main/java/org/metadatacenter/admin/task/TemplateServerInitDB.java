@@ -13,7 +13,7 @@ public class TemplateServerInitDB extends AbstractCedarAdminTask {
 
   private String mongoDatabaseName;
   private String templateElementsCollectionName;
-  //private String templateFieldCollectionName;
+  private String templateFieldCollectionName;
   private String templateInstancesCollectionName;
   private String templatesCollectionName;
   private String usersCollectionName;
@@ -26,8 +26,8 @@ public class TemplateServerInitDB extends AbstractCedarAdminTask {
   @Override
   public void init() {
     mongoDatabaseName = cedarConfig.getTemplateServerConfig().getDatabaseName();
-    /*templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
-        .getValue());*/
+    templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
+        .getValue());
     templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.ELEMENT
         .getValue());
     templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.TEMPLATE
@@ -52,10 +52,10 @@ public class TemplateServerInitDB extends AbstractCedarAdminTask {
   public int execute() {
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
     MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
+    createUniqueIndex(mongoClientForDocuments, templateFieldCollectionName, "@id");
     createUniqueIndex(mongoClientForDocuments, templateElementsCollectionName, "@id");
-    //createUniqueIndex(mongoClientForDocuments, templateFieldCollectionName, "@id");
-    createUniqueIndex(mongoClientForDocuments, templateInstancesCollectionName, "@id");
     createUniqueIndex(mongoClientForDocuments, templatesCollectionName, "@id");
+    createUniqueIndex(mongoClientForDocuments, templateInstancesCollectionName, "@id");
     createUniqueIndex(mongoClientForUsers, usersCollectionName, "id");
 
     return 0;
