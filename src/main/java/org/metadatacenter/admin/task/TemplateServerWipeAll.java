@@ -11,7 +11,7 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
 
   private String mongoDatabaseName;
   private String templateElementsCollectionName;
-  //private String templateFieldCollectionName;
+  private String templateFieldCollectionName;
   private String templateInstancesCollectionName;
   private String templatesCollectionName;
   private String usersCollectionName;
@@ -23,8 +23,8 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
   @Override
   public void init() {
     mongoDatabaseName = cedarConfig.getTemplateServerConfig().getDatabaseName();
-    /*templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
-        .getValue());*/
+    templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
+        .getValue());
     templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.ELEMENT
         .getValue
             ());
@@ -52,10 +52,10 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
     MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
 
+    emptyCollection(mongoClientForDocuments, templateFieldCollectionName);
     emptyCollection(mongoClientForDocuments, templateElementsCollectionName);
-    //emptyCollection(mongoClientForDocuments, templateFieldCollectionName);
-    emptyCollection(mongoClientForDocuments, templateInstancesCollectionName);
     emptyCollection(mongoClientForDocuments, templatesCollectionName);
+    emptyCollection(mongoClientForDocuments, templateInstancesCollectionName);
     emptyCollection(mongoClientForUsers, usersCollectionName);
 
     return 0;

@@ -18,14 +18,13 @@ import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.RelationLabel;
 import org.metadatacenter.model.folderserver.FolderServerNode;
-import org.metadatacenter.server.*;
+import org.metadatacenter.server.AdminServiceSession;
+import org.metadatacenter.server.GraphServiceSession;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
-import org.metadatacenter.server.service.TemplateElementService;
-import org.metadatacenter.server.service.TemplateInstanceService;
-import org.metadatacenter.server.service.TemplateService;
-import org.metadatacenter.server.service.UserService;
+import org.metadatacenter.server.service.*;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
+import org.metadatacenter.server.service.mongodb.TemplateFieldServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
 import org.metadatacenter.util.json.JsonMapper;
@@ -44,18 +43,14 @@ import java.util.zip.ZipFile;
 public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
   public static final String DEFAULT_SORT = "name";
-  private static final int EXPORT_MAX_COUNT = 1000000;
-  private static final int LOG_BY = 100;
 
-  private FolderServiceSession workspaceFolderSession;
-  private UserServiceSession workspaceUserSession;
-  private GroupServiceSession workspaceGroupSession;
   private GraphServiceSession workspaceGraphSession;
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
   private List<String> sortList;
-  private static TemplateService<String, JsonNode> templateService;
+  private static TemplateFieldService<String, JsonNode> templateFieldService;
   private static TemplateElementService<String, JsonNode> templateElementService;
+  private static TemplateService<String, JsonNode> templateService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
   private static UserService userService;
   private LinkedDataUtil linkedDataUtil;
@@ -81,6 +76,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
     nodeTypeList = new ArrayList<>();
     nodeTypeList.add(CedarNodeType.FOLDER);
+    nodeTypeList.add(CedarNodeType.FIELD);
     nodeTypeList.add(CedarNodeType.ELEMENT);
     nodeTypeList.add(CedarNodeType.TEMPLATE);
     nodeTypeList.add(CedarNodeType.INSTANCE);
@@ -91,6 +87,11 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
     MongoConfig templateServerConfig = cedarConfig.getTemplateServerConfig();
+
+    templateFieldService = new TemplateFieldServiceMongoDB(
+        mongoClientForDocuments,
+        templateServerConfig.getDatabaseName(),
+        templateServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
 
     templateElementService = new TemplateElementServiceMongoDB(
         mongoClientForDocuments,
@@ -122,9 +123,6 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     deleteAllNeo4JData();
 
     try {
-      workspaceFolderSession = createCedarFolderSession(cedarConfig);
-      workspaceUserSession = createCedarUserSession(cedarConfig);
-      workspaceGroupSession = createCedarGroupSession(cedarConfig);
       workspaceGraphSession = createCedarGraphSession(cedarConfig);
     } catch (CedarAccessException e) {
       e.printStackTrace();
@@ -162,6 +160,8 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     String mongoDatabaseNameForUsers = cedarConfig.getUserServerConfig().getDatabaseName();
     MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
 
+    String templateFieldsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+        .FIELD.getValue());
     String templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
         .ELEMENT.getValue());
     String templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
@@ -170,6 +170,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
         .TEMPLATE.getValue());
     String usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
 
+    emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateFieldsCollectionName);
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateElementsCollectionName);
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateInstancesCollectionName);
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templatesCollectionName);
@@ -282,7 +283,9 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   private void importResourceIntoMongo(Path p, JsonNode content, CedarNodeType type) {
     try {
       System.out.println("Import " + type + ":" + p);
-      if (type == CedarNodeType.ELEMENT) {
+      if (type == CedarNodeType.FIELD) {
+        templateFieldService.createTemplateField(content);
+      } else if (type == CedarNodeType.ELEMENT) {
         templateElementService.createTemplateElement(content);
       } else if (type == CedarNodeType.TEMPLATE) {
         templateService.createTemplate(content);
