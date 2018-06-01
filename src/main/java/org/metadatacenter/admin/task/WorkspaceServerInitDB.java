@@ -25,42 +25,54 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
       e.printStackTrace();
       return -2;
     }
+    // Global
     createUniqueConstraint(adminSession, NodeLabel.SCOPE, NodeProperty.ID);
 
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_TYPE);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.IS_USER_HOME);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NAME);
 
-    createUniqueConstraint(adminSession, NodeLabel.ELEMENT, NodeProperty.ID);
-
+    // Folders
     createUniqueConstraint(adminSession, NodeLabel.FOLDER, NodeProperty.ID);
 
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_TYPE);
-    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_USER_HOME);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.CREATED_ON_TS);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.LAST_UPDATED_ON_TS);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_ROOT);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_SYSTEM);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_USER_HOME);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.HOME_OF);
 
+    // Groups
     createUniqueConstraint(adminSession, NodeLabel.GROUP, NodeProperty.ID);
 
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.SPECIAL_GROUP);
 
+    // Users
+    createUniqueConstraint(adminSession, NodeLabel.USER, NodeProperty.ID);
+
+    // Resources
     createUniqueConstraint(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
 
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_TYPE);
-    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_USER_HOME);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.CREATED_ON_TS);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.LAST_UPDATED_ON_TS);
 
-    createUniqueConstraint(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
+    createUniqueConstraint(adminSession, NodeLabel.FIELD, NodeProperty.ID);
+
+    createUniqueConstraint(adminSession, NodeLabel.ELEMENT, NodeProperty.ID);
 
     createUniqueConstraint(adminSession, NodeLabel.TEMPLATE, NodeProperty.ID);
 
-    createUniqueConstraint(adminSession, NodeLabel.USER, NodeProperty.ID);
+    createUniqueConstraint(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
 
     return 0;
   }
