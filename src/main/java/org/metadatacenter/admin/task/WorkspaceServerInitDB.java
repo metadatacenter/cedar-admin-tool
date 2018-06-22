@@ -65,6 +65,12 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.CREATED_ON_TS);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.LAST_UPDATED_ON_TS);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_BASED_ON);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.DERIVED_FROM);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.VERSION);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.PUBLICATION_STATUS);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_LATEST_VERSION);
+
 
     createUniqueConstraint(adminSession, NodeLabel.FIELD, NodeProperty.ID);
 
