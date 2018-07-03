@@ -56,7 +56,7 @@ public class TemplateServerInitDB extends AbstractCedarAdminTask {
     createUniqueIndex(mongoClientForDocuments, templateElementsCollectionName, "@id");
     createUniqueIndex(mongoClientForDocuments, templatesCollectionName, "@id");
     createUniqueIndex(mongoClientForDocuments, templateInstancesCollectionName, "@id");
-    createUniqueIndex(mongoClientForUsers, usersCollectionName, "id");
+    createUniqueIndex(mongoClientForUsers, usersCollectionName, "@id");
 
     return 0;
   }
