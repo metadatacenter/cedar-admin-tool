@@ -3,7 +3,6 @@ package org.metadatacenter.admin.task;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.mongodb.MongoClient;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -230,7 +229,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
       } else if (nodeType == CedarNodeType.INSTANCE) {
         response = templateInstanceService.findTemplateInstance(id);
       }
-    } catch (IOException | ProcessingException e) {
+    } catch (IOException e) {
       out.error("There was an error retrieving content for: " + nodeType + ":" + id, e);
     }
     return response;
@@ -245,7 +244,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
       for (CedarUser u : users) {
         serializeUser(path, u);
       }
-    } catch (IOException | ProcessingException e) {
+    } catch (IOException e) {
       out.error(e);
     }
   }

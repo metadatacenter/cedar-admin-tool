@@ -1,6 +1,5 @@
 package org.metadatacenter.admin.task.importflatfolder;
 
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
@@ -81,7 +80,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     CedarUser newOwner = null;
     try {
       newOwner = userService.findUser(userId);
-    } catch (IOException | ProcessingException e) {
+    } catch (IOException e) {
       out.error(e);
     }
 
