@@ -3,6 +3,7 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.service.UserService;
 
@@ -19,6 +20,13 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   protected CedarConfig cedarConfig;
   protected LinkedDataUtil linkedDataUtil;
   public static final String CONFIRM = "yes";
+
+  protected String mongoDatabaseName;
+  protected String templateElementsCollectionName;
+  protected String templateFieldCollectionName;
+  protected String templateInstancesCollectionName;
+  protected String templatesCollectionName;
+  protected String usersCollectionName;
 
   @Override
   public void setArguments(String[] args) {
@@ -63,6 +71,20 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
       out.error("You chose not to continue with the process! Process finished.");
     }
     return proceed;
+  }
+
+  protected void initMongoCollectionNames() {
+    mongoDatabaseName = cedarConfig.getTemplateServerConfig().getDatabaseName();
+    templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
+        .getValue());
+    templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.ELEMENT
+        .getValue
+            ());
+    templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.TEMPLATE
+        .getValue());
+    templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.INSTANCE
+        .getValue());
+    usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
   }
 
 }

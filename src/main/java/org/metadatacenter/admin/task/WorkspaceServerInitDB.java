@@ -18,13 +18,7 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
 
   @Override
   public int execute() {
-    AdminServiceSession adminSession;
-    try {
-      adminSession = createCedarAdminSession(cedarConfig);
-    } catch (CedarAccessException e) {
-      e.printStackTrace();
-      return -2;
-    }
+    AdminServiceSession adminSession= createCedarAdminSession(cedarConfig);
     // Global
     createUniqueConstraint(adminSession, NodeLabel.SCOPE, NodeProperty.ID);
 

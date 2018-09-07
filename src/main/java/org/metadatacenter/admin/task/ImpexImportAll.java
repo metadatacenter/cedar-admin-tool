@@ -14,7 +14,6 @@ import org.bson.Document;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
-import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.RelationLabel;
 import org.metadatacenter.model.folderserver.FolderServerNode;
@@ -117,39 +116,29 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
     out.info("Importing users into Mongo");
     Path userImportPath = Paths.get(importDir).resolve("users");
-    processFolder(userImportPath, p -> importUserIntoMongo(p));
+    processFolder(userImportPath, this::importUserIntoMongo);
 
     out.info("Deleting everything from Neo4J");
     deleteAllNeo4JData();
 
-    try {
-      workspaceGraphSession = createCedarGraphSession(cedarConfig);
-    } catch (CedarAccessException e) {
-      e.printStackTrace();
-      return -1;
-    }
+    workspaceGraphSession = createCedarGraphSession(cedarConfig);
 
     out.info("Importing users into Neo4j");
-    processFolder(userImportPath, p -> importUserIntoNeo(p));
+    processFolder(userImportPath, this::importUserIntoNeo);
 
     out.info("Importing groups");
     Path groupImportPath = Paths.get(importDir).resolve("groups");
-    processFolder(groupImportPath, p -> importGroup(p));
+    processFolder(groupImportPath, this::importGroup);
 
     out.info("Importing resources");
     Path resourceImportPath = Paths.get(importDir).resolve("resources");
-    processFolder(resourceImportPath, p -> importResource(p));
+    processFolder(resourceImportPath, this::importResource);
 
     return 0;
   }
 
   private void deleteAllNeo4JData() {
-    AdminServiceSession adminSession = null;
-    try {
-      adminSession = createCedarAdminSession(cedarConfig);
-    } catch (CedarAccessException e) {
-      e.printStackTrace();
-    }
+    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig);
     adminSession.wipeAllData();
   }
 
