@@ -5,16 +5,8 @@ import com.mongodb.client.MongoCollection;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.metadatacenter.bridge.CedarDataServices;
-import org.metadatacenter.model.CedarNodeType;
 
 public class TemplateServerWipeAll extends AbstractCedarAdminTask {
-
-  private String mongoDatabaseName;
-  private String templateElementsCollectionName;
-  private String templateFieldCollectionName;
-  private String templateInstancesCollectionName;
-  private String templatesCollectionName;
-  private String usersCollectionName;
 
   public TemplateServerWipeAll() {
     description.add("Deletes all documents from the handled MongoDB collections.");
@@ -22,19 +14,8 @@ public class TemplateServerWipeAll extends AbstractCedarAdminTask {
 
   @Override
   public void init() {
-    mongoDatabaseName = cedarConfig.getTemplateServerConfig().getDatabaseName();
-    templateFieldCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.FIELD
-        .getValue());
-    templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.ELEMENT
-        .getValue
-            ());
-    templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.TEMPLATE
-        .getValue());
-    templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType.INSTANCE
-        .getValue());
-    usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
+    initMongoCollectionNames();
   }
-
 
   private void emptyCollection(MongoClient mongoClient, String collectionName) {
     out.info("Deleting all data from collection: " + collectionName + ".");
