@@ -3,7 +3,6 @@ package org.metadatacenter.admin.task.importflatfolder;
 import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
-import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.folderserver.FolderServerFolder;
 import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -62,13 +61,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       out.error("The local source folder specified by sourceFolder is not a folder!");
       return -3;
     }
-    FolderServiceSession folderSession = null;
-    try {
-      folderSession = createCedarFolderSession(cedarConfig);
-    } catch (CedarAccessException e) {
-      e.printStackTrace();
-      return -6;
-    }
+    FolderServiceSession folderSession = createCedarFolderSession(cedarConfig);
 
     FolderServerFolder targetFolder = folderSession.findFolderById(folderId);
     if (targetFolder == null) {
@@ -94,9 +87,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     try (final Stream<Path> stream = Files.list(sourcePath)) {
       stream
           .filter(path -> path.toFile().isFile())
-          .forEach(path -> {
-            importList.add(path);
-          });
+          .forEach(importList::add);
     } catch (IOException e) {
       out.error(e);
     }

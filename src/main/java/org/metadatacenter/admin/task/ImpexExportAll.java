@@ -7,7 +7,6 @@ import com.mongodb.MongoClient;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
-import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.folderserver.*;
 import org.metadatacenter.server.FolderServiceSession;
@@ -112,15 +111,10 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     userService = getUserService();
 
-    try {
-      workspaceFolderSession = createCedarFolderSession(cedarConfig);
-      workspaceUserSession = createCedarUserSession(cedarConfig);
-      workspaceGroupSession = createCedarGroupSession(cedarConfig);
-      workspaceGraphSession = createCedarGraphSession(cedarConfig);
-    } catch (CedarAccessException e) {
-      e.printStackTrace();
-      return -1;
-    }
+    workspaceFolderSession = createCedarFolderSession(cedarConfig);
+    workspaceUserSession = createCedarUserSession(cedarConfig);
+    workspaceGroupSession = createCedarGroupSession(cedarConfig);
+    workspaceGraphSession = createCedarGraphSession(cedarConfig);
 
     linkedDataUtil = cedarConfig.getLinkedDataUtil();
 

@@ -12,6 +12,7 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.server.model.provenance.ProvenanceInfo;
 import org.metadatacenter.server.security.model.user.CedarUser;
+import org.metadatacenter.util.json.JsonIdUtil;
 import org.metadatacenter.util.json.JsonMapper;
 import org.metadatacenter.util.json.JsonUtils;
 import org.metadatacenter.util.provenance.ProvenanceUtil;
@@ -67,7 +68,7 @@ public class ImportWorker {
           JsonUtils.removeField(contentNode, "_id");
           JsonUtils.removeField(contentNode, "parentId");
           provenanceUtil.addProvenanceInfo(contentNode, provenanceInfo);
-          JsonUtils.localizeAtIdsAndTemplateId(contentNode, cedarConfig.getLinkedDataUtil());
+          JsonIdUtil.localizeAtIdsAndTemplateId(contentNode, cedarConfig.getLinkedDataUtil());
           out.println(contentNode);
 
           String authString = newOwner.getFirstApiKeyAuthHeader();
