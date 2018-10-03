@@ -3,7 +3,7 @@ package org.metadatacenter.admin.task.importflatfolder;
 import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
-import org.metadatacenter.model.folderserver.FolderServerFolder;
+import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
 import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;

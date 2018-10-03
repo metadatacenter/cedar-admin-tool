@@ -16,7 +16,7 @@ import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.model.CedarNodeType;
 import org.metadatacenter.model.RelationLabel;
-import org.metadatacenter.model.folderserver.FolderServerNode;
+import org.metadatacenter.model.folderserver.basic.FolderServerNode;
 import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.GraphServiceSession;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
