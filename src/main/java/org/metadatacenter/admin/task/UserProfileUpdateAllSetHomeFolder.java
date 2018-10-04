@@ -3,7 +3,7 @@ package org.metadatacenter.admin.task;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.exception.security.CedarAccessException;
-import org.metadatacenter.model.folderserver.FolderServerFolder;
+import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.FolderServiceSession;
