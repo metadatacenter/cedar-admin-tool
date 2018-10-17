@@ -36,7 +36,7 @@ public class RulesRegenerateIndex extends AbstractCedarAdminTask {
   }
 
   private void regenerateRulesIndex(boolean force) {
-    out.info("Regenerating search index...");
+    out.info("Regenerating rules index...");
     String authString = adminUser.getFirstApiKeyAuthHeader();
     try {
       String url = cedarConfig.getServers().getResource().getRegenerateRulesIndex();
@@ -49,13 +49,13 @@ public class RulesRegenerateIndex extends AbstractCedarAdminTask {
       HttpResponse response = request.execute().returnResponse();
       int statusCode = response.getStatusLine().getStatusCode();
       if (statusCode == HttpStatus.SC_OK) {
-        out.info("The search index has been successfully regenerated");
+        out.info("The rules index has been successfully regenerated");
       } else {
-        out.error("Error while regenerating search index. HTTP status code: " + statusCode);
+        out.error("Error while regenerating rules index. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
       }
     } catch (Exception e) {
-      out.error("Error while regenerating search index", e);
+      out.error("Error while regenerating rules index", e);
       out.error("The requested task was not completed!");
     }
   }
