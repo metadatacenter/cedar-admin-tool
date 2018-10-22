@@ -10,6 +10,8 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.logging.AppLogger;
+import org.metadatacenter.server.logging.AppLoggerQueueService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -68,6 +70,11 @@ public class CedarAdmin {
           SystemComponent systemComponent = SystemComponent.ADMIN_TOOL;
           Map<String, String> environment = CedarEnvironmentVariableProvider.getFor(systemComponent);
           CedarConfig cedarConfig = CedarConfig.getInstance(environment);
+
+          AppLoggerQueueService appLoggerQueueService =
+              new AppLoggerQueueService(cedarConfig.getCacheConfig().getPersistent());
+          AppLogger.initLoggerQueueService(appLoggerQueueService, systemComponent);
+
           CedarRequestContextFactory.init(cedarConfig.getLinkedDataUtil());
           out.info("Building data services");
           CedarDataServices.initializeMongoClientFactoryForUsers(

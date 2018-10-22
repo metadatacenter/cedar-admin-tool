@@ -11,12 +11,12 @@ import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIM
 import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 
-public class SearchRegenerateIndex extends AbstractCedarAdminTask {
+public class RulesRegenerateIndex extends AbstractCedarAdminTask {
 
   CedarUser adminUser;
 
-  public SearchRegenerateIndex() {
-    description.add("It makes a REST call to the Resource server to regenerate the Elasticsearch search index");
+  public RulesRegenerateIndex() {
+    description.add("It makes a REST call to the Resource server to regenerate the Elasticsearch rules index");
     description.add("Note that the Resource server must be running before executing this command");
   }
 
@@ -35,11 +35,11 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
     }
   }
 
-  private void regenerateSearchIndex(boolean force) {
-    out.info("Regenerating search index...");
+  private void regenerateRulesIndex(boolean force) {
+    out.info("Regenerating rules index...");
     String authString = adminUser.getFirstApiKeyAuthHeader();
     try {
-      String url = cedarConfig.getServers().getResource().getRegenerateSearchIndex();
+      String url = cedarConfig.getServers().getResource().getRegenerateRulesIndex();
       out.println(url);
       Request request = Request.Post(url)
           .bodyString("{\"force\":" + force + "}", ContentType.APPLICATION_JSON)
@@ -49,20 +49,20 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
       HttpResponse response = request.execute().returnResponse();
       int statusCode = response.getStatusLine().getStatusCode();
       if (statusCode == HttpStatus.SC_OK) {
-        out.info("The search index has been successfully regenerated");
+        out.info("The rules index has been successfully regenerated");
       } else {
-        out.error("Error while regenerating search index. HTTP status code: " + statusCode);
+        out.error("Error while regenerating rules index. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
       }
     } catch (Exception e) {
-      out.error("Error while regenerating search index", e);
+      out.error("Error while regenerating rules index", e);
       out.error("The requested task was not completed!");
     }
   }
 
   @Override
   public int execute() {
-    regenerateSearchIndex(true);
+    regenerateRulesIndex(true);
     return 0;
   }
 
