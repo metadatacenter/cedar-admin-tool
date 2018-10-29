@@ -6,6 +6,10 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
+import org.metadatacenter.util.json.JsonMapper;
+
+import java.util.Map;
+import java.util.HashMap;
 
 import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
 import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
@@ -36,22 +40,24 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTask {
   }
 
   private void regenerateSearchIndex(boolean force) {
-    out.info("Regenerating search index...");
+    out.info("Requesting search index regeneration. Force:" + force);
     String authString = adminUser.getFirstApiKeyAuthHeader();
     try {
       String url = cedarConfig.getServers().getResource().getRegenerateSearchIndex();
       out.println(url);
+      Map<String, Object> requestMap = new HashMap<>();
+      requestMap.put("force", force);
       Request request = Request.Post(url)
-          .bodyString("{\"force\":" + force + "}", ContentType.APPLICATION_JSON)
+          .bodyString(JsonMapper.MAPPER.writeValueAsString(requestMap), ContentType.APPLICATION_JSON)
           .connectTimeout(CONNECTION_TIMEOUT)
           .socketTimeout(SOCKET_TIMEOUT)
           .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
       HttpResponse response = request.execute().returnResponse();
       int statusCode = response.getStatusLine().getStatusCode();
       if (statusCode == HttpStatus.SC_OK) {
-        out.info("The search index has been successfully regenerated");
+        out.info("The search index regeneration was successfully started. Please inspect the resource server log for progress!");
       } else {
-        out.error("Error while regenerating search index. HTTP status code: " + statusCode);
+        out.error("Error while requesting index regeneration. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
       }
     } catch (Exception e) {
