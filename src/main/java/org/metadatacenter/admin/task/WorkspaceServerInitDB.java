@@ -40,6 +40,7 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_SYSTEM);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_USER_HOME);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.HOME_OF);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.EVERYBODY_PERMISSION);
 
     // Groups
     createUniqueConstraint(adminSession, NodeLabel.GROUP, NodeProperty.ID);
@@ -64,6 +65,7 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.VERSION);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.PUBLICATION_STATUS);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_LATEST_VERSION);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.EVERYBODY_PERMISSION);
 
 
     createUniqueConstraint(adminSession, NodeLabel.FIELD, NodeProperty.ID);
