@@ -43,6 +43,8 @@ public class TaskRegistry {
 
   public static final String RULES_REGENERATE_INDEX = "rules-regenerateIndex";
 
+  public static final String RULES_GENERATE_EMPTY_INDEX = "rules-generateEmptyIndex";
+
   public static final String IMPEX_EXPORT_ALL = "impex-exportAll";
 
   public static final String IMPEX_IMPORT_ALL = "impex-importAll";
@@ -71,6 +73,7 @@ public class TaskRegistry {
     taskMap.put(SEARCH_REGENERATE_INDEX, SearchRegenerateIndex.class);
     taskMap.put(SEARCH_GENERATE_EMPTY_INDEX, SearchGenerateEmptyIndex.class);
     taskMap.put(RULES_REGENERATE_INDEX, RulesRegenerateIndex.class);
+    taskMap.put(RULES_GENERATE_EMPTY_INDEX, RulesGenerateEmptyIndex.class);
     taskMap.put(IMPEX_EXPORT_ALL, ImpexExportAll.class);
     taskMap.put(IMPEX_IMPORT_ALL, ImpexImportAll.class);
     taskMap.put(IMPEX_IMPORT_FLAT_FOLDER, ImpexImportFlatFolder.class);
