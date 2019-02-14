@@ -1,6 +1,5 @@
 package org.metadatacenter.admin.task;
 
-import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.neo4j.NodeLabel;
 import org.metadatacenter.server.neo4j.cypher.NodeProperty;
@@ -18,18 +17,22 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
 
   @Override
   public int execute() {
-    AdminServiceSession adminSession= createCedarAdminSession(cedarConfig);
-    // Global
+    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig);
+
+    // Global unique ID constraint
     createUniqueConstraint(adminSession, NodeLabel.SCOPE, NodeProperty.ID);
 
+    // Global
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_TYPE);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NAME);
 
-    // Folders
-    createUniqueConstraint(adminSession, NodeLabel.FOLDER, NodeProperty.ID);
+    // FSNode
+    createIndex(adminSession, NodeLabel.FSNODE, NodeProperty.ID);
 
+    // Folders
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_TYPE);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_SORT_ORDER);
@@ -43,16 +46,15 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.EVERYBODY_PERMISSION);
 
     // Groups
-    createUniqueConstraint(adminSession, NodeLabel.GROUP, NodeProperty.ID);
-
+    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.SPECIAL_GROUP);
 
     // Users
-    createUniqueConstraint(adminSession, NodeLabel.USER, NodeProperty.ID);
+    createIndex(adminSession, NodeLabel.USER, NodeProperty.ID);
 
     // Resources
-    createUniqueConstraint(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
 
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_TYPE);
@@ -67,14 +69,17 @@ public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_LATEST_VERSION);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.EVERYBODY_PERMISSION);
 
+    // Fields
+    createIndex(adminSession, NodeLabel.FIELD, NodeProperty.ID);
 
-    createUniqueConstraint(adminSession, NodeLabel.FIELD, NodeProperty.ID);
+    // Elements
+    createIndex(adminSession, NodeLabel.ELEMENT, NodeProperty.ID);
 
-    createUniqueConstraint(adminSession, NodeLabel.ELEMENT, NodeProperty.ID);
+    // Templates
+    createIndex(adminSession, NodeLabel.TEMPLATE, NodeProperty.ID);
 
-    createUniqueConstraint(adminSession, NodeLabel.TEMPLATE, NodeProperty.ID);
-
-    createUniqueConstraint(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
+    // Instances
+    createIndex(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
 
     return 0;
   }
