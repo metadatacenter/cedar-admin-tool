@@ -4,10 +4,10 @@ import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.neo4j.NodeLabel;
 import org.metadatacenter.server.neo4j.cypher.NodeProperty;
 
-public class WorkspaceServerInitDB extends AbstractNeo4JAccessTask {
+public class GraphDbInitDB extends AbstractNeo4JAccessTask {
 
-  public WorkspaceServerInitDB() {
-    description.add("Initializes Workspace Server Neo4j database.");
+  public GraphDbInitDB() {
+    description.add("Initializes Neo4j database.");
     description.add("Creates indices and constraints.");
   }
 

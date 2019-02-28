@@ -2,9 +2,9 @@ package org.metadatacenter.admin.task;
 
 import org.metadatacenter.server.AdminServiceSession;
 
-public class WorkspaceServerCreateGlobalObjects extends AbstractNeo4JAccessTask {
+public class GraphDbCreateGlobalObjects extends AbstractNeo4JAccessTask {
 
-  public WorkspaceServerCreateGlobalObjects() {
+  public GraphDbCreateGlobalObjects() {
     description.add("Creates global folders in the graph database: /, /Users");
     description.add("Creates home folder for 'cedar-admin' user");
     description.add("Creates 'Everybody' group");

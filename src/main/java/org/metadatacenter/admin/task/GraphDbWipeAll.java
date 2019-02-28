@@ -2,9 +2,9 @@ package org.metadatacenter.admin.task;
 
 import org.metadatacenter.server.AdminServiceSession;
 
-public class WorkspaceServerWipeAll extends AbstractNeo4JAccessTask {
+public class GraphDbWipeAll extends AbstractNeo4JAccessTask {
 
-  public WorkspaceServerWipeAll() {
+  public GraphDbWipeAll() {
     description.add("Deletes all 'CEDAR' nodes from the Neo4j server.");
   }
 

@@ -17,13 +17,13 @@ public class TaskRegistry {
 
   public static final String TEMPLATE_SERVER_INIT_DB = "templateServer-initDB";
 
-  public static final String WORKSPACE_SERVER_WIPE_ALL = "workspaceServer-wipeAll";
+  public static final String GRAPH_DB_SERVER_WIPE_ALL = "graphDb-wipeAll";
 
-  public static final String WORKSPACE_SERVER_INIT_DB = "workspaceServer-initDB";
+  public static final String GRAPH_DB_SERVER_INIT_DB = "graphDb-initDB";
 
-  public static final String WORKSPACE_SERVER_CREATE_GLOBAL_OBJECTS = "workspaceServer-createGlobalObjects";
+  public static final String GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS = "graphDb-createGlobalObjects";
 
-  public static final String WORKSPACE_SERVER_CREATE_USER_HOME_FOLDERS = "workspaceServer-createUserHomeFolders";
+  public static final String GRAPH_DB_SERVER_CREATE_USER_HOME_FOLDERS = "graphDb-createUserHomeFolders";
 
   public static final String USER_PROFILE_GET_ADMIN = "userProfile-get-admin";
 
@@ -58,10 +58,10 @@ public class TaskRegistry {
     taskMap.put(TEMPLATE_SERVER_WIPE_ALL, TemplateServerWipeAll.class);
     taskMap.put(TEMPLATE_SERVER_INIT_DB, TemplateServerInitDB.class);
 
-    taskMap.put(WORKSPACE_SERVER_WIPE_ALL, WorkspaceServerWipeAll.class);
-    taskMap.put(WORKSPACE_SERVER_INIT_DB, WorkspaceServerInitDB.class);
-    taskMap.put(WORKSPACE_SERVER_CREATE_GLOBAL_OBJECTS, WorkspaceServerCreateGlobalObjects.class);
-    taskMap.put(WORKSPACE_SERVER_CREATE_USER_HOME_FOLDERS, WorkspaceServerCreateUserHomeFolders.class);
+    taskMap.put(GRAPH_DB_SERVER_WIPE_ALL, GraphDbWipeAll.class);
+    taskMap.put(GRAPH_DB_SERVER_INIT_DB, GraphDbInitDB.class);
+    taskMap.put(GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS, GraphDbCreateGlobalObjects.class);
+    taskMap.put(GRAPH_DB_SERVER_CREATE_USER_HOME_FOLDERS, GraphDbCreateUserHomeFolders.class);
 
     taskMap.put(USER_PROFILE_GET_ADMIN, UserProfileGetAdmin.class);
     taskMap.put(USER_PROFILE_LIST_ALL, UserProfileListAll.class);
