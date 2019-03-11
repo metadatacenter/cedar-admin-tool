@@ -43,7 +43,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
   public static final String DEFAULT_SORT = "name";
 
-  private GraphServiceSession workspaceGraphSession;
+  private GraphServiceSession neo4jGraphSession;
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
   private List<String> sortList;
@@ -121,7 +121,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     out.info("Deleting everything from Neo4J");
     deleteAllNeo4JData();
 
-    workspaceGraphSession = createCedarGraphSession(cedarConfig);
+    neo4jGraphSession = createCedarGraphSession(cedarConfig);
 
     out.info("Importing users into Neo4j");
     processFolder(userImportPath, this::importUserIntoNeo);
@@ -235,7 +235,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     // Deserialize json files
     JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
     //Import user into Neo
-    workspaceGraphSession.createUser(node);
+    neo4jGraphSession.createUser(node);
   }
 
 
@@ -245,7 +245,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     // Deserialize json files
     JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
     //Import group into Neo
-    workspaceGraphSession.createGroup(node);
+    neo4jGraphSession.createGroup(node);
     JsonNode incomingArcs = getArchivedFile(p, ImportExportConstants.INCOMING_SUFFIX);
     createArcs(incomingArcs);
   }
@@ -266,7 +266,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   private FolderServerNode importNodeIntoNeo(Path p, JsonNode node) {
     System.out.println("Import node    :" + p);
     //Import resource into Neo
-    return workspaceGraphSession.createNode(node);
+    return neo4jGraphSession.createNode(node);
   }
 
   private void importResourceIntoMongo(Path p, JsonNode content, CedarNodeType type) {
@@ -293,7 +293,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
       String sourceId = arc.get("sourceId").textValue();
       String targetId = arc.get("targetId").textValue();
       String label = arc.get("label").textValue();
-      workspaceGraphSession.createArc(sourceId, RelationLabel.forValue(label), targetId);
+      neo4jGraphSession.createArc(sourceId, RelationLabel.forValue(label), targetId);
     }
   }
 

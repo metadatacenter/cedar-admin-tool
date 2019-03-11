@@ -46,10 +46,10 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private static final int EXPORT_MAX_COUNT = 1000000;
   private static final int LOG_BY = 100;
 
-  private FolderServiceSession workspaceFolderSession;
-  private UserServiceSession workspaceUserSession;
-  private GroupServiceSession workspaceGroupSession;
-  private GraphServiceSession workspaceGraphSession;
+  private FolderServiceSession neo4jFolderSession;
+  private UserServiceSession neo4jUserSession;
+  private GroupServiceSession neo4jGroupSession;
+  private GraphServiceSession neo4jGraphSession;
   private ObjectMapper prettyMapper;
   private List<CedarNodeType> nodeTypeList;
   private List<String> sortList;
@@ -115,10 +115,10 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     userService = getUserService();
 
-    workspaceFolderSession = createCedarFolderSession(cedarConfig);
-    workspaceUserSession = createCedarUserSession(cedarConfig);
-    workspaceGroupSession = createCedarGroupSession(cedarConfig);
-    workspaceGraphSession = createCedarGraphSession(cedarConfig);
+    neo4jFolderSession = createCedarFolderSession(cedarConfig);
+    neo4jUserSession = createCedarUserSession(cedarConfig);
+    neo4jGroupSession = createCedarGroupSession(cedarConfig);
+    neo4jGraphSession = createCedarGraphSession(cedarConfig);
 
     linkedDataUtil = cedarConfig.getLinkedDataUtil();
 
@@ -131,8 +131,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     Path groupExportPath = Paths.get(exportDir).resolve("groups");
     serializeGroups(groupExportPath);
 
-    String rootPath = workspaceFolderSession.getRootPath();
-    FolderServerFolder rootFolder = workspaceFolderSession.findFolderByPath(rootPath);
+    String rootPath = neo4jFolderSession.getRootPath();
+    FolderServerFolder rootFolder = neo4jFolderSession.findFolderByPath(rootPath);
 
     out.info("Exporting resources");
     Path resourceExportPath = Paths.get(exportDir).resolve("resources");
@@ -147,7 +147,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     if (node instanceof FolderServerFolder) {
       FolderServerFolder folder = (FolderServerFolder) node;
       Path candidateFolder = serializeFolder(path, folder, idx);
-      List<FolderServerNode> folderContents = workspaceFolderSession.findFolderContentsFiltered(folder.getId(),
+      List<FolderServerNode> folderContents = neo4jFolderSession.findFolderContentsFiltered(folder.getId(),
           nodeTypeList, ResourceVersionFilter.ALL, ResourcePublicationStatusFilter.ALL, EXPORT_MAX_COUNT, 0, sortList);
       if (!folderContents.isEmpty()) {
         candidateFolder.toFile().mkdirs();
@@ -170,8 +170,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     Path wrapperDir = folderDir.resolve(uuid);
     folderDir.toFile().mkdirs();
 
-    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(id);
+    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(id);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.NODE_SUFFIX, folder);
@@ -201,8 +201,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     wrapperDir.toFile().mkdirs();
 
     JsonNode resource = getTemplateServerContent(id, nodeType);
-    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(id);
+    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(id);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.CONTENT_SUFFIX, resource);
@@ -255,13 +255,13 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     Path wrapperDir = path.resolve(partition);
     wrapperDir.toFile().mkdirs();
 
-    FolderServerUser workspaceUser = workspaceUserSession.getUser(id);
-    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    FolderServerUser neoUser = neo4jUserSession.getUser(id);
+    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(id);
+    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(id);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.CONTENT_SUFFIX, u);
-    contents.put(ImportExportConstants.NODE_SUFFIX, workspaceUser);
+    contents.put(ImportExportConstants.NODE_SUFFIX, neoUser);
     contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
     contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
 
@@ -270,7 +270,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   private void serializeGroups(Path path) {
     path.toFile().mkdirs();
-    List<FolderServerGroup> groups = workspaceGroupSession.findGroups();
+    List<FolderServerGroup> groups = neo4jGroupSession.findGroups();
     out.info("Group count:" + groups.size());
     for (FolderServerGroup g : groups) {
       serializeGroup(path, g);
@@ -285,8 +285,8 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     Path wrapperDir = path.resolve(partition);
     wrapperDir.toFile().mkdirs();
 
-    List<FolderServerArc> outgoingArcs = workspaceGraphSession.getOutgoingArcs(id);
-    List<FolderServerArc> incomingArcs = workspaceGraphSession.getIncomingArcs(id);
+    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(id);
+    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(id);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.NODE_SUFFIX, g);
