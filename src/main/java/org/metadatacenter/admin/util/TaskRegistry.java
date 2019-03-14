@@ -13,9 +13,9 @@ public class TaskRegistry {
 
   static final Map<String, Class<? extends ICedarAdminTask>> taskMap;
 
-  public static final String TEMPLATE_SERVER_WIPE_ALL = "templateServer-wipeAll";
+  public static final String ARTIFACT_SERVER_WIPE_ALL = "artifactServer-wipeAll";
 
-  public static final String TEMPLATE_SERVER_INIT_DB = "templateServer-initDB";
+  public static final String ARTIFACT_SERVER_INIT_DB = "artifactServer-initDB";
 
   public static final String GRAPH_DB_SERVER_WIPE_ALL = "graphDb-wipeAll";
 
@@ -55,8 +55,8 @@ public class TaskRegistry {
 
   static {
     taskMap = new LinkedHashMap<>();
-    taskMap.put(TEMPLATE_SERVER_WIPE_ALL, TemplateServerWipeAll.class);
-    taskMap.put(TEMPLATE_SERVER_INIT_DB, TemplateServerInitDB.class);
+    taskMap.put(ARTIFACT_SERVER_WIPE_ALL, ArtifactServerWipeAll.class);
+    taskMap.put(ARTIFACT_SERVER_INIT_DB, ArtifactServerInitDB.class);
 
     taskMap.put(GRAPH_DB_SERVER_WIPE_ALL, GraphDbWipeAll.class);
     taskMap.put(GRAPH_DB_SERVER_INIT_DB, GraphDbInitDB.class);

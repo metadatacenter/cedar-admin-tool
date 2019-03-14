@@ -8,10 +8,10 @@ import org.bson.BsonInt32;
 import org.bson.Document;
 import org.metadatacenter.bridge.CedarDataServices;
 
-public class TemplateServerInitDB extends AbstractCedarAdminTask {
+public class ArtifactServerInitDB extends AbstractCedarAdminTask {
 
-  public TemplateServerInitDB() {
-    description.add("Initializes Template Server MongoDB collections.");
+  public ArtifactServerInitDB() {
+    description.add("Initializes Artifact Server MongoDB collections.");
     description.add("Adds constraints to the different collections.");
   }
 

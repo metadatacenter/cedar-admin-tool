@@ -91,27 +91,27 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
-    MongoConfig templateServerConfig = cedarConfig.getTemplateServerConfig();
+    MongoConfig artifactServerConfig = cedarConfig.getArtifactServerConfig();
 
     templateFieldService = new TemplateFieldServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
 
     templateElementService = new TemplateElementServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
 
     templateService = new TemplateServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
 
     templateInstanceService = new TemplateInstanceServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
     userService = getUserService();
 
@@ -200,7 +200,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     Path wrapperDir = path.resolve(partition);
     wrapperDir.toFile().mkdirs();
 
-    JsonNode resource = getTemplateServerContent(id, nodeType);
+    JsonNode resource = getArtifactServerContent(id, nodeType);
     List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(id);
     List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(id);
 
@@ -215,7 +215,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     logProgress("resource", idx);
   }
 
-  private JsonNode getTemplateServerContent(String id, CedarNodeType nodeType) {
+  private JsonNode getArtifactServerContent(String id, CedarNodeType nodeType) {
     JsonNode response = null;
     try {
       if (nodeType == CedarNodeType.FIELD) {

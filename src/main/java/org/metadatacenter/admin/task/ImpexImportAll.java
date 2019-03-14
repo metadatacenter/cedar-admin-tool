@@ -85,27 +85,27 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
-    MongoConfig templateServerConfig = cedarConfig.getTemplateServerConfig();
+    MongoConfig artifactServerConfig = cedarConfig.getArtifactServerConfig();
 
     templateFieldService = new TemplateFieldServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
 
     templateElementService = new TemplateElementServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
 
     templateService = new TemplateServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
 
     templateInstanceService = new TemplateInstanceServiceMongoDB(
         mongoClientForDocuments,
-        templateServerConfig.getDatabaseName(),
-        templateServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
+        artifactServerConfig.getDatabaseName(),
+        artifactServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
     userService = getUserService();
 
@@ -143,19 +143,19 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   }
 
   private void deleteAllMongoData() {
-    String mongoDatabaseNameForDocuments = cedarConfig.getTemplateServerConfig().getDatabaseName();
+    String mongoDatabaseNameForDocuments = cedarConfig.getArtifactServerConfig().getDatabaseName();
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
     String mongoDatabaseNameForUsers = cedarConfig.getUserServerConfig().getDatabaseName();
     MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
 
-    String templateFieldsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+    String templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
         .FIELD.getValue());
-    String templateElementsCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+    String templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
         .ELEMENT.getValue());
-    String templateInstancesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+    String templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
         .INSTANCE.getValue());
-    String templatesCollectionName = cedarConfig.getTemplateServerConfig().getCollections().get(CedarNodeType
+    String templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
         .TEMPLATE.getValue());
     String usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
 

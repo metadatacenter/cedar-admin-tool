@@ -80,7 +80,7 @@ public class CedarAdmin {
           CedarDataServices.initializeMongoClientFactoryForUsers(
               cedarConfig.getUserServerConfig().getMongoConnection());
           CedarDataServices.initializeMongoClientFactoryForDocuments(
-              cedarConfig.getTemplateServerConfig().getMongoConnection());
+              cedarConfig.getArtifactServerConfig().getMongoConnection());
           CedarDataServices.initializeUserService(cedarConfig);
           CedarDataServices.initializeNeo4jServices(cedarConfig);
           out.info("Executing task");
