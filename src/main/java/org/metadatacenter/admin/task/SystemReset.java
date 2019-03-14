@@ -18,8 +18,8 @@ public class SystemReset extends AbstractKeycloakReadingTask {
   @Override
   public void init() {
     commands = new ArrayList<>();
-    commands.add(new String[]{TaskRegistry.TEMPLATE_SERVER_WIPE_ALL});
-    commands.add(new String[]{TaskRegistry.TEMPLATE_SERVER_INIT_DB});
+    commands.add(new String[]{TaskRegistry.ARTIFACT_SERVER_WIPE_ALL});
+    commands.add(new String[]{TaskRegistry.ARTIFACT_SERVER_INIT_DB});
     commands.add(new String[]{TaskRegistry.USER_PROFILE_CREATE_ALL});
     commands.add(new String[]{TaskRegistry.GRAPH_DB_SERVER_WIPE_ALL});
     commands.add(new String[]{TaskRegistry.GRAPH_DB_SERVER_INIT_DB});

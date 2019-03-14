@@ -6,9 +6,9 @@ import org.bson.BsonDocument;
 import org.bson.Document;
 import org.metadatacenter.bridge.CedarDataServices;
 
-public class TemplateServerWipeAll extends AbstractCedarAdminTask {
+public class ArtifactServerWipeAll extends AbstractCedarAdminTask {
 
-  public TemplateServerWipeAll() {
+  public ArtifactServerWipeAll() {
     description.add("Deletes all documents from the handled MongoDB collections.");
   }
 
