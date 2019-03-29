@@ -20,7 +20,7 @@ public abstract class AbstractCedarAdminTaskWithAdminUser extends AbstractCedarA
 
   @Override
   public void init() {
-    UserService userService = getUserService();
+    UserService userService = getNeoUserService();
     String adminUserApiKey = cedarConfig.getAdminUserConfig().getApiKey();
     try {
       adminUser = userService.findUserByApiKey(adminUserApiKey);

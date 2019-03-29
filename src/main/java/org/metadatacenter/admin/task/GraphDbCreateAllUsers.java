@@ -1,6 +1,12 @@
 package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
+import org.metadatacenter.bridge.CedarDataServices;
+import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
+import org.metadatacenter.rest.context.CedarRequestContext;
+import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.FolderServiceSession;
+import org.metadatacenter.server.UserServiceSession;
 import org.metadatacenter.server.security.model.user.CedarSuperRole;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.security.model.user.CedarUserExtract;
@@ -9,9 +15,9 @@ import org.metadatacenter.server.service.UserService;
 
 import java.util.List;
 
-public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
+public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
 
-  public UserProfileCreateAll() {
+  public GraphDbCreateAllUsers() {
     description.add("Creates user profiles in Mongo based on all the registered user data from Keycloak.");
     description.add("homeFolderId will be left null for the profiles.");
   }
@@ -27,7 +33,7 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
     if (userRepresentations == null) {
       out.println("Users not found on Keycloak");
     } else {
-      UserService userService = getUserService();
+      UserService userService = getNeoUserService();
       for (UserRepresentation ur : userRepresentations) {
         out.printSeparator();
         printOutUser(out, ur);
@@ -54,8 +60,31 @@ public class UserProfileCreateAll extends AbstractKeycloakReadingTask {
               superRole, cedarConfig, ur.getUsername());
 
           try {
-            CedarUser u = userService.createUser(user);
-            out.println("Id        : " + u.getId());
+
+            CedarUser existingUser = userService.findUser(user.getId());
+            if (existingUser == null) {
+              existingUser = userService.createUser(user);
+            }
+
+            CedarRequestContext userRequestContext = CedarRequestContextFactory.fromUser(existingUser);
+            UserServiceSession userSession = CedarDataServices.getUserServiceSession(userRequestContext);
+
+            userSession.addUserToEverybodyGroup(existingUser);
+
+            FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(userRequestContext);
+            FolderServerFolder userHomeFolder = folderSession.findHomeFolderOf();
+            if (userHomeFolder != null) {
+              out.warn("User home folder is already present.");
+            } else {
+              userHomeFolder = folderSession.ensureUserHomeExists();
+              if (userHomeFolder != null) {
+                out.println("Success: user home was created.");
+              } else {
+                out.error("Error: user home was not created!");
+              }
+            }
+
+            out.println("Id        : " + userId);
             out.println("User created.");
           } catch (Exception e) {
             out.error("Error while creating user: " + ur.getEmail(), e);

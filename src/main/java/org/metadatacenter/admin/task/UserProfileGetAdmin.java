@@ -32,7 +32,7 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
     out.println();
     out.println("Data from MongoDB:", Color.YELLOW);
 
-    UserService userService = getUserService();
+    UserService userService = getNeoUserService();
 
     CedarUser user = null;
     boolean exceptionWhileReading = false;

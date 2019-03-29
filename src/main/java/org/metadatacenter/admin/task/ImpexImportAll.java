@@ -63,6 +63,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
   @Override
   public void init() {
+    super.init();
   }
 
   @Override
@@ -107,7 +108,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
         artifactServerConfig.getDatabaseName(),
         artifactServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
-    userService = getUserService();
+    userService = getNeoUserService();
 
     linkedDataUtil = cedarConfig.getLinkedDataUtil();
 

@@ -32,7 +32,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
   @Override
   public void init() {
-
+    super.init();
   }
 
   @Override
@@ -69,7 +69,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
       return -4;
     }
 
-    UserService userService = getUserService();
+    UserService userService = getNeoUserService();
     CedarUser newOwner = null;
     try {
       newOwner = userService.findUser(userId);
