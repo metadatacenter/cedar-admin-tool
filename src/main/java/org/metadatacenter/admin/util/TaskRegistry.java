@@ -23,15 +23,11 @@ public class TaskRegistry {
 
   public static final String GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS = "graphDb-createGlobalObjects";
 
-  public static final String GRAPH_DB_SERVER_CREATE_USER_HOME_FOLDERS = "graphDb-createUserHomeFolders";
+  public static final String GRAPH_DB_SERVER_CREATE_ALL_USERS = "graphDb-createAllUsers";
 
   public static final String USER_PROFILE_GET_ADMIN = "userProfile-get-admin";
 
   public static final String USER_PROFILE_LIST_ALL = "userProfile-listAll";
-
-  public static final String USER_PROFILE_WIPE_ALL = "userProfile-wipeAll";
-
-  public static final String USER_PROFILE_CREATE_ALL = "userProfile-createAll";
 
   public static final String USER_PROFILE_UPDATE_ALL_UPDATE_PERMISSIONS = "userProfile-updateAll-updatePermissions";
 
@@ -53,6 +49,8 @@ public class TaskRegistry {
 
   public static final String SYSTEM_RESET = "system-reset";
 
+  public static final String MIGRATE_USERS_TO_NEO = "migrate-users-to-neo";
+
   static {
     taskMap = new LinkedHashMap<>();
     taskMap.put(ARTIFACT_SERVER_WIPE_ALL, ArtifactServerWipeAll.class);
@@ -61,12 +59,10 @@ public class TaskRegistry {
     taskMap.put(GRAPH_DB_SERVER_WIPE_ALL, GraphDbWipeAll.class);
     taskMap.put(GRAPH_DB_SERVER_INIT_DB, GraphDbInitDB.class);
     taskMap.put(GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS, GraphDbCreateGlobalObjects.class);
-    taskMap.put(GRAPH_DB_SERVER_CREATE_USER_HOME_FOLDERS, GraphDbCreateUserHomeFolders.class);
+    taskMap.put(GRAPH_DB_SERVER_CREATE_ALL_USERS, GraphDbCreateAllUsers.class);
 
     taskMap.put(USER_PROFILE_GET_ADMIN, UserProfileGetAdmin.class);
     taskMap.put(USER_PROFILE_LIST_ALL, UserProfileListAll.class);
-    taskMap.put(USER_PROFILE_WIPE_ALL, UserProfileWipeAll.class);
-    taskMap.put(USER_PROFILE_CREATE_ALL, UserProfileCreateAll.class);
     taskMap.put(USER_PROFILE_UPDATE_ALL_UPDATE_PERMISSIONS, UserProfileUpdateAllUpdatePermissions.class);
     taskMap.put(USER_PROFILE_UPDATE_ALL_SET_HOME_FOLDER, UserProfileUpdateAllSetHomeFolder.class);
 
@@ -79,6 +75,8 @@ public class TaskRegistry {
     taskMap.put(IMPEX_IMPORT_FLAT_FOLDER, ImpexImportFlatFolder.class);
 
     taskMap.put(SYSTEM_RESET, SystemReset.class);
+
+    taskMap.put(MIGRATE_USERS_TO_NEO, UserProfileMigrateAllFromMongoToNeo.class);
   }
 
   public static Set<String> getTaskKeys() {

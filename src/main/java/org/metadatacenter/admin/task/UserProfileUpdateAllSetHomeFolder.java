@@ -31,7 +31,7 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
     if (userRepresentations == null) {
       out.println("Users not found on Keycloak");
     } else {
-      UserService userService = getUserService();
+      UserService userService = getNeoUserService();
       for (UserRepresentation ur : userRepresentations) {
         out.printSeparator();
         printOutUser(out, ur);
@@ -65,7 +65,7 @@ public class UserProfileUpdateAllSetHomeFolder extends AbstractKeycloakReadingTa
           } else {
             user.setHomeFolderId(userHomeFolder.getId());
             try {
-              userService.updateUser(userId, user);
+              userService.updateUser(user);
               out.println("The user was updated");
             } catch (Exception e) {
               out.error("Error while updating user: " + ur.getEmail(), e);

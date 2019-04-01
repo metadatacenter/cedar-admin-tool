@@ -1,17 +1,17 @@
 package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
-import org.metadatacenter.server.security.CedarUserRolePermissionUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 
 import java.util.List;
 
-public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadingTask {
+public class UserProfileMigrateAllFromMongoToNeo extends AbstractKeycloakReadingTask {
 
-  public UserProfileUpdateAllUpdatePermissions() {
-    description.add("Updates user profiles in Mongo. The permissions will be recalculated and updated.");
-    description.add("The iteration is done on the Keycloak user list.");
+  public UserProfileMigrateAllFromMongoToNeo() {
+    description.add(
+        "Reads all users in Keycloak. Then reads them one by one from Mongo. If found, updates the representation in " +
+            "Neo with preferences and homeFolderOf data");
   }
 
   @Override
@@ -25,7 +25,8 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
     if (userRepresentations == null) {
       out.println("Users not found on Keycloak");
     } else {
-      UserService userService = getNeoUserService();
+      UserService mongoUserService = getMongoUserService();
+      UserService neoUserService = getNeoUserService();
       for (UserRepresentation ur : userRepresentations) {
         out.printSeparator();
         printOutUser(out, ur);
@@ -33,7 +34,8 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
         CedarUser user = null;
         boolean exceptionWhileReading = false;
         try {
-          user = userService.findUser(ur.getId());
+          String id = linkedDataUtil.getUserId(ur.getId());
+          user = mongoUserService.findUser(id);
         } catch (Exception e) {
           out.error("Error while reading user: " + ur.getEmail(), e);
           exceptionWhileReading = true;
@@ -42,12 +44,11 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
         if (user == null && !exceptionWhileReading) {
           out.error("The user was not found for id:" + ur.getId());
         } else {
-          CedarUserRolePermissionUtil.expandRolesIntoPermissions(user);
           try {
-            userService.updateUser(user);
-            out.println("The user was updated");
+            neoUserService.updateUser(user);
+            out.println("The user was updated in Neo");
           } catch (Exception e) {
-            out.error("Error while updating user: " + ur.getEmail(), e);
+            out.error("Error while updating user in Neo: " + ur.getEmail(), e);
           }
         }
         out.printSeparator();

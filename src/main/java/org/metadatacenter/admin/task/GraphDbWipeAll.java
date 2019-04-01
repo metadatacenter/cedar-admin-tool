@@ -10,6 +10,7 @@ public class GraphDbWipeAll extends AbstractNeo4JAccessTask {
 
   @Override
   public void init() {
+    super.init();
   }
 
   @Override
@@ -18,7 +19,7 @@ public class GraphDbWipeAll extends AbstractNeo4JAccessTask {
       return -1;
     }
 
-    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig);
+    AdminServiceSession adminSession = createUnconditionalCedarAdminSession(cedarConfig);
     adminSession.wipeAllData();
 
     return 0;

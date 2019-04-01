@@ -69,6 +69,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   @Override
   public void init() {
+    super.init();
   }
 
   @Override
@@ -113,7 +114,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
         artifactServerConfig.getDatabaseName(),
         artifactServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
 
-    userService = getUserService();
+    userService = getNeoUserService();
 
     neo4jFolderSession = createCedarFolderSession(cedarConfig);
     neo4jUserSession = createCedarUserSession(cedarConfig);

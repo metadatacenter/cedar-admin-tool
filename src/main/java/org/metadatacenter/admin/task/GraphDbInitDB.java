@@ -13,11 +13,12 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
 
   @Override
   public void init() {
+    super.init();
   }
 
   @Override
   public int execute() {
-    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig);
+    AdminServiceSession adminSession = createUnconditionalCedarAdminSession(cedarConfig);
 
     // Global unique ID constraint
     createUniqueConstraint(adminSession, NodeLabel.SCOPE, NodeProperty.ID);
@@ -52,6 +53,7 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
 
     // Users
     createIndex(adminSession, NodeLabel.USER, NodeProperty.ID);
+    createIndex(adminSession, NodeLabel.USER, NodeProperty.API_KEYS);
 
     // Resources
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);

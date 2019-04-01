@@ -6,19 +6,18 @@ public class GraphDbCreateGlobalObjects extends AbstractNeo4JAccessTask {
 
   public GraphDbCreateGlobalObjects() {
     description.add("Creates global folders in the graph database: /, /Users");
-    description.add("Creates home folder for 'cedar-admin' user");
     description.add("Creates 'Everybody' group");
-    description.add("Updates 'cedar-admin' user profile in MongoDB, sets homeFolderId");
+    description.add("Creates 'cedar-admin' user in Neo4J");
   }
 
   @Override
   public void init() {
-
+    super.init();
   }
 
   @Override
   public int execute() {
-    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig);
+    AdminServiceSession adminSession = createUnconditionalCedarAdminSession(cedarConfig);
     adminSession.ensureGlobalObjectsExists();
     return 0;
   }
