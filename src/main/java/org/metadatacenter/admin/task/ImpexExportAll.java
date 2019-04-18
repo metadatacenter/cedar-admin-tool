@@ -8,7 +8,7 @@ import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.model.CedarNodeType;
-import org.metadatacenter.model.folderserver.*;
+import org.metadatacenter.model.folderserver.FolderServerArc;
 import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
 import org.metadatacenter.model.folderserver.basic.FolderServerGroup;
 import org.metadatacenter.model.folderserver.basic.FolderServerNode;
@@ -236,15 +236,11 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
 
   private void serializeUsers(Path path) {
-    try {
-      path.toFile().mkdirs();
-      List<CedarUser> users = userService.findAll();
-      out.info("User count:" + users.size());
-      for (CedarUser u : users) {
-        serializeUser(path, u);
-      }
-    } catch (IOException e) {
-      out.error(e);
+    path.toFile().mkdirs();
+    List<CedarUser> users = userService.findAll();
+    out.info("User count:" + users.size());
+    for (CedarUser u : users) {
+      serializeUser(path, u);
     }
   }
 

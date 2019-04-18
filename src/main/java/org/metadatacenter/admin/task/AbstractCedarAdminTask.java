@@ -58,10 +58,6 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
     return CedarDataServices.getNeoUserService();
   }
 
-  protected UserService getMongoUserService() {
-    return CedarDataServices.getMongoUserService();
-  }
-
   protected boolean getConfirmInput(String message) {
     Console c = System.console();
     if (c == null) {

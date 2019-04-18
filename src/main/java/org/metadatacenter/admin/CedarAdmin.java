@@ -77,11 +77,8 @@ public class CedarAdmin {
 
           CedarRequestContextFactory.init(cedarConfig.getLinkedDataUtil());
           out.info("Building data services");
-          CedarDataServices.initializeMongoClientFactoryForUsers(
-              cedarConfig.getUserServerConfig().getMongoConnection());
           CedarDataServices.initializeMongoClientFactoryForDocuments(
               cedarConfig.getArtifactServerConfig().getMongoConnection());
-          CedarDataServices.initializeMongoUserService(cedarConfig);
           CedarDataServices.initializeNeo4jServices(cedarConfig);
           out.info("Executing task");
           System.exit(TaskExecutor.executeOneTask(cedarConfig, firstArg, out, args));

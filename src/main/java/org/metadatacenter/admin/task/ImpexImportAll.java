@@ -52,7 +52,6 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   private static TemplateService<String, JsonNode> templateService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
   private static UserService userService;
-  private LinkedDataUtil linkedDataUtil;
 
 
   public ImpexImportAll() {
@@ -147,9 +146,6 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     String mongoDatabaseNameForDocuments = cedarConfig.getArtifactServerConfig().getDatabaseName();
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
-    String mongoDatabaseNameForUsers = cedarConfig.getUserServerConfig().getDatabaseName();
-    MongoClient mongoClientForUsers = CedarDataServices.getMongoClientFactoryForUsers().getClient();
-
     String templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
         .FIELD.getValue());
     String templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
@@ -158,13 +154,11 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
         .INSTANCE.getValue());
     String templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
         .TEMPLATE.getValue());
-    String usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
 
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateFieldsCollectionName);
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateElementsCollectionName);
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateInstancesCollectionName);
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templatesCollectionName);
-    emptyCollection(mongoClientForUsers, mongoDatabaseNameForUsers, usersCollectionName);
   }
 
   protected void emptyCollection(MongoClient client, String databaseName, String collectionName) {
@@ -223,11 +217,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }
-    try {
-      userService.createUser(cedarUser);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    userService.createUser(cedarUser);
   }
 
   private void importUserIntoNeo(Path p) {
