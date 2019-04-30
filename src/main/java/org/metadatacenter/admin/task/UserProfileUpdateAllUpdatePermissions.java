@@ -10,7 +10,7 @@ import java.util.List;
 public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadingTask {
 
   public UserProfileUpdateAllUpdatePermissions() {
-    description.add("Updates user profiles in Mongo. The permissions will be recalculated and updated.");
+    description.add("Updates user profiles in Neo4j. The permissions will be recalculated and updated.");
     description.add("The iteration is done on the Keycloak user list.");
   }
 

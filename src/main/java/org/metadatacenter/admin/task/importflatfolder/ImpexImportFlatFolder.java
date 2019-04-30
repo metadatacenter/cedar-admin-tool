@@ -70,12 +70,7 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     }
 
     UserService userService = getNeoUserService();
-    CedarUser newOwner = null;
-    try {
-      newOwner = userService.findUser(userId);
-    } catch (IOException e) {
-      out.error(e);
-    }
+    CedarUser newOwner = userService.findUser(userId);
 
     if (newOwner == null) {
       out.error("The new owner specified by userId does not exist!");
