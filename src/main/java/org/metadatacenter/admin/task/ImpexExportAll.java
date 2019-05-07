@@ -7,11 +7,11 @@ import com.mongodb.MongoClient;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
-import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.folderserver.FolderServerArc;
 import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
 import org.metadatacenter.model.folderserver.basic.FolderServerGroup;
-import org.metadatacenter.model.folderserver.basic.FolderServerNode;
+import org.metadatacenter.model.folderserver.basic.FileSystemResource;
 import org.metadatacenter.model.folderserver.basic.FolderServerUser;
 import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.GraphServiceSession;
@@ -51,7 +51,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private GroupServiceSession neo4jGroupSession;
   private GraphServiceSession neo4jGraphSession;
   private ObjectMapper prettyMapper;
-  private List<CedarNodeType> nodeTypeList;
+  private List<CedarResourceType> resourceTypeList;
   private List<String> sortList;
   private static TemplateFieldService<String, JsonNode> templateFieldService;
   private static TemplateElementService<String, JsonNode> templateElementService;
@@ -80,12 +80,12 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     prettyMapper = new ObjectMapper();
     prettyMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-    nodeTypeList = new ArrayList<>();
-    nodeTypeList.add(CedarNodeType.FOLDER);
-    nodeTypeList.add(CedarNodeType.FIELD);
-    nodeTypeList.add(CedarNodeType.ELEMENT);
-    nodeTypeList.add(CedarNodeType.TEMPLATE);
-    nodeTypeList.add(CedarNodeType.INSTANCE);
+    resourceTypeList = new ArrayList<>();
+    resourceTypeList.add(CedarResourceType.FOLDER);
+    resourceTypeList.add(CedarResourceType.FIELD);
+    resourceTypeList.add(CedarResourceType.ELEMENT);
+    resourceTypeList.add(CedarResourceType.TEMPLATE);
+    resourceTypeList.add(CedarResourceType.INSTANCE);
 
     sortList = new ArrayList<>();
     sortList.add(DEFAULT_SORT);
@@ -97,22 +97,22 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     templateFieldService = new TemplateFieldServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.FIELD));
 
     templateElementService = new TemplateElementServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.ELEMENT));
 
     templateService = new TemplateServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.TEMPLATE));
 
     templateInstanceService = new TemplateInstanceServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.INSTANCE));
 
     userService = getNeoUserService();
 
@@ -143,16 +143,16 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   }
 
 
-  private int walkFolder(Path path, FolderServerNode node, int idx) {
+  private int walkFolder(Path path, FileSystemResource node, int idx) {
     idx++;
     if (node instanceof FolderServerFolder) {
       FolderServerFolder folder = (FolderServerFolder) node;
       Path candidateFolder = serializeFolder(path, folder, idx);
-      List<FolderServerNode> folderContents = neo4jFolderSession.findFolderContentsFiltered(folder.getId(),
-          nodeTypeList, ResourceVersionFilter.ALL, ResourcePublicationStatusFilter.ALL, EXPORT_MAX_COUNT, 0, sortList);
+      List<FileSystemResource> folderContents = neo4jFolderSession.findFolderContentsFiltered(folder.getId(),
+          resourceTypeList, ResourceVersionFilter.ALL, ResourcePublicationStatusFilter.ALL, EXPORT_MAX_COUNT, 0, sortList);
       if (!folderContents.isEmpty()) {
         candidateFolder.toFile().mkdirs();
-        for (FolderServerNode child : folderContents) {
+        for (FileSystemResource child : folderContents) {
           idx = walkFolder(candidateFolder, child, idx);
         }
       }
@@ -164,7 +164,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   private Path serializeFolder(Path path, FolderServerFolder folder, int idx) {
     String id = folder.getId();
-    String uuid = linkedDataUtil.getUUID(id, CedarNodeType.FOLDER);
+    String uuid = linkedDataUtil.getUUID(id, CedarResourceType.FOLDER);
 
     String partition = uuid.substring(0, 2);
     Path folderDir = path.resolve(partition);
@@ -192,16 +192,16 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     }
   }
 
-  private void serializeResource(Path path, FolderServerNode node, int idx) {
+  private void serializeResource(Path path, FileSystemResource node, int idx) {
     String id = node.getId();
-    CedarNodeType nodeType = node.getType();
-    String uuid = linkedDataUtil.getUUID(id, nodeType);
+    CedarResourceType resourceType = node.getType();
+    String uuid = linkedDataUtil.getUUID(id, resourceType);
 
     String partition = uuid.substring(0, 2);
     Path wrapperDir = path.resolve(partition);
     wrapperDir.toFile().mkdirs();
 
-    JsonNode resource = getArtifactServerContent(id, nodeType);
+    JsonNode resource = getArtifactServerContent(id, resourceType);
     List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(id);
     List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(id);
 
@@ -216,20 +216,20 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     logProgress("resource", idx);
   }
 
-  private JsonNode getArtifactServerContent(String id, CedarNodeType nodeType) {
+  private JsonNode getArtifactServerContent(String id, CedarResourceType resourceType) {
     JsonNode response = null;
     try {
-      if (nodeType == CedarNodeType.FIELD) {
+      if (resourceType == CedarResourceType.FIELD) {
         response = templateFieldService.findTemplateField(id);
-      } else if (nodeType == CedarNodeType.ELEMENT) {
+      } else if (resourceType == CedarResourceType.ELEMENT) {
         response = templateElementService.findTemplateElement(id);
-      } else if (nodeType == CedarNodeType.TEMPLATE) {
+      } else if (resourceType == CedarResourceType.TEMPLATE) {
         response = templateService.findTemplate(id);
-      } else if (nodeType == CedarNodeType.INSTANCE) {
+      } else if (resourceType == CedarResourceType.INSTANCE) {
         response = templateInstanceService.findTemplateInstance(id);
       }
     } catch (IOException e) {
-      out.error("There was an error retrieving content for: " + nodeType + ":" + id, e);
+      out.error("There was an error retrieving content for: " + resourceType + ":" + id, e);
     }
     return response;
   }
@@ -246,7 +246,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   private void serializeUser(Path path, CedarUser u) {
     String id = u.getId();
-    String uuid = linkedDataUtil.getUUID(id, CedarNodeType.USER);
+    String uuid = linkedDataUtil.getUUID(id, CedarResourceType.USER);
 
     String partition = uuid.substring(0, 2);
     Path wrapperDir = path.resolve(partition);
@@ -276,7 +276,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   private void serializeGroup(Path path, FolderServerGroup g) {
     String id = g.getId();
-    String uuid = linkedDataUtil.getUUID(id, CedarNodeType.GROUP);
+    String uuid = linkedDataUtil.getUUID(id, CedarResourceType.GROUP);
 
     String partition = uuid.substring(0, 2);
     Path wrapperDir = path.resolve(partition);

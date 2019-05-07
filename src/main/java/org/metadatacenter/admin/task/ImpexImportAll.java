@@ -14,12 +14,11 @@ import org.bson.Document;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
-import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.RelationLabel;
-import org.metadatacenter.model.folderserver.basic.FolderServerNode;
+import org.metadatacenter.model.folderserver.basic.FileSystemResource;
 import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.GraphServiceSession;
-import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.*;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
@@ -45,7 +44,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
   private GraphServiceSession neo4jGraphSession;
   private ObjectMapper prettyMapper;
-  private List<CedarNodeType> nodeTypeList;
+  private List<CedarResourceType> resourceTypeList;
   private List<String> sortList;
   private static TemplateFieldService<String, JsonNode> templateFieldService;
   private static TemplateElementService<String, JsonNode> templateElementService;
@@ -73,12 +72,12 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     prettyMapper = new ObjectMapper();
     prettyMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-    nodeTypeList = new ArrayList<>();
-    nodeTypeList.add(CedarNodeType.FOLDER);
-    nodeTypeList.add(CedarNodeType.FIELD);
-    nodeTypeList.add(CedarNodeType.ELEMENT);
-    nodeTypeList.add(CedarNodeType.TEMPLATE);
-    nodeTypeList.add(CedarNodeType.INSTANCE);
+    resourceTypeList = new ArrayList<>();
+    resourceTypeList.add(CedarResourceType.FOLDER);
+    resourceTypeList.add(CedarResourceType.FIELD);
+    resourceTypeList.add(CedarResourceType.ELEMENT);
+    resourceTypeList.add(CedarResourceType.TEMPLATE);
+    resourceTypeList.add(CedarResourceType.INSTANCE);
 
     sortList = new ArrayList<>();
     sortList.add(DEFAULT_SORT);
@@ -90,22 +89,22 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     templateFieldService = new TemplateFieldServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.FIELD));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.FIELD));
 
     templateElementService = new TemplateElementServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.ELEMENT));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.ELEMENT));
 
     templateService = new TemplateServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.TEMPLATE));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.TEMPLATE));
 
     templateInstanceService = new TemplateInstanceServiceMongoDB(
         mongoClientForDocuments,
         artifactServerConfig.getDatabaseName(),
-        artifactServerConfig.getMongoCollectionName(CedarNodeType.INSTANCE));
+        artifactServerConfig.getMongoCollectionName(CedarResourceType.INSTANCE));
 
     userService = getNeoUserService();
 
@@ -146,13 +145,14 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     String mongoDatabaseNameForDocuments = cedarConfig.getArtifactServerConfig().getDatabaseName();
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
-    String templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
+    String templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType
         .FIELD.getValue());
-    String templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
+    String templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType
         .ELEMENT.getValue());
-    String templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
+    String templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(
+        CedarResourceType
         .INSTANCE.getValue());
-    String templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType
+    String templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType
         .TEMPLATE.getValue());
 
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateFieldsCollectionName);
@@ -245,8 +245,8 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     System.out.println("Import resource:" + p);
     String baseName = FilenameUtils.getBaseName(p.toString());
     JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
-    FolderServerNode fsNode = importNodeIntoNeo(p, node);
-    if (fsNode.getType() != CedarNodeType.FOLDER) {
+    FileSystemResource fsNode = importNodeIntoNeo(p, node);
+    if (fsNode.getType() != CedarResourceType.FOLDER) {
       JsonNode content = getArchivedFile(p, ImportExportConstants.CONTENT_SUFFIX);
       importResourceIntoMongo(p, content, fsNode.getType());
     }
@@ -254,22 +254,22 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     createArcs(incomingArcs);
   }
 
-  private FolderServerNode importNodeIntoNeo(Path p, JsonNode node) {
+  private FileSystemResource importNodeIntoNeo(Path p, JsonNode node) {
     System.out.println("Import node    :" + p);
     //Import resource into Neo
     return neo4jGraphSession.createNode(node);
   }
 
-  private void importResourceIntoMongo(Path p, JsonNode content, CedarNodeType type) {
+  private void importResourceIntoMongo(Path p, JsonNode content, CedarResourceType type) {
     try {
       System.out.println("Import " + type + ":" + p);
-      if (type == CedarNodeType.FIELD) {
+      if (type == CedarResourceType.FIELD) {
         templateFieldService.createTemplateField(content);
-      } else if (type == CedarNodeType.ELEMENT) {
+      } else if (type == CedarResourceType.ELEMENT) {
         templateElementService.createTemplateElement(content);
-      } else if (type == CedarNodeType.TEMPLATE) {
+      } else if (type == CedarResourceType.TEMPLATE) {
         templateService.createTemplate(content);
-      } else if (type == CedarNodeType.INSTANCE) {
+      } else if (type == CedarResourceType.INSTANCE) {
         templateInstanceService.createTemplateInstance(content);
       } else {
         System.out.println("Unknown resource type:" + type);

@@ -2,7 +2,7 @@ package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.Color;
-import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 
@@ -50,7 +50,7 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
       out.printIndented("First active API KEY: " + user.getFirstActiveApiKey());
       out.printIndented("Home folder Id      : " + user.getHomeFolderId());
 
-      String userUUID = linkedDataUtil.getUUID(user.getId(), CedarNodeType.USER);
+      String userUUID = linkedDataUtil.getUUID(user.getId(), CedarResourceType.USER);
       UserRepresentation userRepresentation = getUserFromKeycloak(userUUID);
       out.println();
       out.println("Data from Keycloak:", Color.YELLOW);

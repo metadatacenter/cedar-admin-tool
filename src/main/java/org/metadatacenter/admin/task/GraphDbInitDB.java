@@ -25,7 +25,7 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
 
     // Global
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.OWNED_BY);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_TYPE);
+    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NAME);
 
@@ -35,7 +35,7 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     // Folders
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.OWNED_BY);
-    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_TYPE);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NAME);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.CREATED_ON_TS);
@@ -59,7 +59,7 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
 
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.OWNED_BY);
-    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_TYPE);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.CREATED_ON_TS);
