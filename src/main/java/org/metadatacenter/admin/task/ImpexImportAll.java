@@ -242,7 +242,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   }
 
   private void importResource(Path p) {
-    System.out.println("Import resource:" + p);
+    System.out.println("Import artifact:" + p);
     String baseName = FilenameUtils.getBaseName(p.toString());
     JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
     FileSystemResource fsNode = importNodeIntoNeo(p, node);
@@ -255,8 +255,8 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   }
 
   private FileSystemResource importNodeIntoNeo(Path p, JsonNode node) {
-    System.out.println("Import node    :" + p);
-    //Import resource into Neo
+    System.out.println("Import resource    :" + p);
+    //Import artifact into Neo
     return neo4jGraphSession.createNode(node);
   }
 
@@ -272,7 +272,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
       } else if (type == CedarResourceType.INSTANCE) {
         templateInstanceService.createTemplateInstance(content);
       } else {
-        System.out.println("Unknown resource type:" + type);
+        System.out.println("Unknown artifact type:" + type);
       }
     } catch (IOException e) {
       e.printStackTrace();

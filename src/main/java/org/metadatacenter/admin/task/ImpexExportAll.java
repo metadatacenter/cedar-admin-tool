@@ -213,7 +213,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     createZippedContent(wrapperDir, uuid, contents);
 
-    logProgress("resource", idx);
+    logProgress("artifact", idx);
   }
 
   private JsonNode getArtifactServerContent(String id, CedarResourceType resourceType) {
