@@ -9,7 +9,7 @@ import org.apache.http.entity.ContentType;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.server.model.provenance.ProvenanceInfo;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.util.json.JsonIdUtil;
@@ -52,10 +52,10 @@ public class ImportWorker {
     }
 
     if (infoNode != null) {
-      String nodeTypeString = infoNode.get("nodeType").asText();
-      CedarNodeType nodeType = CedarNodeType.forValue(nodeTypeString);
-      if (nodeType != null) {
-        out.println(nodeType);
+      String resourceTypeString = infoNode.get("resourceType").asText();
+      CedarResourceType resourceType = CedarResourceType.forValue(resourceTypeString);
+      if (resourceType != null) {
+        out.println(resourceType);
 
         JsonNode contentNode = null;
         try {
@@ -73,7 +73,7 @@ public class ImportWorker {
 
           String authString = newOwner.getFirstApiKeyAuthHeader();
           try {
-            String url = cedarConfig.getServers().getResource().getBase() + nodeType.getPrefix() +
+            String url = cedarConfig.getServers().getResource().getBase() + resourceType.getPrefix() +
                 "?" + QP_FOLDER_ID + "=" + new URLCodec().encode(folderId);
             out.println("***IMPORT:" + url);
             Request request = Request.Post(url)

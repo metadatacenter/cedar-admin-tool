@@ -3,7 +3,7 @@ package org.metadatacenter.admin.task;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
-import org.metadatacenter.model.CedarNodeType;
+import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.service.UserService;
 
@@ -75,16 +75,16 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
 
   protected void initMongoCollectionNames() {
     mongoDatabaseName = cedarConfig.getArtifactServerConfig().getDatabaseName();
-    templateFieldCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType.FIELD
+    templateFieldCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.FIELD
         .getValue());
-    templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType.ELEMENT
+    templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.ELEMENT
         .getValue
             ());
-    templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType.TEMPLATE
+    templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.TEMPLATE
         .getValue());
-    templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarNodeType.INSTANCE
+    templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.INSTANCE
         .getValue());
-    usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarNodeType.USER.getValue());
+    usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarResourceType.USER.getValue());
   }
 
 }
