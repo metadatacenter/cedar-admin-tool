@@ -7,7 +7,10 @@ import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.server.jsonld.LinkedDataUtil;
 import org.metadatacenter.server.service.UserService;
 
+import java.io.BufferedReader;
 import java.io.Console;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,13 +62,22 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   }
 
   protected boolean getConfirmInput(String message) {
-    Console c = System.console();
-    if (c == null) {
-      return false;
-    }
-    out.warn("You need to confirm your intent by entering '" + CONFIRM + "'!");
     out.warn(message);
-    String yes = c.readLine("Do you really want to perform the operation: ");
+    out.warn("You need to confirm your intent by entering '" + CONFIRM + "'!");
+    String yes = null;
+    Console c = System.console();
+    if (c != null) {
+      out.info("Got console.");
+      yes = c.readLine("Do you really want to perform the operation: ");
+    } else {
+      out.warn("Unable to get console. Reading System.in.");
+      BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+      try {
+        yes = br.readLine();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
     boolean proceed = CONFIRM.equals(yes);
     if (!proceed) {
       out.error("You chose not to continue with the process! Process finished.");
