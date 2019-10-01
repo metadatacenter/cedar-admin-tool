@@ -32,15 +32,16 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
 
         CedarUser user = null;
         boolean exceptionWhileReading = false;
+        String userId = linkedDataUtil.getUserId(ur.getId());
         try {
-          user = userService.findUser(ur.getId());
+          user = userService.findUser(userId);
         } catch (Exception e) {
           out.error("Error while reading user: " + ur.getEmail(), e);
           exceptionWhileReading = true;
         }
 
         if (user == null && !exceptionWhileReading) {
-          out.error("The user was not found for id:" + ur.getId());
+          out.error("The user was not found for id:" + userId);
         } else {
           CedarUserRolePermissionUtil.expandRolesIntoPermissions(user);
           try {

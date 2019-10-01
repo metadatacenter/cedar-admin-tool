@@ -45,6 +45,8 @@ public class TaskRegistry {
 
   public static final String IMPEX_IMPORT_FLAT_FOLDER = "impex-importFlatFolder";
 
+  public static final String FOLDER_PURGE_CONTENT = "folder-purgeContent";
+
   public static final String SYSTEM_RESET = "system-reset";
 
   static {
@@ -68,6 +70,8 @@ public class TaskRegistry {
     taskMap.put(IMPEX_EXPORT_ALL, ImpexExportAll.class);
     taskMap.put(IMPEX_IMPORT_ALL, ImpexImportAll.class);
     taskMap.put(IMPEX_IMPORT_FLAT_FOLDER, ImpexImportFlatFolder.class);
+
+    taskMap.put(FOLDER_PURGE_CONTENT, FolderPurgeContent.class);
 
     taskMap.put(SYSTEM_RESET, SystemReset.class);
   }
