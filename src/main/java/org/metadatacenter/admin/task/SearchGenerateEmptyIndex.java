@@ -20,7 +20,7 @@ public class SearchGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUse
       int statusCode = post(url, requestMap);
       if (statusCode == HttpStatus.SC_OK) {
         out.info(
-            "The search empty index generation was successfully started. Please inspect the artifact server log for " +
+            "The search empty index generation was successfully started. Please inspect the resource server log for " +
                 "progress!");
       } else {
         out.error("Error while requesting empty index generation. HTTP status code: " + statusCode);

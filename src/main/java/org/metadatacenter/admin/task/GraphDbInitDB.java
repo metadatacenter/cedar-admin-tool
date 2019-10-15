@@ -21,16 +21,16 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     AdminServiceSession adminSession = createUnconditionalCedarAdminSession(cedarConfig);
 
     // Global unique ID constraint
-    createUniqueConstraint(adminSession, NodeLabel.SCOPE, NodeProperty.ID);
+    createUniqueConstraint(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
 
     // Global
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.OWNED_BY);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.RESOURCE_TYPE);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_SORT_ORDER);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.OWNED_BY);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.RESOURCE_TYPE);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
 
     // FSNode
-    createIndex(adminSession, NodeLabel.FSNODE, NodeProperty.ID);
+    createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.ID);
 
     // Folders
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.ID);

@@ -3,6 +3,8 @@ package org.metadatacenter.admin.task.importflatfolder;
 import org.metadatacenter.admin.task.AbstractNeo4JAccessTask;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.task.importexport.ImportFileList;
+import org.metadatacenter.id.CedarFolderId;
+import org.metadatacenter.id.CedarUserId;
 import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
 import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -46,6 +48,9 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     String folderId = arguments.get(2);
     String userId = arguments.get(3);
 
+    CedarFolderId fid = CedarFolderId.buildSafe(folderId);
+    CedarUserId uid = CedarUserId.buildSafe(userId);
+
     out.println("Input parameters:");
     out.println("sourceFolder: " + sourceFolder);
     out.println("folderId    : " + folderId);
@@ -63,14 +68,14 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     }
     FolderServiceSession folderSession = createCedarFolderSession(cedarConfig);
 
-    FolderServerFolder targetFolder = folderSession.findFolderById(folderId);
+    FolderServerFolder targetFolder = folderSession.findFolderById(fid);
     if (targetFolder == null) {
       out.error("The remote target folder specified by folderId does not exist!");
       return -4;
     }
 
     UserService userService = getNeoUserService();
-    CedarUser newOwner = userService.findUser(userId);
+    CedarUser newOwner = userService.findUser(uid);
 
     if (newOwner == null) {
       out.error("The new owner specified by userId does not exist!");

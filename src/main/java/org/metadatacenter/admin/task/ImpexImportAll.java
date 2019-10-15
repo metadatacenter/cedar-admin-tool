@@ -14,6 +14,7 @@ import org.bson.Document;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
+import org.metadatacenter.id.CedarResourceId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.RelationLabel;
 import org.metadatacenter.model.folderserver.basic.FileSystemResource;
@@ -151,7 +152,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
         .ELEMENT.getValue());
     String templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(
         CedarResourceType
-        .INSTANCE.getValue());
+            .INSTANCE.getValue());
     String templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType
         .TEMPLATE.getValue());
 
@@ -257,7 +258,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   private FileSystemResource importNodeIntoNeo(Path p, JsonNode node) {
     System.out.println("Import resource    :" + p);
     //Import artifact into Neo
-    return neo4jGraphSession.createNode(node);
+    return neo4jGraphSession.createFilesystemResource(node);
   }
 
   private void importResourceIntoMongo(Path p, JsonNode content, CedarResourceType type) {
@@ -284,7 +285,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
       String sourceId = arc.get("sourceId").textValue();
       String targetId = arc.get("targetId").textValue();
       String label = arc.get("label").textValue();
-      neo4jGraphSession.createArc(sourceId, RelationLabel.forValue(label), targetId);
+      neo4jGraphSession.createArc(CedarResourceId.buildSafe(sourceId), RelationLabel.forValue(label), CedarResourceId.buildSafe(targetId));
     }
   }
 
