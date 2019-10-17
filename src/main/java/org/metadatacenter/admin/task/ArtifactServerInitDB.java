@@ -7,6 +7,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
 import org.metadatacenter.bridge.CedarDataServices;
+import org.metadatacenter.constant.LinkedData;
 
 public class ArtifactServerInitDB extends AbstractCedarAdminTask {
 
@@ -34,10 +35,10 @@ public class ArtifactServerInitDB extends AbstractCedarAdminTask {
   @Override
   public int execute() {
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
-    createUniqueIndex(mongoClientForDocuments, templateFieldCollectionName, "@id");
-    createUniqueIndex(mongoClientForDocuments, templateElementsCollectionName, "@id");
-    createUniqueIndex(mongoClientForDocuments, templatesCollectionName, "@id");
-    createUniqueIndex(mongoClientForDocuments, templateInstancesCollectionName, "@id");
+    createUniqueIndex(mongoClientForDocuments, templateFieldsCollectionName, LinkedData.ID);
+    createUniqueIndex(mongoClientForDocuments, templateElementsCollectionName, LinkedData.ID);
+    createUniqueIndex(mongoClientForDocuments, templatesCollectionName, LinkedData.ID);
+    createUniqueIndex(mongoClientForDocuments, templateInstancesCollectionName, LinkedData.ID);
 
     return 0;
   }

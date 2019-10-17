@@ -7,6 +7,7 @@ public class GraphDbCreateGlobalObjects extends AbstractNeo4JAccessTask {
   public GraphDbCreateGlobalObjects() {
     description.add("Creates global folders in the graph database: /, /Users");
     description.add("Creates 'Everybody' group");
+    description.add("Creates root category");
     description.add("Creates 'cedar-admin' user in Neo4J");
   }
 
