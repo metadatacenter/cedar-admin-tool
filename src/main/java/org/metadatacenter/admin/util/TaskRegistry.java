@@ -19,7 +19,7 @@ public class TaskRegistry {
 
   public static final String GRAPH_DB_SERVER_WIPE_ALL = "graphDb-wipeAll";
 
-  public static final String GRAPH_DB_SERVER_INIT_DB = "graphDb-initDB";
+  public static final String GRAPH_DB_SERVER_CREATE_INDICES = "graphDb-createIndices";
 
   public static final String GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS = "graphDb-createGlobalObjects";
 
@@ -55,7 +55,7 @@ public class TaskRegistry {
     taskMap.put(ARTIFACT_SERVER_INIT_DB, ArtifactServerInitDB.class);
 
     taskMap.put(GRAPH_DB_SERVER_WIPE_ALL, GraphDbWipeAll.class);
-    taskMap.put(GRAPH_DB_SERVER_INIT_DB, GraphDbInitDB.class);
+    taskMap.put(GRAPH_DB_SERVER_CREATE_INDICES, GraphDbCreateIndicesAndConstraints.class);
     taskMap.put(GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS, GraphDbCreateGlobalObjects.class);
     taskMap.put(GRAPH_DB_SERVER_CREATE_ALL_USERS, GraphDbCreateAllUsers.class);
 

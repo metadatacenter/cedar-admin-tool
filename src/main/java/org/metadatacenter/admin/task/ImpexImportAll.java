@@ -15,6 +15,7 @@ import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.id.CedarResourceId;
+import org.metadatacenter.id.CedarUntypedResourceId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.RelationLabel;
 import org.metadatacenter.model.folderserver.basic.FileSystemResource;
@@ -285,7 +286,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
       String sourceId = arc.get("sourceId").textValue();
       String targetId = arc.get("targetId").textValue();
       String label = arc.get("label").textValue();
-      neo4jGraphSession.createArc(CedarResourceId.buildSafe(sourceId), RelationLabel.forValue(label), CedarResourceId.buildSafe(targetId));
+      neo4jGraphSession.createArc(CedarUntypedResourceId.build(sourceId), RelationLabel.forValue(label), CedarUntypedResourceId.build(targetId));
     }
   }
 

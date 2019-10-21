@@ -48,8 +48,8 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     String folderId = arguments.get(2);
     String userId = arguments.get(3);
 
-    CedarFolderId fid = CedarFolderId.buildSafe(folderId);
-    CedarUserId uid = CedarUserId.buildSafe(userId);
+    CedarFolderId fid = CedarFolderId.build(folderId);
+    CedarUserId uid = CedarUserId.build(userId);
 
     out.println("Input parameters:");
     out.println("sourceFolder: " + sourceFolder);

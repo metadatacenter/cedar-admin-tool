@@ -45,12 +45,11 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     if (arguments.size() != 2) {
       out.error("A folderId parameter must be passed for this task:");
       out.info("Usage:");
-      out.info("$ cedarat folder-purgeContent https://repo.metadatacenter" +
-          ".org/folders/88888888-4444-4444-4444-121212121212");
+      out.info("$ cedarat folder-purgeContent https://repo.metadatacenter.org/folders/88888888-4444-4444-4444-121212121212");
       return -1;
     }
     String folderId = arguments.get(1);
-    CedarFolderId fid = CedarFolderId.buildSafe(folderId);
+    CedarFolderId fid = CedarFolderId.build(folderId);
 
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
@@ -95,7 +94,7 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
 
     for (FileSystemResource r : allChildArtifacts) {
       String id = r.getId();
-      CedarArtifactId aid = CedarArtifactId.buildSafe(id);
+      CedarArtifactId aid = CedarArtifactId.build(id, r.getType());
       boolean deletedFromNeo = folderSession.deleteResourceById(aid);
       if (deletedFromNeo) {
         neoCount++;

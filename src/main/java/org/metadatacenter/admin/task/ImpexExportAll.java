@@ -7,7 +7,10 @@ import com.mongodb.MongoClient;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
+import org.metadatacenter.id.CedarFolderId;
+import org.metadatacenter.id.CedarGroupId;
 import org.metadatacenter.id.CedarResourceId;
+import org.metadatacenter.id.CedarUserId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.folderserver.FolderServerArc;
 import org.metadatacenter.model.folderserver.basic.FileSystemResource;
@@ -166,7 +169,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private Path serializeFolder(Path path, FolderServerFolder folder, int idx) {
     String id = folder.getId();
     String uuid = linkedDataUtil.getUUID(id, CedarResourceType.FOLDER);
-    CedarResourceId rid = CedarResourceId.buildSafe(id);
+    CedarFolderId rid = CedarFolderId.build(id);
 
     String partition = uuid.substring(0, 2);
     Path folderDir = path.resolve(partition);
@@ -198,7 +201,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     String id = node.getId();
     CedarResourceType resourceType = node.getType();
     String uuid = linkedDataUtil.getUUID(id, resourceType);
-    CedarResourceId rid = CedarResourceId.buildSafe(id);
+    CedarResourceId rid = CedarResourceId.build(id, node.getType());
 
     String partition = uuid.substring(0, 2);
     Path wrapperDir = path.resolve(partition);
@@ -250,15 +253,15 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private void serializeUser(Path path, CedarUser u) {
     String id = u.getId();
     String uuid = linkedDataUtil.getUUID(id, CedarResourceType.USER);
-    CedarResourceId rid = CedarResourceId.buildSafe(id);
+    CedarUserId uid = CedarUserId.build(id);
 
     String partition = uuid.substring(0, 2);
     Path wrapperDir = path.resolve(partition);
     wrapperDir.toFile().mkdirs();
 
     FolderServerUser neoUser = neo4jUserSession.getUser(u.getResourceId());
-    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(rid);
-    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(rid);
+    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(uid);
+    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(uid);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.CONTENT_SUFFIX, u);
@@ -281,14 +284,14 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private void serializeGroup(Path path, FolderServerGroup g) {
     String id = g.getId();
     String uuid = linkedDataUtil.getUUID(id, CedarResourceType.GROUP);
-    CedarResourceId rid = CedarResourceId.buildSafe(id);
+    CedarGroupId gid = CedarGroupId.build(id);
 
     String partition = uuid.substring(0, 2);
     Path wrapperDir = path.resolve(partition);
     wrapperDir.toFile().mkdirs();
 
-    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(rid);
-    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(rid);
+    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(gid);
+    List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(gid);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.NODE_SUFFIX, g);

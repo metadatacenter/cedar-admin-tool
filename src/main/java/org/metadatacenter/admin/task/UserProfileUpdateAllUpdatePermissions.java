@@ -40,7 +40,7 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
         boolean exceptionWhileReading = false;
         String userId = linkedDataUtil.getUserId(ur.getId());
         try {
-          user = userService.findUser(CedarUserId.buildSafe(userId));
+          user = userService.findUser(CedarUserId.build(userId));
         } catch (Exception e) {
           out.error("Error while reading user: " + ur.getEmail(), e);
           exceptionWhileReading = true;
