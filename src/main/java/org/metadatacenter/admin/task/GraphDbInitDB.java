@@ -30,10 +30,8 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NAME);
 
     // FSNode
-    createIndex(adminSession, NodeLabel.FSNODE, NodeProperty.ID);
 
     // Folders
-    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_SORT_ORDER);
@@ -47,17 +45,13 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.EVERYBODY_PERMISSION);
 
     // Groups
-    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.SPECIAL_GROUP);
 
     // Users
-    createIndex(adminSession, NodeLabel.USER, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.USER, NodeProperty.API_KEYS);
 
     // Resources
-    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
-
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
@@ -70,18 +64,6 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.PUBLICATION_STATUS);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_LATEST_VERSION);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.EVERYBODY_PERMISSION);
-
-    // Fields
-    createIndex(adminSession, NodeLabel.FIELD, NodeProperty.ID);
-
-    // Elements
-    createIndex(adminSession, NodeLabel.ELEMENT, NodeProperty.ID);
-
-    // Templates
-    createIndex(adminSession, NodeLabel.TEMPLATE, NodeProperty.ID);
-
-    // Instances
-    createIndex(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
 
     return 0;
   }
