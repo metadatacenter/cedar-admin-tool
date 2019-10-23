@@ -43,10 +43,10 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.PARENT_CATEGORY_ID);
 
     // Filesystem resources
-    createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.ID);
+
+    // FSNode
 
     // Folders
-    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_SORT_ORDER);
@@ -60,7 +60,6 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.EVERYBODY_PERMISSION);
 
     // Artifacts
-    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.OWNED_BY);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.NODE_SORT_ORDER);
@@ -74,17 +73,26 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.IS_LATEST_VERSION);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.EVERYBODY_PERMISSION);
 
-    // Fields
-    createIndex(adminSession, NodeLabel.FIELD, NodeProperty.ID);
+    // Groups
+    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.SPECIAL_GROUP);
 
-    // Elements
-    createIndex(adminSession, NodeLabel.ELEMENT, NodeProperty.ID);
+    // Users
+    createIndex(adminSession, NodeLabel.USER, NodeProperty.API_KEYS);
 
-    // Templates
-    createIndex(adminSession, NodeLabel.TEMPLATE, NodeProperty.ID);
-
-    // Instances
-    createIndex(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
+    // Resources
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.OWNED_BY);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.RESOURCE_TYPE);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.CREATED_ON_TS);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.LAST_UPDATED_ON_TS);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_BASED_ON);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.DERIVED_FROM);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.VERSION);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.PUBLICATION_STATUS);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_LATEST_VERSION);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.EVERYBODY_PERMISSION);
 
     return 0;
   }
