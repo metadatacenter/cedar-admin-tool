@@ -111,7 +111,9 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
         readMore = false;
       }
     }
-    out.info("Read all users from Keycloak, start processing them");
+    out.info("Read all users from Keycloak");
+    out.info("Read roles for users");
+    int i=0;
     for (UserRepresentation ur : users) {
       UserResource userResource = realm.users().get(ur.getId());
       List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listEffective();
@@ -120,6 +122,10 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
         realmRoles.add(rr.getName());
       }
       ur.setRealmRoles(realmRoles);
+      if (i % batchSize == 0) {
+        out.info("Read roles for " + i + " users");
+      }
+      i++;
     }
     return users;
   }
