@@ -98,7 +98,9 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
   protected List<UserRepresentation> listAllUsersFromKeycloak() {
     Keycloak kc = buildKeycloak();
     RealmResource realm = kc.realm(keycloakRealmName);
+    out.info("Start reading the users from Keycloak");
     List<UserRepresentation> users = realm.users().search(null, 0, Integer.MAX_VALUE);
+    out.info("Read all users from Keycloak, start processing them");
     for (UserRepresentation ur : users) {
       UserResource userResource = realm.users().get(ur.getId());
       List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listEffective();
