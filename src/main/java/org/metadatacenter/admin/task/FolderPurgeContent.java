@@ -9,6 +9,8 @@ import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.bridge.GraphDbPermissionReader;
 import org.metadatacenter.constant.LinkedData;
 import org.metadatacenter.exception.CedarException;
+import org.metadatacenter.id.CedarArtifactId;
+import org.metadatacenter.id.CedarFolderId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.folderserver.basic.FileSystemResource;
 import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
@@ -43,21 +45,20 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     if (arguments.size() != 2) {
       out.error("A folderId parameter must be passed for this task:");
       out.info("Usage:");
-      out.info("$ cedarat folder-purgeContent https://repo.metadatacenter" +
-          ".org/folders/88888888-4444-4444-4444-121212121212");
+      out.info("$ cedarat folder-purgeContent https://repo.metadatacenter.org/folders/88888888-4444-4444-4444-121212121212");
       return -1;
     }
     String folderId = arguments.get(1);
+    CedarFolderId fid = CedarFolderId.build(folderId);
 
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
     FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
-    ResourcePermissionServiceSession permissionSession =
-        CedarDataServices.getResourcePermissionServiceSession(cedarRequestContext);
+    ResourcePermissionServiceSession permissionSession = CedarDataServices.getResourcePermissionServiceSession(cedarRequestContext);
 
     MongoClient mongoClient = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
-    FolderServerFolder folder = folderSession.findFolderById(folderId);
+    FolderServerFolder folder = folderSession.findFolderById(fid);
     if (folder == null) {
       out.error("Parent folder not found by id: '" + folderId + "'");
       return -2;
@@ -65,8 +66,7 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
 
     FolderServerFolderCurrentUserReport folderReport = null;
     try {
-      folderReport = GraphDbPermissionReader.getFolderCurrentUserReport(cedarRequestContext, folderSession,
-          permissionSession, folderId);
+      folderReport = GraphDbPermissionReader.getFolderCurrentUserReport(cedarRequestContext, folderSession, permissionSession, fid);
     } catch (CedarException e) {
       out.error("Error reading folder report");
       return -3;
@@ -77,16 +77,12 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     out.info("Path: " + folderReport.getPath());
 
     Map<CedarResourceType, MongoCollection<Document>> collectionMap = new HashMap<>();
-    collectionMap.put(CedarResourceType.FIELD,
-        mongoClient.getDatabase(mongoDatabaseName).getCollection(templateFieldsCollectionName));
-    collectionMap.put(CedarResourceType.ELEMENT,
-        mongoClient.getDatabase(mongoDatabaseName).getCollection(templateElementsCollectionName));
-    collectionMap.put(CedarResourceType.TEMPLATE,
-        mongoClient.getDatabase(mongoDatabaseName).getCollection(templatesCollectionName));
-    collectionMap.put(CedarResourceType.INSTANCE,
-        mongoClient.getDatabase(mongoDatabaseName).getCollection(templateInstancesCollectionName));
+    collectionMap.put(CedarResourceType.FIELD, mongoClient.getDatabase(mongoDatabaseName).getCollection(templateFieldsCollectionName));
+    collectionMap.put(CedarResourceType.ELEMENT, mongoClient.getDatabase(mongoDatabaseName).getCollection(templateElementsCollectionName));
+    collectionMap.put(CedarResourceType.TEMPLATE, mongoClient.getDatabase(mongoDatabaseName).getCollection(templatesCollectionName));
+    collectionMap.put(CedarResourceType.INSTANCE, mongoClient.getDatabase(mongoDatabaseName).getCollection(templateInstancesCollectionName));
 
-    List<FileSystemResource> allChildArtifacts = folderSession.findAllChildArtifactsOfFolder(folderId);
+    List<FileSystemResource> allChildArtifacts = folderSession.findAllChildArtifactsOfFolder(fid);
 
 
     int i = 0;
@@ -98,7 +94,8 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
 
     for (FileSystemResource r : allChildArtifacts) {
       String id = r.getId();
-      boolean deletedFromNeo = folderSession.deleteResourceById(id);
+      CedarArtifactId aid = CedarArtifactId.build(id, r.getType());
+      boolean deletedFromNeo = folderSession.deleteResourceById(aid);
       if (deletedFromNeo) {
         neoCount++;
       }

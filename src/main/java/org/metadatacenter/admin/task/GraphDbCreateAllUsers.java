@@ -49,19 +49,18 @@ public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
         }
 
         if (superRole == null) {
-          out.error("The user '" + ur.getUsername() +
-              "' has no recognized roles. The user will not be created in MongoDB");
+          out.error("The user '" + ur.getUsername() + "' has no recognized roles. The user will not be created in MongoDB");
         } else {
 
           String userUUID = ur.getId();
           String userId = linkedDataUtil.getUserId(userUUID);
           CedarUserExtract cue = new CedarUserExtract(userId, ur.getFirstName(), ur.getLastName(), ur.getEmail());
-          CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue,
-              superRole, cedarConfig, ur.getUsername());
+          CedarUser user = CedarUserUtil.createUserFromBlueprint(cedarConfig.getBlueprintUserProfile(), cue, superRole, cedarConfig,
+              ur.getUsername());
 
           try {
 
-            CedarUser existingUser = userService.findUser(user.getId());
+            CedarUser existingUser = userService.findUser(user.getResourceId());
             if (existingUser == null) {
               existingUser = userService.createUser(user);
             }
@@ -69,7 +68,7 @@ public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
             CedarRequestContext userRequestContext = CedarRequestContextFactory.fromUser(existingUser);
             UserServiceSession userSession = CedarDataServices.getUserServiceSession(userRequestContext);
 
-            userSession.addUserToEverybodyGroup(existingUser);
+            userSession.addUserToEverybodyGroup(existingUser.getResourceId());
 
             FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(userRequestContext);
             FolderServerFolder userHomeFolder = folderSession.findHomeFolderOf();

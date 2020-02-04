@@ -4,10 +4,9 @@ import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.neo4j.NodeLabel;
 import org.metadatacenter.server.neo4j.cypher.NodeProperty;
 
-public class GraphDbInitDB extends AbstractNeo4JAccessTask {
+public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask {
 
-  public GraphDbInitDB() {
-    description.add("Initializes Neo4j database.");
+  public GraphDbCreateIndicesAndConstraints() {
     description.add("Creates indices and constraints.");
   }
 
@@ -21,13 +20,29 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     AdminServiceSession adminSession = createUnconditionalCedarAdminSession(cedarConfig);
 
     // Global unique ID constraint
-    createUniqueConstraint(adminSession, NodeLabel.SCOPE, NodeProperty.ID);
+    createUniqueConstraint(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
 
     // Global
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.OWNED_BY);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.RESOURCE_TYPE);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NODE_SORT_ORDER);
-    createIndex(adminSession, NodeLabel.SCOPE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.OWNED_BY);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.RESOURCE_TYPE);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
+
+    // Groups
+    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.ID);
+    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.SPECIAL_GROUP);
+
+    // Users
+    createIndex(adminSession, NodeLabel.USER, NodeProperty.ID);
+    createIndex(adminSession, NodeLabel.USER, NodeProperty.API_KEYS);
+
+    // Categories
+    createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.ID);
+    createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.PARENT_CATEGORY_ID);
+
+    // Filesystem resources
 
     // FSNode
 
@@ -43,6 +58,20 @@ public class GraphDbInitDB extends AbstractNeo4JAccessTask {
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_USER_HOME);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.HOME_OF);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.EVERYBODY_PERMISSION);
+
+    // Artifacts
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.OWNED_BY);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.RESOURCE_TYPE);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.NODE_SORT_ORDER);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.CREATED_ON_TS);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.LAST_UPDATED_ON_TS);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.IS_BASED_ON);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.DERIVED_FROM);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.VERSION);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.PUBLICATION_STATUS);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.IS_LATEST_VERSION);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.EVERYBODY_PERMISSION);
 
     // Groups
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
