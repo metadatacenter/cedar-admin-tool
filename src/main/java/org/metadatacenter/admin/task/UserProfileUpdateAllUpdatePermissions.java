@@ -2,6 +2,7 @@ package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.config.BlueprintUserProfile;
+import org.metadatacenter.id.CedarUserId;
 import org.metadatacenter.server.security.CedarUserRolePermissionUtil;
 import org.metadatacenter.server.security.model.user.CedarSuperRole;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -39,7 +40,7 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
         boolean exceptionWhileReading = false;
         String userId = linkedDataUtil.getUserId(ur.getId());
         try {
-          user = userService.findUser(userId);
+          user = userService.findUser(CedarUserId.build(userId));
         } catch (Exception e) {
           out.error("Error while reading user: " + ur.getEmail(), e);
           exceptionWhileReading = true;

@@ -32,7 +32,7 @@ public class CedarAdmin {
     showTitle();
     out.printTitle("Usage:");
     out.printIndented("cedar-admin-tool command parameters...");
-    out.printTitle("Available commands:");
+    out.printTitle("Available command details:");
     for (String key : TaskRegistry.getTaskKeys()) {
       out.printIndented(key, Color.BRIGHT);
       ICedarAdminTask t = null;
@@ -42,14 +42,22 @@ public class CedarAdmin {
         out.error(e);
       }
       if (t != null) {
-        out.printIndented("Details:", 2);
         for (String desc : t.getDescription()) {
           out.printIndented("* " + desc, 2);
         }
         out.println();
       }
     }
-    out.println("\n");
+    out.printTitle("Available commands:");
+    for (String key : TaskRegistry.getTaskKeys()) {
+      out.printIndented(key, Color.BRIGHT);
+      ICedarAdminTask t = null;
+      try {
+        t = TaskRegistry.getTaskForKey(key);
+      } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        out.error(e);
+      }
+    }
     System.exit(-1);
   }
 
