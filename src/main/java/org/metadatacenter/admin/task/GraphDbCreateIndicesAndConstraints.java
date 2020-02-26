@@ -56,6 +56,7 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_USER_HOME);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.HOME_OF);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.EVERYBODY_PERMISSION);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.SPECIAL_FOLDER);
 
     // Artifacts
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.ID);
