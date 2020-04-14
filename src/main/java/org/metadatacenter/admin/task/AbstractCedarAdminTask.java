@@ -87,15 +87,10 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
 
   protected void initMongoCollectionNames() {
     mongoDatabaseName = cedarConfig.getArtifactServerConfig().getDatabaseName();
-    templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.FIELD
-        .getValue());
-    templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.ELEMENT
-        .getValue
-            ());
-    templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.TEMPLATE
-        .getValue());
-    templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.INSTANCE
-        .getValue());
+    templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.FIELD.getValue());
+    templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.ELEMENT.getValue());
+    templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.TEMPLATE.getValue());
+    templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.INSTANCE.getValue());
     usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarResourceType.USER.getValue());
   }
 

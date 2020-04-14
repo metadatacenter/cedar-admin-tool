@@ -147,15 +147,10 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     String mongoDatabaseNameForDocuments = cedarConfig.getArtifactServerConfig().getDatabaseName();
     MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
 
-    String templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType
-        .FIELD.getValue());
-    String templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType
-        .ELEMENT.getValue());
-    String templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(
-        CedarResourceType
-            .INSTANCE.getValue());
-    String templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType
-        .TEMPLATE.getValue());
+    String templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.FIELD.getValue());
+    String templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.ELEMENT.getValue());
+    String templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.INSTANCE.getValue());
+    String templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.TEMPLATE.getValue());
 
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateFieldsCollectionName);
     emptyCollection(mongoClientForDocuments, mongoDatabaseNameForDocuments, templateElementsCollectionName);
