@@ -19,9 +19,7 @@ public class SearchGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUse
       Map<String, Object> requestMap = new HashMap<>();
       int statusCode = post(url, requestMap);
       if (statusCode == HttpStatus.SC_OK) {
-        out.info(
-            "The search empty index generation was successfully started. Please inspect the resource server log for " +
-                "progress!");
+        out.info("The search empty index generation was successfully started. Please inspect the resource server log for progress!");
       } else {
         out.error("Error while requesting empty index generation. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
