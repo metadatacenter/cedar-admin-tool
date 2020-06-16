@@ -26,7 +26,7 @@ public abstract class AbstractNeo4JAccessTask extends AbstractKeycloakReadingTas
 
   @Override
   public void init() {
-    initKeycloak();
+    initKeycloak(cedarConfig);
   }
 
   protected AdminServiceSession createCedarAdminSession(CedarConfig cedarConfig) {
