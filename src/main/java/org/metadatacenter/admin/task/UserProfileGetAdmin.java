@@ -14,18 +14,17 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
 
   @Override
   public void init() {
-    initKeycloak();
+    initKeycloak(cedarConfig);
 
     out.println();
     out.println("Data from config:", Color.YELLOW);
-    out.printIndented("cedarAdminUserName    : " + cedarAdminUserName);
-    out.printIndented("cedarAdminUserPassword: " + cedarAdminUserPassword);
-    out.printIndented("cedarAdminUserApiKey  : " + cedarAdminUserApiKey);
-    out.printIndented("keycloakClientId      : " + keycloakClientId);
-    out.printIndented("keycloakRealmName     : " + keycloakRealmName);
-    out.printIndented("keycloakBaseURI       : " + keycloakBaseURI);
+    out.printIndented("cedarAdminUserName    : " + kcInfo.getCedarAdminUserName());
+    out.printIndented("cedarAdminUserPassword: " + kcInfo.getCedarAdminUserPassword());
+    out.printIndented("cedarAdminUserApiKey  : " + kcInfo.getCedarAdminUserApiKey());
+    out.printIndented("keycloakClientId      : " + kcInfo.getKeycloakClientId());
+    out.printIndented("keycloakRealmName     : " + kcInfo.getKeycloakRealmName());
+    out.printIndented("keycloakBaseURI       : " + kcInfo.getKeycloakBaseURI());
   }
-
 
   @Override
   public int execute() {
@@ -37,16 +36,16 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
     CedarUser user = null;
     boolean exceptionWhileReading = false;
     try {
-      user = userService.findUserByApiKey(cedarAdminUserApiKey);
+      user = userService.findUserByApiKey(kcInfo.getCedarAdminUserApiKey());
     } catch (Exception e) {
-      out.error("Error while reading user for apiKey: " + cedarAdminUserApiKey, e);
+      out.error("Error while reading user for apiKey: " + kcInfo.getCedarAdminUserApiKey(), e);
       exceptionWhileReading = true;
     }
 
     if (user == null && !exceptionWhileReading) {
-      out.printIndented(cedarAdminUserName + " user was not found in MongoDB", Color.RED);
+      out.printIndented(kcInfo.getCedarAdminUserName() + " user was not found in neo4j", Color.RED);
     } else {
-      out.printIndented(cedarAdminUserName + " user was found in MongoDB", Color.GREEN);
+      out.printIndented(kcInfo.getCedarAdminUserName() + " user was found in neo4j", Color.GREEN);
       out.printIndented("First active API KEY: " + user.getFirstActiveApiKey());
       out.printIndented("Home folder Id      : " + user.getHomeFolderId());
 
@@ -55,9 +54,9 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
       out.println();
       out.println("Data from Keycloak:", Color.YELLOW);
       if (userRepresentation == null) {
-        out.printIndented(cedarAdminUserName + " user was not found on Keycloak", Color.RED);
+        out.printIndented(kcInfo.getCedarAdminUserName() + " user was not found on Keycloak", Color.RED);
       } else {
-        out.printIndented(cedarAdminUserName + " user was found on Keycloak", Color.GREEN);
+        out.printIndented(kcInfo.getCedarAdminUserName() + " user was found on Keycloak", Color.GREEN);
         printOutUser(out, userRepresentation);
       }
     }

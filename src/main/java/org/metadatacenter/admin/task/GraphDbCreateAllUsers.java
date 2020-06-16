@@ -24,7 +24,7 @@ public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
 
   @Override
   public void init() {
-    initKeycloak();
+    initKeycloak(cedarConfig);
   }
 
   @Override

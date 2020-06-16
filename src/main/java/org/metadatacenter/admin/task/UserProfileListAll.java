@@ -12,7 +12,7 @@ public class UserProfileListAll extends AbstractKeycloakReadingTask {
 
   @Override
   public void init() {
-    initKeycloak();
+    initKeycloak(cedarConfig);
   }
 
   @Override

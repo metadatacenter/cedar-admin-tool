@@ -21,7 +21,7 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
 
   @Override
   public void init() {
-    initKeycloak();
+    initKeycloak(cedarConfig);
   }
 
   @Override
