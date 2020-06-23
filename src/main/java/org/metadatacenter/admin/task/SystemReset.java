@@ -23,6 +23,7 @@ public class SystemReset extends AbstractKeycloakReadingTask {
     commands.add(new String[]{TaskRegistry.GRAPH_DB_SERVER_WIPE_ALL});
     commands.add(new String[]{TaskRegistry.GRAPH_DB_SERVER_CREATE_INDICES});
     commands.add(new String[]{TaskRegistry.GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS});
+    commands.add(new String[]{TaskRegistry.GRAPH_DB_SERVER_CREATE_CADSR_OBJECTS});
     commands.add(new String[]{TaskRegistry.GRAPH_DB_SERVER_CREATE_ALL_USERS});
     commands.add(new String[]{TaskRegistry.SEARCH_REGENERATE_INDEX});
   }
