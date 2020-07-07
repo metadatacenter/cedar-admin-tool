@@ -88,6 +88,8 @@ public class CedarAdmin {
           CedarDataServices.initializeMongoClientFactoryForDocuments(
               cedarConfig.getArtifactServerConfig().getMongoConnection());
           CedarDataServices.initializeNeo4jServices(cedarConfig);
+          String version = System.getProperty("java.version");
+          out.info("Java version:" + version);
           out.info("Executing task");
           System.exit(TaskExecutor.executeOneTask(cedarConfig, firstArg, out, args));
         }
