@@ -2,7 +2,7 @@
 
 Command line tool to administer a CEDAR installation
 
-[![Build Status](https://travis-ci.org/metadatacenter/cedar-admin-tool.svg?branch=master)](https://travis-ci.org/metadatacenter/cedar-admin-tool)
+[![Build Status](https://travis-ci.com/metadatacenter/cedar-admin-tool.svg?branch=master)](https://travis-ci.com/metadatacenter/cedar-admin-tool)
 
 #### Questions
 
