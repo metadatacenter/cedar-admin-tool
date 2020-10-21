@@ -28,7 +28,13 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
   protected UserRepresentation getUserFromKeycloak(String userUUID) {
     Keycloak kc = KeycloakUtils.buildKeycloak(kcInfo);
     UserResource userResource = kc.realm(kcInfo.getKeycloakRealmName()).users().get(userUUID);
-    return userResource.toRepresentation();
+    try {
+      return userResource.toRepresentation();
+    } catch (Exception e) {
+      out.error("Error while reading userResource from Keycloak");
+      out.error(e);
+      return null;
+    }
   }
 
   protected List<UserRepresentation> listAllUsersFromKeycloak() {

@@ -50,6 +50,7 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
       out.printIndented("Home folder Id      : " + user.getHomeFolderId());
 
       String userUUID = linkedDataUtil.getUUID(user.getId(), CedarResourceType.USER);
+      out.printIndented("User Id             : " + userUUID);
       UserRepresentation userRepresentation = getUserFromKeycloak(userUUID);
       out.println();
       out.println("Data from Keycloak:", Color.YELLOW);
