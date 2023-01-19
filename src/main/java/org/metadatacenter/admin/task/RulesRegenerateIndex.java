@@ -20,7 +20,7 @@ public class RulesRegenerateIndex extends AbstractCedarAdminTaskWithAdminUser {
       requestMap.put("force", force);
       int statusCode = post(url, requestMap);
       if (statusCode == HttpStatus.SC_OK) {
-        out.info("The rules index regeneration was successfully started. Please inspect the research server log for progress!");
+        out.info("The rules index regeneration was successfully started. Please inspect the resource server log for progress!");
       } else {
         out.error("Error while requesting index regeneration. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
