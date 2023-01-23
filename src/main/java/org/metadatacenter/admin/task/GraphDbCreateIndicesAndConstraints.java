@@ -19,6 +19,8 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
   public int execute() {
     AdminServiceSession adminSession = createUnconditionalCedarAdminSession(cedarConfig);
 
+    removeAllConstraintsAndIndices(adminSession);
+
     // Global unique ID constraint
     createUniqueConstraint(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
 
@@ -87,6 +89,11 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
 
     return 0;
+  }
+
+  private void removeAllConstraintsAndIndices(AdminServiceSession adminSession) {
+    out.info("Removing all constraints and indices");
+    adminSession.removeAllConstraintsAndIndices();
   }
 
   private void createIndex(AdminServiceSession adminSession, NodeLabel nodeLabel, NodeProperty property) {
