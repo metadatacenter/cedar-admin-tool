@@ -29,7 +29,7 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
   @Override
   public int execute() {
     out.println();
-    out.println("Data from MongoDB:", Color.YELLOW);
+    out.println("Data from Neo4j:", Color.YELLOW);
 
     UserService userService = getNeoUserService();
 
