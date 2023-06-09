@@ -35,6 +35,8 @@ public class TaskRegistry {
 
   public static final String USER_PROFILE_UPDATE_ALL_UPDATE_PERMISSIONS = "userProfile-updateAll-updatePermissions";
 
+  public static final String USER_PROFILE_RESET_UI_PREFERENCES = "userProfile-reset-UIPreferences";
+
   public static final String SEARCH_REGENERATE_INDEX = "search-regenerateIndex";
 
   public static final String SEARCH_GENERATE_EMPTY_INDEX = "search-generateEmptyIndex";
@@ -70,6 +72,7 @@ public class TaskRegistry {
     taskMap.put(USER_PROFILE_GET_ADMIN, UserProfileGetAdmin.class);
     taskMap.put(USER_PROFILE_LIST_ALL, UserProfileListAll.class);
     taskMap.put(USER_PROFILE_UPDATE_ALL_UPDATE_PERMISSIONS, UserProfileUpdateAllUpdatePermissions.class);
+    taskMap.put(USER_PROFILE_RESET_UI_PREFERENCES, UserProfileResetUIPreferences.class);
 
     taskMap.put(SEARCH_REGENERATE_INDEX, SearchRegenerateIndex.class);
     taskMap.put(SEARCH_GENERATE_EMPTY_INDEX, SearchGenerateEmptyIndex.class);
