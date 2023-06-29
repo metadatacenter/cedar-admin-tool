@@ -33,6 +33,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
     } catch (Exception e) {
       out.error("Error while reading userResource from Keycloak");
       out.error(e);
+      out.error("Java version:" + System. getProperty("java.version"));
       return null;
     }
   }
