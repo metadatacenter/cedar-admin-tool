@@ -29,6 +29,8 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.CREATED_ON_TS);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.SPECIAL_FOLDER);
 
     // Groups
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.ID);
@@ -71,6 +73,7 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.IS_BASED_ON);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.DERIVED_FROM);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.VERSION);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.PREVIOUS_VERSION);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.PUBLICATION_STATUS);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.IS_LATEST_VERSION);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.EVERYBODY_PERMISSION);
@@ -79,6 +82,9 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.EVERYBODY_PERMISSION);
+    createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.IS_USER_HOME);
+    createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.CREATED_ON_TS);
 
     createIndex(adminSession, NodeLabel.FIELD, NodeProperty.ID);
 
