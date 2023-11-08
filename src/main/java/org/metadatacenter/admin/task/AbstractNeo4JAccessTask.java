@@ -2,7 +2,6 @@ package org.metadatacenter.admin.task;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.bridge.CedarDataServices;
-import org.metadatacenter.config.BlueprintUserProfile;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.rest.context.CedarRequestContext;
@@ -10,14 +9,11 @@ import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.*;
 import org.metadatacenter.server.security.model.user.CedarSuperRole;
 import org.metadatacenter.server.security.model.user.CedarUser;
-import org.metadatacenter.server.security.model.user.CedarUserApiKey;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.server.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public abstract class AbstractNeo4JAccessTask extends AbstractKeycloakReadingTask {
