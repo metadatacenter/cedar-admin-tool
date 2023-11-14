@@ -11,8 +11,6 @@ import org.metadatacenter.constant.CedarConstants;
 import org.metadatacenter.server.security.KeycloakUtilInfo;
 import org.metadatacenter.server.security.KeycloakUtils;
 
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +46,7 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
     while (readMore) {
       List<UserRepresentation> partialUsers = realm.users().search(null, users.size(), batchSize);
       out.info("Read " + partialUsers.size() + " users from " + users.size());
-      if (partialUsers.size() > 0) {
+      if (!partialUsers.isEmpty()) {
         users.addAll(partialUsers);
       } else {
         readMore = false;
@@ -71,6 +69,28 @@ public abstract class AbstractKeycloakReadingTask extends AbstractCedarAdminTask
       i++;
     }
     return users;
+  }
+
+  protected UserRepresentation getAdminUserFromKeycloak() {
+    String userName = cedarConfig.getAdminUserConfig().getUserName();
+    Keycloak kc = KeycloakUtils.buildKeycloak(kcInfo);
+    RealmResource realm = kc.realm(kcInfo.getKeycloakRealmName());
+    out.info("Reading admin user from Keycloak");
+    UserRepresentation user = null;
+    List<UserRepresentation> candidateUsers = realm.users().searchByUsername(userName, true);
+    if (candidateUsers.size() == 1) {
+      user = candidateUsers.get(0);
+    }
+    if (user != null) {
+      UserResource userResource = realm.users().get(user.getId());
+      List<RoleRepresentation> roleRepresentations = userResource.roles().realmLevel().listEffective();
+      List<String> realmRoles = new ArrayList<>();
+      for (RoleRepresentation rr : roleRepresentations) {
+        realmRoles.add(rr.getName());
+      }
+      user.setRealmRoles(realmRoles);
+    }
+    return user;
   }
 
   protected void printOutUser(AdminOutput out, UserRepresentation ur) {

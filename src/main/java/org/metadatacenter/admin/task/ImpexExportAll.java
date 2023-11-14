@@ -129,18 +129,19 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
 
     out.info("Exporting users");
-    Path userExportPath = Paths.get(exportDir).resolve("users");
+    Path exportPath = Paths.get(exportDir);
+    Path userExportPath = exportPath.resolve("users");
     serializeUsers(userExportPath);
 
     out.info("Exporting groups");
-    Path groupExportPath = Paths.get(exportDir).resolve("groups");
+    Path groupExportPath = exportPath.resolve("groups");
     serializeGroups(groupExportPath);
 
     String rootPath = neo4jFolderSession.getRootPath();
     FolderServerFolder rootFolder = neo4jFolderSession.findFolderByPath(rootPath);
 
     out.info("Exporting resources");
-    Path resourceExportPath = Paths.get(exportDir).resolve("resources");
+    Path resourceExportPath = exportPath.resolve("resources");
     walkFolder(resourceExportPath, rootFolder, 0);
 
     return 0;
@@ -149,8 +150,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
   private int walkFolder(Path path, FileSystemResource node, int idx) {
     idx++;
-    if (node instanceof FolderServerFolder) {
-      FolderServerFolder folder = (FolderServerFolder) node;
+    if (node instanceof FolderServerFolder folder) {
       Path candidateFolder = serializeFolder(path, folder, idx);
       List<FileSystemResource> folderContents = neo4jFolderSession.findFolderContentsFiltered(folder.getResourceId(), resourceTypeList,
           ResourceVersionFilter.ALL, ResourcePublicationStatusFilter.ALL, EXPORT_MAX_COUNT, 0, sortList);

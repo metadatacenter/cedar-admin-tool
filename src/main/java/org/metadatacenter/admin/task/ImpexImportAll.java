@@ -14,7 +14,6 @@ import org.bson.Document;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
-import org.metadatacenter.id.CedarResourceId;
 import org.metadatacenter.id.CedarUntypedResourceId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.RelationLabel;
@@ -116,7 +115,8 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     deleteAllMongoData();
 
     out.info("Importing users into Mongo");
-    Path userImportPath = Paths.get(importDir).resolve("users");
+    Path importPath = Paths.get(importDir);
+    Path userImportPath = importPath.resolve("users");
     processFolder(userImportPath, this::importUserIntoMongo);
 
     out.info("Deleting everything from Neo4J");
@@ -128,11 +128,11 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     processFolder(userImportPath, this::importUserIntoNeo);
 
     out.info("Importing groups");
-    Path groupImportPath = Paths.get(importDir).resolve("groups");
+    Path groupImportPath = importPath.resolve("groups");
     processFolder(groupImportPath, this::importGroup);
 
     out.info("Importing resources");
-    Path resourceImportPath = Paths.get(importDir).resolve("resources");
+    Path resourceImportPath = importPath.resolve("resources");
     processFolder(resourceImportPath, this::importResource);
 
     return 0;
