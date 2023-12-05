@@ -1,6 +1,6 @@
 package org.metadatacenter.admin.task;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
