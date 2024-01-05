@@ -3,7 +3,7 @@ package org.metadatacenter.admin.task;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
