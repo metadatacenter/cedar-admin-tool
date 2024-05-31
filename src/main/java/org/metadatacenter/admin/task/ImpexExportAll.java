@@ -176,12 +176,12 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     Path wrapperDir = folderDir.resolve(uuid);
     folderDir.toFile().mkdirs();
 
-    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(rid);
+    //List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(rid);
     List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(rid);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.NODE_SUFFIX, folder);
-    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    //contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
     contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
 
     createZippedContent(folderDir, uuid, contents);
@@ -208,13 +208,13 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     wrapperDir.toFile().mkdirs();
 
     JsonNode resource = getArtifactServerContent(id, resourceType);
-    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(rid);
+    //List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(rid);
     List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(rid);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.CONTENT_SUFFIX, resource);
     contents.put(ImportExportConstants.NODE_SUFFIX, node);
-    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    //contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
     contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
 
     createZippedContent(wrapperDir, uuid, contents);
@@ -260,13 +260,13 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     wrapperDir.toFile().mkdirs();
 
     FolderServerUser neoUser = neo4jUserSession.getUser(u.getResourceId());
-    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(uid);
+    //List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(uid);
     List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(uid);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.CONTENT_SUFFIX, u);
     contents.put(ImportExportConstants.NODE_SUFFIX, neoUser);
-    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    //contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
     contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
 
     createZippedContent(wrapperDir, uuid, contents);
@@ -290,12 +290,12 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     Path wrapperDir = path.resolve(partition);
     wrapperDir.toFile().mkdirs();
 
-    List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(gid);
+    //List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(gid);
     List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(gid);
 
     Map<String, Object> contents = new HashMap<>();
     contents.put(ImportExportConstants.NODE_SUFFIX, g);
-    contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
+    //contents.put(ImportExportConstants.OUTGOING_SUFFIX, outgoingArcs);
     contents.put(ImportExportConstants.INCOMING_SUFFIX, incomingArcs);
 
     createZippedContent(wrapperDir, uuid, contents);
