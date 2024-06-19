@@ -29,22 +29,28 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.CREATED_ON_TS);
     createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.SPECIAL_FOLDER);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_BASED_ON);
+    createIndex(adminSession, NodeLabel.RESOURCE, NodeProperty.IS_USER_HOME);
 
     // Groups
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.SPECIAL_GROUP);
 
     // Users
     createIndex(adminSession, NodeLabel.USER, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.USER, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.USER, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.USER, NodeProperty.API_KEYS);
 
     // Categories
     createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.PARENT_CATEGORY_ID);
 
     // Folders
@@ -53,6 +59,7 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.CREATED_ON_TS);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.LAST_UPDATED_ON_TS);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_ROOT);
@@ -68,6 +75,7 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.CREATED_ON_TS);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.LAST_UPDATED_ON_TS);
     createIndex(adminSession, NodeLabel.ARTIFACT, NodeProperty.IS_BASED_ON);
@@ -84,6 +92,7 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.NAME);
+    createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.EVERYBODY_PERMISSION);
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.IS_USER_HOME);
     createIndex(adminSession, NodeLabel.FILESYSTEM_RESOURCE, NodeProperty.CREATED_ON_TS);
