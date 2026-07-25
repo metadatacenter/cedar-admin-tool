@@ -7,7 +7,7 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariable;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.SystemComponent;
-import org.metadatacenter.util.test.TestUtil;
+import org.metadatacenter.config.environment.CedarEnvironmentSource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,9 @@ public class CedarConfigAdminToolTest {
 
   @Before
   public void setEnvironment() {
-    Map<String, String> env = new HashMap<>();
+    // Base on the current environment: the override replaces the whole sandbox, and the
+    // variables not overridden here must keep their profile values
+    Map<String, String> env = new HashMap<>(CedarEnvironmentSource.getAll());
 
     env.put(CedarEnvironmentVariable.CEDAR_HOME.getName(), "/home/cedar/");
 
@@ -46,7 +48,7 @@ public class CedarConfigAdminToolTest {
 
     env.put(CedarEnvironmentVariable.CEDAR_SALT_API_KEY.getName(), "saltme");
 
-    TestUtil.setEnv(env);
+    CedarEnvironmentSource.setOverride(env);
   }
 
   @Test
