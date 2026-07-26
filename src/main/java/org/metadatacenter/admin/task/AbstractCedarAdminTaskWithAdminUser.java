@@ -1,8 +1,9 @@
 package org.metadatacenter.admin.task;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.util.Timeout;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.util.json.JsonMapper;
@@ -35,13 +36,13 @@ public abstract class AbstractCedarAdminTaskWithAdminUser extends AbstractCedarA
 
   protected int post(String url, Map<String, Object> requestMap) throws IOException {
     String authString = adminUser.getFirstApiKeyAuthHeader();
-    Request request = Request.Post(url)
+    Request request = Request.post(url)
         .bodyString(JsonMapper.MAPPER.writeValueAsString(requestMap), ContentType.APPLICATION_JSON)
-        .connectTimeout(CONNECTION_TIMEOUT)
-        .socketTimeout(SOCKET_TIMEOUT)
+        .connectTimeout(Timeout.ofMilliseconds(CONNECTION_TIMEOUT))
+        .responseTimeout(Timeout.ofMilliseconds(SOCKET_TIMEOUT))
         .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
-    HttpResponse response = request.execute().returnResponse();
-    return response.getStatusLine().getStatusCode();
+    ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse();
+    return response.getCode();
   }
 
 }

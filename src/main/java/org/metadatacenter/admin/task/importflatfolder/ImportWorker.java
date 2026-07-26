@@ -2,10 +2,11 @@ package org.metadatacenter.admin.task.importflatfolder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.util.Timeout;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
@@ -76,13 +77,13 @@ public class ImportWorker {
             String url =
                 cedarConfig.getServers().getResource().getBase() + resourceType.getPrefix() + "?" + QP_FOLDER_ID + "=" + new URLCodec().encode(folderId);
             out.println("***IMPORT:" + url);
-            Request request = Request.Post(url)
+            Request request = Request.post(url)
                 .bodyString(contentNode.toString(), ContentType.APPLICATION_JSON)
-                .connectTimeout(CONNECTION_TIMEOUT)
-                .socketTimeout(SOCKET_TIMEOUT)
+                .connectTimeout(Timeout.ofMilliseconds(CONNECTION_TIMEOUT))
+                .responseTimeout(Timeout.ofMilliseconds(SOCKET_TIMEOUT))
                 .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
-            HttpResponse response = request.execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
+            ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse();
+            int statusCode = response.getCode();
             if (statusCode == HttpStatus.SC_CREATED) {
               out.println("The document was created");
             } else {
