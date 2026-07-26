@@ -1,8 +1,9 @@
 package org.metadatacenter.cedar.admintool.config;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariable;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public class CedarConfigAdminToolTest {
 
-  @Before
+  @BeforeEach
   public void setEnvironment() {
     // Base on the current environment: the override replaces the whole sandbox, and the
     // variables not overridden here must keep their profile values
@@ -56,7 +57,7 @@ public class CedarConfigAdminToolTest {
     SystemComponent systemComponent = SystemComponent.ADMIN_TOOL;
     Map<String, String> environment = CedarEnvironmentVariableProvider.getFor(systemComponent);
     CedarConfig instance = CedarConfig.getInstance(environment);
-    Assert.assertNotNull(instance);
+    assertNotNull(instance);
   }
 
 }
