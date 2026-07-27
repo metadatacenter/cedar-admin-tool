@@ -1,6 +1,6 @@
 package org.metadatacenter.admin.task;
 
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 
 import java.util.HashMap;
 import java.util.Map;
