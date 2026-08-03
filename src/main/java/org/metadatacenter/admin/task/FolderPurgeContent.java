@@ -53,10 +53,10 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
 
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
-    FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(cedarRequestContext);
-    ResourcePermissionServiceSession permissionSession = CedarDataServices.getResourcePermissionServiceSession(cedarRequestContext);
+    FolderServiceSession folderSession = CedarDataServices.getInstance().getFolderServiceSession(cedarRequestContext);
+    ResourcePermissionServiceSession permissionSession = CedarDataServices.getInstance().getResourcePermissionServiceSession(cedarRequestContext);
 
-    MongoClient mongoClient = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+    MongoClient mongoClient = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
 
     FolderServerFolder folder = folderSession.findFolderById(fid);
     if (folder == null) {

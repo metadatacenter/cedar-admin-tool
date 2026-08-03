@@ -34,7 +34,7 @@ public class ArtifactServerInitDB extends AbstractCedarAdminTask {
 
   @Override
   public int execute() {
-    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+    MongoClient mongoClientForDocuments = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
     createUniqueIndex(mongoClientForDocuments, templateFieldsCollectionName, LinkedData.ID);
     createUniqueIndex(mongoClientForDocuments, templateElementsCollectionName, LinkedData.ID);
     createUniqueIndex(mongoClientForDocuments, templatesCollectionName, LinkedData.ID);

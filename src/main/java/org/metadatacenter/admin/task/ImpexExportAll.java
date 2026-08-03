@@ -94,7 +94,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     sortList = new ArrayList<>();
     sortList.add(DEFAULT_SORT);
 
-    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+    MongoClient mongoClientForDocuments = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
 
     MongoConfig artifactServerConfig = cedarConfig.getArtifactServerConfig();
 

@@ -26,7 +26,7 @@ public abstract class AbstractNeo4JAccessTask extends AbstractKeycloakReadingTas
   protected AdminServiceSession createCedarAdminSession(CedarConfig cedarConfig) {
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
-    return CedarDataServices.getAdminServiceSession(cedarRequestContext);
+    return CedarDataServices.getInstance().getAdminServiceSession(cedarRequestContext);
   }
 
   protected AdminServiceSession createUnconditionalCedarAdminSession(CedarConfig cedarConfig) {
@@ -49,30 +49,30 @@ public abstract class AbstractNeo4JAccessTask extends AbstractKeycloakReadingTas
     } catch (CedarAccessException e) {
       log.error("Error while creating unconditional admin user", e);
     }
-    return CedarDataServices.getAdminServiceSession(cedarRequestContext);
+    return CedarDataServices.getInstance().getAdminServiceSession(cedarRequestContext);
   }
 
   protected FolderServiceSession createCedarFolderSession(CedarConfig cedarConfig) {
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
-    return CedarDataServices.getFolderServiceSession(cedarRequestContext);
+    return CedarDataServices.getInstance().getFolderServiceSession(cedarRequestContext);
   }
 
   protected UserServiceSession createCedarUserSession(CedarConfig cedarConfig) {
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
-    return CedarDataServices.getUserServiceSession(cedarRequestContext);
+    return CedarDataServices.getInstance().getUserServiceSession(cedarRequestContext);
   }
 
   protected GroupServiceSession createCedarGroupSession(CedarConfig cedarConfig) {
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
-    return CedarDataServices.getGroupServiceSession(cedarRequestContext);
+    return CedarDataServices.getInstance().getGroupServiceSession(cedarRequestContext);
   }
 
   protected GraphServiceSession createCedarGraphSession(CedarConfig cedarConfig) {
     UserService userService = getNeoUserService();
     CedarRequestContext cedarRequestContext = CedarRequestContextFactory.fromAdminUser(cedarConfig, userService);
-    return CedarDataServices.getGraphServiceSession(cedarRequestContext);
+    return CedarDataServices.getInstance().getGraphServiceSession(cedarRequestContext);
   }
 }

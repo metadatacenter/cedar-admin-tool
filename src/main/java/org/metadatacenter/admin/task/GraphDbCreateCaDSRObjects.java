@@ -59,7 +59,7 @@ public class GraphDbCreateCaDSRObjects extends AbstractNeo4JAccessTask {
     CedarRequestContext userRequestContext;
     try {
       userRequestContext = CedarRequestContextFactory.fromUser(existingUser);
-      UserServiceSession userSession = CedarDataServices.getUserServiceSession(userRequestContext);
+      UserServiceSession userSession = CedarDataServices.getInstance().getUserServiceSession(userRequestContext);
       adminSession.ensureCaDSRObjectsExists(existingUser, userSession);
     } catch (CedarAccessException e) {
       out.error("Error while creating caDSR admin user.", e);

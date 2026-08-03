@@ -58,7 +58,7 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   }
 
   protected UserService getNeoUserService() {
-    return CedarDataServices.getNeoUserService();
+    return CedarDataServices.getInstance().getNeoUserService();
   }
 
   protected boolean getConfirmInput(String message) {
