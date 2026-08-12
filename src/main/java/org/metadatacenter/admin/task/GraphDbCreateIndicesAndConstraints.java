@@ -38,7 +38,10 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     // Groups
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME);
-    createIndex(adminSession, NodeLabel.GROUP, NodeProperty.NAME_LOWER);
+    // Group names are unique without regard to case. GroupsResource can only look the name up before
+    // writing, which two concurrent requests both pass; the constraint is what actually enforces it.
+    // It brings its own backing index, so NAME_LOWER needs no separate one.
+    createUniqueConstraint(adminSession, NodeLabel.GROUP, NodeProperty.NAME_LOWER);
     createIndex(adminSession, NodeLabel.GROUP, NodeProperty.SPECIAL_GROUP);
 
     // Users
