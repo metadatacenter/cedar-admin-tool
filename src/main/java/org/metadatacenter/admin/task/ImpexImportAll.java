@@ -83,7 +83,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     sortList = new ArrayList<>();
     sortList.add(DEFAULT_SORT);
 
-    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+    MongoClient mongoClientForDocuments = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
 
     MongoConfig artifactServerConfig = cedarConfig.getArtifactServerConfig();
 
@@ -145,7 +145,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
   private void deleteAllMongoData() {
     String mongoDatabaseNameForDocuments = cedarConfig.getArtifactServerConfig().getDatabaseName();
-    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+    MongoClient mongoClientForDocuments = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
 
     String templateFieldsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.FIELD.getValue());
     String templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.ELEMENT.getValue());

@@ -30,7 +30,7 @@ public class ArtifactServerWipeAll extends AbstractCedarAdminTask {
       return -1;
     }
 
-    MongoClient mongoClientForDocuments = CedarDataServices.getMongoClientFactoryForDocuments().getClient();
+    MongoClient mongoClientForDocuments = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
     emptyCollection(mongoClientForDocuments, templateFieldsCollectionName);
     emptyCollection(mongoClientForDocuments, templateElementsCollectionName);
     emptyCollection(mongoClientForDocuments, templatesCollectionName);

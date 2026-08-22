@@ -66,11 +66,11 @@ public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
             }
 
             CedarRequestContext userRequestContext = CedarRequestContextFactory.fromUser(existingUser);
-            UserServiceSession userSession = CedarDataServices.getUserServiceSession(userRequestContext);
+            UserServiceSession userSession = CedarDataServices.getInstance().getUserServiceSession(userRequestContext);
 
             userSession.addUserToEverybodyGroup(existingUser.getResourceId());
 
-            FolderServiceSession folderSession = CedarDataServices.getFolderServiceSession(userRequestContext);
+            FolderServiceSession folderSession = CedarDataServices.getInstance().getFolderServiceSession(userRequestContext);
             FolderServerFolder userHomeFolder = folderSession.findHomeFolderOf();
             if (userHomeFolder != null) {
               out.warn("User home folder is already present.");
