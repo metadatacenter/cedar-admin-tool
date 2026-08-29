@@ -4,6 +4,8 @@ import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.neo4j.NodeLabel;
 import org.metadatacenter.server.neo4j.cypher.NodeProperty;
 
+import java.util.List;
+
 public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask {
 
   public GraphDbCreateIndicesAndConstraints() {
@@ -20,6 +22,10 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     AdminServiceSession adminSession = createUnconditionalCedarAdminSession(cedarConfig);
 
     removeAllConstraintsAndIndices(adminSession);
+
+    // Historical folder nodes predate parentFolderId. The relationship remains authoritative;
+    // materialize its parent id before creating the composite sibling-name constraint.
+    backfillFolderParentIds(adminSession);
 
     // Global unique ID constraint
     createUniqueConstraint(adminSession, NodeLabel.RESOURCE, NodeProperty.ID);
@@ -53,8 +59,8 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     // Categories
     createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.ID);
     createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.NAME);
-    createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.NAME_LOWER);
-    createIndex(adminSession, NodeLabel.CATEGORY, NodeProperty.PARENT_CATEGORY_ID);
+    createUniqueConstraint(adminSession, NodeLabel.CATEGORY,
+        List.of(NodeProperty.PARENT_CATEGORY_ID, NodeProperty.NAME_LOWER));
 
     // Folders
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.ID);
@@ -62,7 +68,8 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.RESOURCE_TYPE);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NODE_SORT_ORDER);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NAME);
-    createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.NAME_LOWER);
+    createUniqueConstraint(adminSession, NodeLabel.FOLDER,
+        List.of(NodeProperty.PARENT_FOLDER_ID, NodeProperty.NAME_LOWER));
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.CREATED_ON_TS);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.LAST_UPDATED_ON_TS);
     createIndex(adminSession, NodeLabel.FOLDER, NodeProperty.IS_ROOT);
@@ -130,6 +137,17 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
   private void createUniqueConstraint(AdminServiceSession adminSession, NodeLabel nodeLabel, NodeProperty property) {
     out.info("Creating unique constraint on: " + nodeLabel.getSimpleLabel() + "." + property.getValue());
     adminSession.createUniqueConstraint(nodeLabel, property);
+  }
+
+  private void createUniqueConstraint(AdminServiceSession adminSession, NodeLabel nodeLabel,
+                                      List<NodeProperty> properties) {
+    out.info("Creating unique constraint on: " + nodeLabel.getSimpleLabel() + "." + properties);
+    adminSession.createUniqueConstraint(nodeLabel, properties);
+  }
+
+  private void backfillFolderParentIds(AdminServiceSession adminSession) {
+    out.info("Backfilling folder parent identifiers");
+    adminSession.backfillFolderParentIds();
   }
 
 }
