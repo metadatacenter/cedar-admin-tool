@@ -59,7 +59,7 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
           }
           CedarUserRolePermissionUtil.expandRolesIntoPermissions(user);
           try {
-            userService.updateUser(user);
+            userService.replaceRolesAndPermissions(user.getResourceId(), user.getRoles(), user.getPermissions());
             out.println("The user was updated");
           } catch (Exception e) {
             out.error("Error while updating user: " + ur.getEmail(), e);

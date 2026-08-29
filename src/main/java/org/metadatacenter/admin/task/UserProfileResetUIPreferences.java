@@ -71,9 +71,8 @@ public class UserProfileResetUIPreferences extends AbstractKeycloakReadingTask {
         String serializedBlue = JsonMapper.MAPPER.writeValueAsString(blueprintUiPreferences);
         CedarUserUIPreferences uiPreferences = JsonMapper.MAPPER.readValue(serializedBlue,
             CedarUserUIPreferences.class);
-        user.setUiPreferences(uiPreferences);
-        userService.updateUser(user);
-        serializedNew = JsonMapper.PRETTY_MAPPER.writeValueAsString(user.getUiPreferences());
+        userService.replaceUiPreferences(user.getResourceId(), uiPreferences);
+        serializedNew = JsonMapper.PRETTY_MAPPER.writeValueAsString(uiPreferences);
       } catch (JsonProcessingException e) {
         out.error("Error while serializing new ui preferences", e);
       }
