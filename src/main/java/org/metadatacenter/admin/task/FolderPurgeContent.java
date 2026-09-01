@@ -76,21 +76,23 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     out.info("Name: " + folder.getName());
     out.info("Path: " + folderReport.getPath());
 
+    List<FileSystemResource> allChildArtifacts = folderSession.findAllChildArtifactsOfFolder(fid);
+    int totalCount = allChildArtifacts.size();
+
+    out.info("Folder child artifact count: " + totalCount);
+    if (!confirmPurge(folder.getName(), folderId, totalCount)) {
+      return -4;
+    }
+
     Map<CedarResourceType, MongoCollection<Document>> collectionMap = new HashMap<>();
     collectionMap.put(CedarResourceType.FIELD, mongoClient.getDatabase(mongoDatabaseName).getCollection(templateFieldsCollectionName));
     collectionMap.put(CedarResourceType.ELEMENT, mongoClient.getDatabase(mongoDatabaseName).getCollection(templateElementsCollectionName));
     collectionMap.put(CedarResourceType.TEMPLATE, mongoClient.getDatabase(mongoDatabaseName).getCollection(templatesCollectionName));
     collectionMap.put(CedarResourceType.INSTANCE, mongoClient.getDatabase(mongoDatabaseName).getCollection(templateInstancesCollectionName));
 
-    List<FileSystemResource> allChildArtifacts = folderSession.findAllChildArtifactsOfFolder(fid);
-
-
     int i = 0;
     int neoCount = 0;
     int mongoCount = 0;
-    int totalCount = allChildArtifacts.size();
-
-    out.info("Folder child artifact count: " + totalCount);
 
     for (FileSystemResource r : allChildArtifacts) {
       String id = r.getId();
@@ -123,5 +125,10 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     out.warn("You should regenerate the search index using 'cedarat search-regenerateIndex' !!!");
 
     return 0;
+  }
+
+  protected boolean confirmPurge(String folderName, String folderId, int childArtifactCount) {
+    return getConfirmInput("Permanently deleting " + childArtifactCount + " child artifact(s) from folder '" +
+        folderName + "' (" + folderId + ") in Neo4j and MongoDB...");
   }
 }

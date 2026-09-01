@@ -69,6 +69,10 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   public int execute() {
     String importDir = cedarConfig.getImportExportConfig().getImportDir();
     out.println("Import dir:=>" + importDir + "<=");
+    String mongoDatabaseName = cedarConfig.getArtifactServerConfig().getDatabaseName();
+    if (!confirmReplacement(importDir, mongoDatabaseName)) {
+      return -1;
+    }
 
     prettyMapper = new ObjectMapper();
     prettyMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -136,6 +140,11 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     processFolder(resourceImportPath, this::importResource);
 
     return 0;
+  }
+
+  protected boolean confirmReplacement(String importDir, String mongoDatabaseName) {
+    return getConfirmInput("Deleting every artifact document from MongoDB database '" + mongoDatabaseName +
+        "' and all CEDAR data from Neo4j before importing from '" + importDir + "'...");
   }
 
   private void deleteAllNeo4JData() {

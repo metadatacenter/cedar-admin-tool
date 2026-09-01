@@ -3,16 +3,14 @@ package org.metadatacenter.admin.task;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.util.Timeout;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.UserService;
+import org.metadatacenter.util.http.HttpTimeouts;
 import org.metadatacenter.util.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.Map;
 
-import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
-import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 
 public abstract class AbstractCedarAdminTaskWithAdminUser extends AbstractCedarAdminTask {
@@ -38,10 +36,8 @@ public abstract class AbstractCedarAdminTaskWithAdminUser extends AbstractCedarA
     String authString = adminUser.getFirstApiKeyAuthHeader();
     Request request = Request.post(url)
         .bodyString(JsonMapper.MAPPER.writeValueAsString(requestMap), ContentType.APPLICATION_JSON)
-        .connectTimeout(Timeout.ofMilliseconds(CONNECTION_TIMEOUT))
-        .responseTimeout(Timeout.ofMilliseconds(SOCKET_TIMEOUT))
         .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
-    ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse();
+    ClassicHttpResponse response = HttpTimeouts.BATCH.execute(request);
     return response.getCode();
   }
 

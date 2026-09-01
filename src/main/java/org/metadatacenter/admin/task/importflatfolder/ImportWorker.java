@@ -6,7 +6,6 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.util.Timeout;
 import org.metadatacenter.admin.task.importexport.ImportFileDescriptor;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
@@ -14,6 +13,7 @@ import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.server.model.provenance.ProvenanceInfo;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.util.json.JsonIdUtil;
+import org.metadatacenter.util.http.HttpTimeouts;
 import org.metadatacenter.util.json.JsonMapper;
 import org.metadatacenter.util.json.JsonUtils;
 import org.metadatacenter.util.provenance.ProvenanceUtil;
@@ -21,8 +21,6 @@ import org.metadatacenter.util.provenance.ProvenanceUtil;
 import java.io.IOException;
 
 import static org.metadatacenter.constant.CedarQueryParameters.QP_FOLDER_ID;
-import static org.metadatacenter.constant.HttpConnectionConstants.CONNECTION_TIMEOUT;
-import static org.metadatacenter.constant.HttpConnectionConstants.SOCKET_TIMEOUT;
 import static org.metadatacenter.constant.HttpConstants.HTTP_HEADER_AUTHORIZATION;
 
 public class ImportWorker {
@@ -79,10 +77,8 @@ public class ImportWorker {
             out.println("***IMPORT:" + url);
             Request request = Request.post(url)
                 .bodyString(contentNode.toString(), ContentType.APPLICATION_JSON)
-                .connectTimeout(Timeout.ofMilliseconds(CONNECTION_TIMEOUT))
-                .responseTimeout(Timeout.ofMilliseconds(SOCKET_TIMEOUT))
                 .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
-            ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse();
+            ClassicHttpResponse response = HttpTimeouts.BATCH.execute(request);
             int statusCode = response.getCode();
             if (statusCode == HttpStatus.SC_CREATED) {
               out.println("The document was created");
