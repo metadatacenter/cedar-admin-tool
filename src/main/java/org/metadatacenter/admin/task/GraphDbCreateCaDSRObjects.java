@@ -19,7 +19,7 @@ public class GraphDbCreateCaDSRObjects extends AbstractNeo4JAccessTask {
   public GraphDbCreateCaDSRObjects() {
     description.add("Creates caDSR top category");
     description.add("Creates 'cadsr-admin' user");
-    description.add("Grants 'write' permission to the user regarding the category");
+    description.add("Grants the Manager role to the user on the category");
   }
 
   @Override
