@@ -219,7 +219,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     // Import user into Mongo
     CedarUser cedarUser = null;
     try {
-      cedarUser = JsonMapper.MAPPER.treeToValue(content, CedarUser.class);
+      cedarUser = JsonMapper.TOLERANT_MAPPER.treeToValue(content, CedarUser.class);
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }
