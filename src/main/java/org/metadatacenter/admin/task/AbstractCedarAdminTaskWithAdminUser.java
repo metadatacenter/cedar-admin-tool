@@ -35,7 +35,7 @@ public abstract class AbstractCedarAdminTaskWithAdminUser extends AbstractCedarA
   protected int post(String url, Map<String, Object> requestMap) throws IOException {
     String authString = adminUser.getFirstApiKeyAuthHeader();
     Request request = Request.post(url)
-        .bodyString(JsonMapper.MAPPER.writeValueAsString(requestMap), ContentType.APPLICATION_JSON)
+        .bodyString(JsonMapper.STRICT_MAPPER.writeValueAsString(requestMap), ContentType.APPLICATION_JSON)
         .addHeader(HTTP_HEADER_AUTHORIZATION, authString);
     ClassicHttpResponse response = HttpTimeouts.BATCH.execute(request);
     return response.getCode();
