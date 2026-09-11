@@ -45,7 +45,7 @@ public class ImportWorker {
     out.println();
     JsonNode infoNode = null;
     try {
-      infoNode = JsonMapper.MAPPER.readTree(descriptor.getInfo().toFile());
+      infoNode = JsonMapper.STRICT_MAPPER.readTree(descriptor.getInfo().toFile());
     } catch (IOException e) {
       out.error(e);
     }
@@ -58,7 +58,7 @@ public class ImportWorker {
 
         JsonNode contentNode = null;
         try {
-          contentNode = JsonMapper.MAPPER.readTree(descriptor.getContent().toFile());
+          contentNode = JsonMapper.STRICT_MAPPER.readTree(descriptor.getContent().toFile());
         } catch (IOException e) {
           out.error(e);
         }

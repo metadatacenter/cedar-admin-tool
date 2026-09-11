@@ -196,7 +196,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     try {
       zf = new ZipFile(p.toFile());
       InputStream in = zf.getInputStream(zf.getEntry(zipEntryName));
-      return JsonMapper.MAPPER.readTree(in);
+      return JsonMapper.STRICT_MAPPER.readTree(in);
     } catch (IOException e) {
       e.printStackTrace();
     } finally {

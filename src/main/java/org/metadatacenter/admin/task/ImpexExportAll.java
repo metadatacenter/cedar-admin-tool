@@ -319,7 +319,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private void addZipJsonExport(ZipOutputStream zipOut, String suffix, Object o) throws IOException {
     ZipEntry zipEntry = new ZipEntry(suffix);
     zipOut.putNextEntry(zipEntry);
-    String s = prettyMapper.writeValueAsString(JsonMapper.MAPPER.valueToTree(o));
+    String s = prettyMapper.writeValueAsString(JsonMapper.STRICT_MAPPER.valueToTree(o));
     zipOut.write(s.getBytes(StandardCharsets.UTF_8));
   }
 
