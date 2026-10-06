@@ -73,7 +73,7 @@ public class ImportWorker {
           String authString = newOwner.getFirstApiKeyAuthHeader();
           try {
             String url =
-                cedarConfig.getServers().getResource().getBase() + resourceType.getPrefix() + "?" + QP_FOLDER_ID + "=" + new URLCodec().encode(folderId);
+                cedarConfig.getServers().getResource().getBase() + resourceType.getPrefix() + "?" + QP_FOLDER_ID + "=" + new URLCodec().encode(cedarConfig.getLinkedDataUtil().resourceRequestId(folderId));
             out.println("***IMPORT:" + url);
             Request request = Request.post(url)
                 .bodyString(contentNode.toString(), ContentType.APPLICATION_JSON)
