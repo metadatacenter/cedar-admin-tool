@@ -81,52 +81,12 @@
 
     <dependency>
       <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-common</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-adapter-core</artifactId>
-      <!--
-        This declaration is nearer than the one in cedar-auth-operations-keycloak-library, so it
-        repeats that library's exclusion of the Keycloak server SPI, which the adapter reaches through
-        keycloak-crypto-default and nothing in the tool uses.
-      -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.keycloak</groupId>
-          <artifactId>keycloak-server-spi</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.keycloak</groupId>
-          <artifactId>keycloak-server-spi-private</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.keycloak</groupId>
       <artifactId>keycloak-admin-client-jakarta</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-client</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jackson2-provider</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
 
     <dependency>
