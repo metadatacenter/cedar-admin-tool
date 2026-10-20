@@ -33,11 +33,16 @@ public class GraphDbCreateCaDSRObjects extends AbstractNeo4JAccessTask {
 
     UserRepresentation caDSRAdminRepresentation = null;
 
+    String caDSRAdminUserName = cedarConfig.getCaDSRAdminUserConfig().getUserName();
     List<UserRepresentation> userRepresentations = listAllUsersFromKeycloak();
     for (UserRepresentation ur : userRepresentations) {
-      if (cedarConfig.getCaDSRAdminUserConfig().getUserName().equals(ur.getUsername())) {
+      if (caDSRAdminUserName.equals(ur.getUsername())) {
         caDSRAdminRepresentation = ur;
       }
+    }
+    if (caDSRAdminRepresentation == null) {
+      out.error("Keycloak has no user named '" + caDSRAdminUserName + "'. Create that user first.");
+      return -1;
     }
 
     CedarUser caDSRAdminExtract = new CedarUser();
