@@ -90,6 +90,11 @@ class GraphDbCreateIndicesAndConstraintsTest {
         constraint(NodeLabel.FOLDER, NodeProperty.PARENT_FOLDER_ID, NodeProperty.NAME_LOWER))) {
       assertTrue(constraints.contains(expected), "missing uniqueness rule " + expected + " in " + constraints);
     }
+    // The servers' own constraints, which removing the old schema took away with everything else.
+    for (String expected : List.of("CedarVersionLock[id]", "CedarVersionProjection[resourceId]",
+        "CedarArtifactCreateCleanup[jobId]")) {
+      assertTrue(constraints.contains(expected), "the task should restore " + expected + ": " + constraints);
+    }
 
     Set<String> indexes = indexNames();
     for (NodeLabel label : List.of(NodeLabel.GROUP, NodeLabel.USER, NodeLabel.CATEGORY, NodeLabel.FOLDER,
@@ -181,6 +186,11 @@ class GraphDbCreateIndicesAndConstraintsTest {
     @Override
     public boolean createIndex(NodeLabel nodeLabel, NodeProperty property) {
       return delegate.createIndex(nodeLabel, property);
+    }
+
+    @Override
+    public void ensureServerSchema() {
+      delegate.ensureServerSchema();
     }
   }
 
