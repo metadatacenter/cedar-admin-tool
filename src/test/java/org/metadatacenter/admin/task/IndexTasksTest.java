@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Four tasks ask the resource server to rebuild or empty the search and rules indexes, as the administrator. The
+ * Two tasks ask the resource server to rebuild or empty the search index, as the administrator. The
  * request either starts the work, and the task succeeds, or the server refuses it, and the task fails, so that a
  * script or system-reset that runs it stops there. Here the resource server's address points at a local stand-in.
  */
@@ -32,12 +32,9 @@ class IndexTasksTest {
   private record Case(String key, Supplier<AbstractCedarAdminTaskWithAdminUser> task, String path, Boolean force) {
   }
 
-  @SuppressWarnings("deprecation")
   private static final List<Case> CASES = List.of(
       new Case("search-regenerateIndex", SearchRegenerateIndex::new, "/command/regenerate-search-index", true),
-      new Case("search-generateEmptyIndex", SearchGenerateEmptyIndex::new, "/command/generate-empty-search-index", null),
-      new Case("rules-regenerateIndex", RulesRegenerateIndex::new, "/command/regenerate-rules-index", true),
-      new Case("rules-generateEmptyIndex", RulesGenerateEmptyIndex::new, "/command/generate-empty-rules-index", null));
+      new Case("search-generateEmptyIndex", SearchGenerateEmptyIndex::new, "/command/generate-empty-search-index", null));
 
   private static StubHttpServer resourceServer;
   private static Map<String, String> environmentBefore;
