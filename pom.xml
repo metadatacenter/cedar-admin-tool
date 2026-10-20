@@ -18,6 +18,8 @@
   <properties>
 
     <assembly.targetDir>${project.basedir}/dist</assembly.targetDir>
+    <!-- Line coverage measured on 2026-10-19: 10.7%. The build fails below this floor. -->
+    <cedar.coverage.line.minimum>0.08</cedar.coverage.line.minimum>
   </properties>
 
   <scm>
