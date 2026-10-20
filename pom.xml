@@ -105,6 +105,13 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- The embedded MongoDB and Neo4j the provisioning tasks are tested against. -->
+    <dependency>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-test-support-library</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
