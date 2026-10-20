@@ -27,6 +27,10 @@ final class Console {
     try {
       T result = task.call();
       return new Run<>(result, printed.toString(StandardCharsets.UTF_8));
+    } catch (Exception | Error e) {
+      // A task that throws leaves its output as the only account of what it did, so it is not swallowed.
+      originalOut.print(printed.toString(StandardCharsets.UTF_8));
+      throw e;
     } finally {
       System.setIn(originalIn);
       System.setOut(originalOut);
