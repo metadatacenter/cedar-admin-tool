@@ -61,6 +61,14 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
     return CedarDataServices.getInstance().getNeoUserService();
   }
 
+  /** A secret as the console shows it: hidden, apart from as many of its last characters as are given. */
+  protected static String masked(String secret, int shown) {
+    if (secret == null || secret.isEmpty()) {
+      return "(not set)";
+    }
+    return "********" + (secret.length() > 2 * shown ? secret.substring(secret.length() - shown) : "");
+  }
+
   protected boolean getConfirmInput(String message) {
     out.warn(message);
     out.warn("You need to confirm your intent by entering '" + CONFIRM + "'!");

@@ -12,7 +12,7 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTaskWithAdminUser {
     description.add("Note that the Resource server must be running before executing this command");
   }
 
-  private void regenerateSearchIndex(boolean force) {
+  private boolean regenerateSearchIndex(boolean force) {
     out.info("Requesting search index regeneration. Force:" + force);
     try {
       String url = cedarConfig.getServers().getResource().getRegenerateSearchIndex();
@@ -21,6 +21,7 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTaskWithAdminUser {
       int statusCode = post(url, requestMap);
       if (statusCode == HttpStatus.SC_OK) {
         out.info("The search index regeneration was successfully started. Please inspect the resource server log for progress!");
+        return true;
       } else {
         out.error("Error while requesting index regeneration. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
@@ -29,12 +30,12 @@ public class SearchRegenerateIndex extends AbstractCedarAdminTaskWithAdminUser {
       out.error("Error while regenerating search index", e);
       out.error("The requested task was not completed!");
     }
+    return false;
   }
 
   @Override
   public int execute() {
-    regenerateSearchIndex(true);
-    return 0;
+    return regenerateSearchIndex(true) ? 0 : -1;
   }
 
 }

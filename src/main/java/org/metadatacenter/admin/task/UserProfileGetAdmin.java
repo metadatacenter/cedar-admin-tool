@@ -19,8 +19,8 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
     out.println();
     out.println("Data from config:", Color.YELLOW);
     out.printIndented("cedarAdminUserName    : " + kcInfo.getCedarAdminUserName());
-    out.printIndented("cedarAdminUserPassword: " + kcInfo.getCedarAdminUserPassword());
-    out.printIndented("cedarAdminUserApiKey  : " + kcInfo.getCedarAdminUserApiKey());
+    out.printIndented("cedarAdminUserPassword: " + masked(kcInfo.getCedarAdminUserPassword(), 0));
+    out.printIndented("cedarAdminUserApiKey  : " + masked(kcInfo.getCedarAdminUserApiKey(), 4));
     out.printIndented("keycloakClientId      : " + kcInfo.getKeycloakClientId());
     out.printIndented("keycloakRealmName     : " + kcInfo.getKeycloakRealmName());
     out.printIndented("keycloakBaseURI       : " + kcInfo.getKeycloakBaseURI());
@@ -34,15 +34,13 @@ public class UserProfileGetAdmin extends AbstractKeycloakReadingTask {
     UserService userService = getNeoUserService();
 
     CedarUser user = null;
-    boolean exceptionWhileReading = false;
     try {
       user = userService.findUserByApiKey(kcInfo.getCedarAdminUserApiKey());
     } catch (Exception e) {
-      out.error("Error while reading user for apiKey: " + kcInfo.getCedarAdminUserApiKey(), e);
-      exceptionWhileReading = true;
+      out.error("Error while reading user for apiKey: " + masked(kcInfo.getCedarAdminUserApiKey(), 4), e);
     }
 
-    if (user == null && !exceptionWhileReading) {
+    if (user == null) {
       out.printIndented(kcInfo.getCedarAdminUserName() + " user was not found in neo4j", Color.RED);
     } else {
       out.printIndented(kcInfo.getCedarAdminUserName() + " user was found in neo4j", Color.GREEN);

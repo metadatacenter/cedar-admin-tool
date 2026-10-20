@@ -20,7 +20,7 @@ public class RulesRegenerateIndex extends AbstractCedarAdminTaskWithAdminUser {
     description.add("Note that the Resource server must be running before executing this command");
   }
 
-  private void regenerateRulesIndex(boolean force) {
+  private boolean regenerateRulesIndex(boolean force) {
     out.warn("This command is deprecated: it empties the rules index instead of regenerating it.");
     out.warn("Every mined rule will be discarded and recommendations will stop returning results.");
     out.info("Requesting rules index regeneration. Force:" + force);
@@ -31,6 +31,7 @@ public class RulesRegenerateIndex extends AbstractCedarAdminTaskWithAdminUser {
       int statusCode = post(url, requestMap);
       if (statusCode == HttpStatus.SC_OK) {
         out.info("The rules index regeneration was successfully started. Please inspect the resource server log for progress!");
+        return true;
       } else {
         out.error("Error while requesting index regeneration. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
@@ -39,12 +40,12 @@ public class RulesRegenerateIndex extends AbstractCedarAdminTaskWithAdminUser {
       out.error("Error while regenerating rules index", e);
       out.error("The requested task was not completed!");
     }
+    return false;
   }
 
   @Override
   public int execute() {
-    regenerateRulesIndex(true);
-    return 0;
+    return regenerateRulesIndex(true) ? 0 : -1;
   }
 
 }

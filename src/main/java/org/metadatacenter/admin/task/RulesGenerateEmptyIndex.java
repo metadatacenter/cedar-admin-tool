@@ -12,7 +12,7 @@ public class RulesGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUser
     description.add("Note that the Resource server must be running before executing this command");
   }
 
-  private void generateEmptyRulesIndex() {
+  private boolean generateEmptyRulesIndex() {
     out.info("Requesting empty rules index generation.");
     try {
       String url = cedarConfig.getServers().getResource().getGenerateEmptyRulesIndex();
@@ -20,6 +20,7 @@ public class RulesGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUser
       int statusCode = post(url, requestMap);
       if (statusCode == HttpStatus.SC_OK) {
         out.info("The rules empty index generation was successfully started. Please inspect the resource server log for progress!");
+        return true;
       } else {
         out.error("Error while requesting empty index generation. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
@@ -28,12 +29,12 @@ public class RulesGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUser
       out.error("Error while generating empty rules index", e);
       out.error("The requested task was not completed!");
     }
+    return false;
   }
 
   @Override
   public int execute() {
-    generateEmptyRulesIndex();
-    return 0;
+    return generateEmptyRulesIndex() ? 0 : -1;
   }
 
 }
