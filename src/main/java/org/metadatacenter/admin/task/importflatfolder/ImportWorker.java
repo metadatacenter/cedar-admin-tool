@@ -41,7 +41,8 @@ public class ImportWorker {
     this.folderId = folderId;
   }
 
-  public void importFile(ImportFileDescriptor descriptor) {
+  /** Posts one document to the resource server, and answers whether the server created it. */
+  public boolean importFile(ImportFileDescriptor descriptor) {
     out.println();
     JsonNode infoNode = null;
     try {
@@ -82,6 +83,7 @@ public class ImportWorker {
             int statusCode = response.getCode();
             if (statusCode == HttpStatus.SC_CREATED) {
               out.println("The document was created");
+              return true;
             } else {
               out.println("The document was not created");
             }
@@ -93,5 +95,6 @@ public class ImportWorker {
       }
 
     }
+    return false;
   }
 }

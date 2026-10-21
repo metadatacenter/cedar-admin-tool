@@ -12,7 +12,7 @@ public class SearchGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUse
     description.add("Note that the Resource server must be running before executing this command");
   }
 
-  private void generateEmptySearchIndex() {
+  private boolean generateEmptySearchIndex() {
     out.info("Requesting empty search index generation.");
     try {
       String url = cedarConfig.getServers().getResource().getGenerateEmptySearchIndex();
@@ -20,6 +20,7 @@ public class SearchGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUse
       int statusCode = post(url, requestMap);
       if (statusCode == HttpStatus.SC_OK) {
         out.info("The search empty index generation was successfully started. Please inspect the resource server log for progress!");
+        return true;
       } else {
         out.error("Error while requesting empty index generation. HTTP status code: " + statusCode);
         out.error("The requested task was not completed!");
@@ -28,12 +29,12 @@ public class SearchGenerateEmptyIndex extends AbstractCedarAdminTaskWithAdminUse
       out.error("Error while generating empty search index", e);
       out.error("The requested task was not completed!");
     }
+    return false;
   }
 
   @Override
   public int execute() {
-    generateEmptySearchIndex();
-    return 0;
+    return generateEmptySearchIndex() ? 0 : -1;
   }
 
 }

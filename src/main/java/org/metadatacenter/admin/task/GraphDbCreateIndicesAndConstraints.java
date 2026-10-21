@@ -121,6 +121,10 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
 
     createIndex(adminSession, NodeLabel.INSTANCE, NodeProperty.ID);
 
+    // Removing every constraint above also removed the ones the servers create at startup, and a
+    // running server does not create them again until it restarts.
+    adminSession.ensureServerSchema();
+
     return 0;
   }
 

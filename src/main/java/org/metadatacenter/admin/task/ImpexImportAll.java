@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.bson.BsonDocument;
@@ -14,10 +13,13 @@ import org.bson.Document;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.MongoConfig;
+import org.metadatacenter.exception.security.CedarAccessException;
 import org.metadatacenter.id.CedarUntypedResourceId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.RelationLabel;
 import org.metadatacenter.model.folderserver.basic.FileSystemResource;
+import org.metadatacenter.rest.context.CedarRequestContext;
+import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.GraphServiceSession;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -51,7 +53,6 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   private static TemplateElementService<String, JsonNode> templateElementService;
   private static TemplateService<String, JsonNode> templateService;
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
-  private static UserService userService;
 
 
   public ImpexImportAll() {
@@ -69,6 +70,19 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   public int execute() {
     String importDir = cedarConfig.getImportExportConfig().getImportDir();
     out.println("Import dir:=>" + importDir + "<=");
+    Path importPath = Paths.get(importDir);
+    Path userImportPath = importPath.resolve("users");
+    Path groupImportPath = importPath.resolve("groups");
+    Path resourceImportPath = importPath.resolve("resources");
+
+    // The import acts throughout as the export's administrator, recognized by the configured API key, so it needs an
+    // administrator neither in the graph it replaces nor in the one it builds.
+    CedarRequestContext administrator = exportedAdministrator(userImportPath);
+    if (administrator == null) {
+      out.error("The import holds no user with the configured administrator's API key. Nothing was changed.");
+      return -1;
+    }
+
     String mongoDatabaseName = cedarConfig.getArtifactServerConfig().getDatabaseName();
     if (!confirmReplacement(importDir, mongoDatabaseName)) {
       return -1;
@@ -111,33 +125,35 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
         artifactServerConfig.getDatabaseName(),
         artifactServerConfig.getMongoCollectionName(CedarResourceType.INSTANCE));
 
-    userService = getNeoUserService();
-
     linkedDataUtil = cedarConfig.getLinkedDataUtil();
 
     out.info("Deleting data from MongoDB");
     deleteAllMongoData();
 
-    out.info("Importing users into Mongo");
-    Path importPath = Paths.get(importDir);
-    Path userImportPath = importPath.resolve("users");
-    processFolder(userImportPath, this::importUserIntoMongo);
-
     out.info("Deleting everything from Neo4J");
-    deleteAllNeo4JData();
+    AdminServiceSession adminSession = CedarDataServices.getInstance().getAdminServiceSession(administrator);
+    adminSession.wipeAllData();
 
-    neo4jGraphSession = createCedarGraphSession(cedarConfig);
+    neo4jGraphSession = CedarDataServices.getInstance().getGraphServiceSession(administrator);
 
-    out.info("Importing users into Neo4j");
-    processFolder(userImportPath, this::importUserIntoNeo);
+    out.info("Importing users");
+    processFolder(userImportPath, this::importUser);
 
     out.info("Importing groups");
-    Path groupImportPath = importPath.resolve("groups");
     processFolder(groupImportPath, this::importGroup);
 
     out.info("Importing resources");
-    Path resourceImportPath = importPath.resolve("resources");
     processFolder(resourceImportPath, this::importResource);
+
+    // An arc joins two nodes, either of which an archive read later may hold, so the arcs wait for every node.
+    out.info("Importing arcs");
+    processFolder(userImportPath, this::importIncomingArcs);
+    processFolder(groupImportPath, this::importIncomingArcs);
+    processFolder(resourceImportPath, this::importIncomingArcs);
+
+    // A folder records its parent's identifier, which the export leaves to the CONTAINS arcs.
+    out.info("Recording each folder's parent");
+    adminSession.backfillFolderParentIds();
 
     return 0;
   }
@@ -145,11 +161,6 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   protected boolean confirmReplacement(String importDir, String mongoDatabaseName) {
     return getConfirmInput("Deleting every artifact document from MongoDB database '" + mongoDatabaseName +
         "' and all CEDAR data from Neo4j before importing from '" + importDir + "'...");
-  }
-
-  private void deleteAllNeo4JData() {
-    AdminServiceSession adminSession = createCedarAdminSession(cedarConfig);
-    adminSession.wipeAllData();
   }
 
   private void deleteAllMongoData() {
@@ -211,53 +222,52 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     return null;
   }
 
-  private void importUserIntoMongo(Path p) {
+  private void importUser(Path p) {
     System.out.println("Import user:" + p);
-    String baseName = FilenameUtils.getBaseName(p.toString());
-    // Deserialize json files
-    JsonNode content = getArchivedFile(p, ImportExportConstants.CONTENT_SUFFIX);
-    // Import user into Mongo
-    CedarUser cedarUser = null;
-    try {
-      cedarUser = JsonMapper.TOLERANT_MAPPER.treeToValue(content, CedarUser.class);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
+    neo4jGraphSession.createUser(getArchivedFile(p, ImportExportConstants.NODE_SUFFIX));
+  }
+
+  private CedarRequestContext exportedAdministrator(Path userImportPath) {
+    String adminApiKey = cedarConfig.getAdminUserConfig().getApiKey();
+    List<CedarUser> administrators = new ArrayList<>();
+    processFolder(userImportPath, p -> {
+      try {
+        CedarUser user = JsonMapper.TOLERANT_MAPPER.treeToValue(
+            getArchivedFile(p, ImportExportConstants.CONTENT_SUFFIX), CedarUser.class);
+        if (user.getApiKeys().stream().anyMatch(key -> adminApiKey.equals(key.getKey()))) {
+          administrators.add(user);
+        }
+      } catch (JsonProcessingException e) {
+        throw new IllegalStateException("Unreadable user in " + p, e);
+      }
+    });
+    if (administrators.isEmpty()) {
+      return null;
     }
-    userService.createUser(cedarUser);
+    try {
+      return CedarRequestContextFactory.fromUser(administrators.get(0));
+    } catch (CedarAccessException e) {
+      throw new IllegalStateException("The exported administrator cannot act", e);
+    }
   }
-
-  private void importUserIntoNeo(Path p) {
-    System.out.println("Import user:" + p);
-    String baseName = FilenameUtils.getBaseName(p.toString());
-    // Deserialize json files
-    JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
-    //Import user into Neo
-    neo4jGraphSession.createUser(node);
-  }
-
 
   private void importGroup(Path p) {
     System.out.println("Import group:" + p);
-    String baseName = FilenameUtils.getBaseName(p.toString());
-    // Deserialize json files
-    JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
-    //Import group into Neo
-    neo4jGraphSession.createGroup(node);
-    JsonNode incomingArcs = getArchivedFile(p, ImportExportConstants.INCOMING_SUFFIX);
-    createArcs(incomingArcs);
+    neo4jGraphSession.createGroup(getArchivedFile(p, ImportExportConstants.NODE_SUFFIX));
   }
 
   private void importResource(Path p) {
     System.out.println("Import artifact:" + p);
-    String baseName = FilenameUtils.getBaseName(p.toString());
     JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
     FileSystemResource fsNode = importNodeIntoNeo(p, node);
     if (fsNode.getType() != CedarResourceType.FOLDER) {
       JsonNode content = getArchivedFile(p, ImportExportConstants.CONTENT_SUFFIX);
       importResourceIntoMongo(p, content, fsNode.getType());
     }
-    JsonNode incomingArcs = getArchivedFile(p, ImportExportConstants.INCOMING_SUFFIX);
-    createArcs(incomingArcs);
+  }
+
+  private void importIncomingArcs(Path p) {
+    createArcs(getArchivedFile(p, ImportExportConstants.INCOMING_SUFFIX));
   }
 
   private FileSystemResource importNodeIntoNeo(Path p, JsonNode node) {

@@ -28,7 +28,7 @@ public class CedarAdmin {
     out.println("CEDAR Admin Tool");
   }
 
-  private static void showUsageAndExit() {
+  private static void showUsage() {
     showTitle();
     out.printTitle("Usage:");
     out.printIndented("cedar-admin-tool command parameters...");
@@ -58,43 +58,43 @@ public class CedarAdmin {
         out.error(e);
       }
     }
-    System.exit(-1);
   }
 
   public static void main(String[] args) {
-    if (args == null || args.length == 0) {
-      showUsageAndExit();
-    } else {
-      String firstArg = args[0];
-      if (firstArg == null || firstArg.trim().length() == 0) {
-        showUsageAndExit();
-      } else {
-        Class<? extends ICedarAdminTask> taskClass = TaskRegistry.getTaskClassForKey(firstArg);
-        if (taskClass == null) {
-          out.error("Unknown command: " + firstArg + "\n");
-          showUsageAndExit();
-        } else {
-          out.info("Reading config");
-          SystemComponent systemComponent = SystemComponent.ADMIN_TOOL;
-          Map<String, String> environment = CedarEnvironmentVariableProvider.getFor(systemComponent);
-          CedarConfig cedarConfig = CedarConfig.getInstance(environment);
+    System.exit(run(args));
+  }
 
-          AppLoggerQueueService appLoggerQueueService =
-              new AppLoggerQueueService(cedarConfig.getCacheConfig().getPersistent());
-          AppLogger.initLoggerQueueService(appLoggerQueueService, systemComponent);
-
-          CedarRequestContextFactory.init(cedarConfig.getLinkedDataUtil());
-          out.info("Building data services");
-          CedarDataServices.initializeMongoClientFactoryForDocuments(
-              cedarConfig.getArtifactServerConfig().getMongoConnection());
-          CedarDataServices.initializeNeo4jServices(cedarConfig);
-          String version = System.getProperty("java.version");
-          out.info("Java version:" + version);
-          out.info("Executing task");
-          System.exit(TaskExecutor.executeOneTask(cedarConfig, firstArg, out, args));
-        }
-      }
+  /** Runs the command the arguments name, and answers its exit status, or -1 when they name no command. */
+  static int run(String[] args) {
+    if (args == null || args.length == 0 || args[0] == null || args[0].trim().length() == 0) {
+      showUsage();
+      return -1;
     }
+    String firstArg = args[0];
+    Class<? extends ICedarAdminTask> taskClass = TaskRegistry.getTaskClassForKey(firstArg);
+    if (taskClass == null) {
+      out.error("Unknown command: " + firstArg + "\n");
+      showUsage();
+      return -1;
+    }
+    out.info("Reading config");
+    SystemComponent systemComponent = SystemComponent.ADMIN_TOOL;
+    Map<String, String> environment = CedarEnvironmentVariableProvider.getFor(systemComponent);
+    CedarConfig cedarConfig = CedarConfig.getInstance(environment);
+
+    AppLoggerQueueService appLoggerQueueService =
+        new AppLoggerQueueService(cedarConfig.getCacheConfig().getPersistent());
+    AppLogger.initLoggerQueueService(appLoggerQueueService, systemComponent);
+
+    CedarRequestContextFactory.init(cedarConfig.getLinkedDataUtil());
+    out.info("Building data services");
+    CedarDataServices.initializeMongoClientFactoryForDocuments(
+        cedarConfig.getArtifactServerConfig().getMongoConnection());
+    CedarDataServices.initializeNeo4jServices(cedarConfig);
+    String version = System.getProperty("java.version");
+    out.info("Java version:" + version);
+    out.info("Executing task");
+    return TaskExecutor.executeOneTask(cedarConfig, firstArg, out, args);
   }
 
 }

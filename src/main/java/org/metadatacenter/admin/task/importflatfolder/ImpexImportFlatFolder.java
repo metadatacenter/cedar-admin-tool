@@ -49,7 +49,8 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
     String userId = arguments.get(3);
 
     CedarFolderId fid = CedarFolderId.build(folderId);
-    CedarUserId uid = CedarUserId.build(userId);
+    // The owner is named by UUID, as the description says, or by the full identifier.
+    CedarUserId uid = CedarUserId.build(userId.startsWith("http") ? userId : cedarConfig.getLinkedDataUtil().getUserId(userId));
 
     out.println("Input parameters:");
     out.println("sourceFolder: " + sourceFolder);
@@ -94,16 +95,23 @@ public class ImpexImportFlatFolder extends AbstractNeo4JAccessTask {
 
     ImportWorker importWorker = new ImportWorker(out, cedarConfig, newOwner, folderId);
 
+    int notCreated = 0;
     for (Map.Entry<String, ImportFileDescriptor> ifd : importList.getFiles().entrySet()) {
       ImportFileDescriptor desc = ifd.getValue();
       if (desc.isComplete()) {
         out.info("Importing :" + desc);
-        importWorker.importFile(desc);
+        if (!importWorker.importFile(desc)) {
+          notCreated++;
+        }
       } else {
         out.info("Skipping  :" + desc);
       }
     }
 
+    if (notCreated > 0) {
+      out.error(notCreated + " of the documents were not created");
+      return -6;
+    }
     return 0;
   }
 

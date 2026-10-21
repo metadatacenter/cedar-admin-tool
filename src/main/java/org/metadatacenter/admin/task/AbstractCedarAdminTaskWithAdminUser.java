@@ -24,10 +24,10 @@ public abstract class AbstractCedarAdminTaskWithAdminUser extends AbstractCedarA
     try {
       adminUser = userService.findUserByApiKey(adminUserApiKey);
     } catch (Exception e) {
-      out.error("Error while loading admin user by apiKey:" + adminUserApiKey);
+      out.error("Error while loading admin user by apiKey:" + masked(adminUserApiKey, 4));
     }
     if (adminUser == null) {
-      out.error("Admin user not found by apiKey:" + adminUserApiKey);
+      out.error("Admin user not found by apiKey:" + masked(adminUserApiKey, 4));
       out.error("The requested task was not completed!");
     }
   }
