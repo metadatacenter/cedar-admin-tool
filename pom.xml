@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.metadatacenter</groupId>
     <artifactId>cedar-parent</artifactId>
-    <version>2.9.28</version>
+    <version>2.9.29</version>
   </parent>
 
   <groupId>org.metadatacenter</groupId>
   <artifactId>cedar-admin-tool</artifactId>
-  <version>2.9.28</version>
+  <version>2.9.29</version>
   <packaging>jar</packaging>
 
   <name>CEDAR Admin Tool</name>
@@ -89,6 +89,18 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-admin-client-jakarta</artifactId>
+      <!-- Admin operations use JSON only. Match the auth library's exclusions so these unused
+           6.0 providers and their Mime4j dependencies cannot join the managed RESTEasy stack. -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.resteasy</groupId>
+          <artifactId>resteasy-multipart-provider</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.jboss.resteasy</groupId>
+          <artifactId>resteasy-jaxb-provider</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -118,6 +130,32 @@
 
   <build>
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-json-only-keycloak-client</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.jboss.resteasy:resteasy-jaxb-provider</exclude>
+                    <exclude>org.jboss.resteasy:resteasy-multipart-provider</exclude>
+                    <exclude>org.apache.james:apache-mime4j-*</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>The admin tool uses JSON only; exclude the legacy JAXB/multipart providers from the Keycloak admin client.</message>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
