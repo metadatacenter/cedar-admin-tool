@@ -39,6 +39,7 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Session;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -49,7 +50,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -72,10 +75,8 @@ class ImpexRoundTripTest {
   @BeforeAll
   static void startTheStores() throws Exception {
     EmbeddedCedarMongo.startAndRedirectEnvironment();
-    // Every class in this JVM shares the graph and the artifact store. A class that empties the store, as
-    // ArtifactServerWipeAllTest does, leaves the graph naming documents that no longer exist. The export writes
-    // those artifacts without a document and the import fails on them, so the round trip starts from a freshly
-    // seeded graph.
+    // Every class in this JVM shares the graph and the artifact store, and the round trip compares the whole
+    // installation, so it starts from a freshly seeded graph rather than from whatever an earlier class left.
     EmbeddedCedarNeo4j.stopAndReset();
     EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
     cedarConfig = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
@@ -175,6 +176,50 @@ class ImpexRoundTripTest {
         .findUser(TestAuthUtil.getTestUser1(cedarConfig).getResourceId()) != null, "the graph is untouched");
   }
 
+  /**
+   * The import empties both stores before it reads an artifact's archive, so an export holding an artifact without
+   * its document is refused before anything is wiped, and the refusal names the archive.
+   */
+  @Test
+  void anExportWithAnArtifactWithoutItsDocumentIsRefusedBeforeAnythingChanges() throws Exception {
+    CedarRequestContext user1 = CedarRequestContextFactory.fromUser(TestAuthUtil.getTestUser1(cedarConfig));
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    FolderServerFolder folder = new FolderServerFolder();
+    folder.setName("Refused Import");
+    folder.setDescription("Exported by ImpexRoundTripTest");
+    CedarFolderId folderId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataIdObject(CedarFolderId.class);
+    folders.createFolderAsChildOfId(folder, folders.findHomeFolderOf().getResourceId(), folderId);
+    String templateId = artifact(folders, folderId, new FolderServerTemplate(), CedarResourceType.TEMPLATE,
+        "Refused Template");
+    templates.createTemplate(document(templateId, "Refused Template"));
+
+    Path exportDir = Path.of(cedarConfig.getImportExportConfig().getExportDir());
+    Path importDir = Path.of(cedarConfig.getImportExportConfig().getImportDir());
+    FileUtils.deleteDirectory(importDir.toFile());
+    export();
+    FileUtils.moveDirectory(exportDir.toFile(), importDir.toFile());
+    Path archive = archiveOf(importDir.resolve("resources"),
+        cedarConfig.getLinkedDataUtil().getUUID(templateId, CedarResourceType.TEMPLATE));
+    replaceTheDocumentWithNull(archive);
+
+    Console.Run<Integer> refused = Console.run(() -> {
+      ImpexImportAll task = new ImpexImportAll();
+      task.setArguments(new String[]{"impex-importAll"});
+      task.injectConfig(cedarConfig);
+      task.setOutput(new AdminOutput());
+      task.init();
+      return task.execute();
+    });
+
+    assertEquals(-1, refused.result(), refused.printed());
+    assertTrue(refused.printed().contains(archive + ": it holds no document for its template"), refused.printed());
+    assertTrue(refused.printed().contains("1 resource archive cannot be imported. Nothing was changed."),
+        refused.printed());
+    assertTrue(templates.findTemplate(templateId) != null, "the artifact store is untouched");
+    assertTrue(CedarDataServices.getInstance().getNeoUserService()
+        .findUser(TestAuthUtil.getTestUser1(cedarConfig).getResourceId()) != null, "the graph is untouched");
+  }
+
   private static void export() throws Exception {
     FileUtils.deleteDirectory(Path.of(cedarConfig.getImportExportConfig().getExportDir()).toFile());
     ImpexExportAll export = new ImpexExportAll();
@@ -208,6 +253,31 @@ class ImpexRoundTripTest {
       archives.put(dir.relativize(zip).toString(), parts);
     }
     return archives;
+  }
+
+  private static Path archiveOf(Path dir, String uuid) throws Exception {
+    try (Stream<Path> files = Files.walk(dir)) {
+      return files.filter(f -> f.getFileName().toString().equals(uuid + ".zip")).findFirst()
+          .orElseThrow(() -> new AssertionError("no archive for " + uuid));
+    }
+  }
+
+  /** Rewrites an archive with JSON null as its document, as the export writes an artifact the store has no document for. */
+  private static void replaceTheDocumentWithNull(Path archive) throws Exception {
+    Map<String, byte[]> parts = new TreeMap<>();
+    try (ZipFile file = new ZipFile(archive.toFile())) {
+      for (var entry : Collections.list(file.entries())) {
+        parts.put(entry.getName(), file.getInputStream(entry).readAllBytes());
+      }
+    }
+    parts.put(ImportExportConstants.CONTENT_SUFFIX, "null".getBytes(StandardCharsets.UTF_8));
+    try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(archive))) {
+      for (Map.Entry<String, byte[]> part : parts.entrySet()) {
+        zip.putNextEntry(new ZipEntry(part.getKey()));
+        zip.write(part.getValue());
+        zip.closeEntry();
+      }
+    }
   }
 
   private static String artifact(FolderServiceSession folders, CedarFolderId parent, FolderServerSchemaArtifact artifact,
