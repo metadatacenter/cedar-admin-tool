@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * one promise is that nothing is lost or altered on the way, so an installation exported, imported and exported
  * again gives the same export: every user, group, folder and artifact, each artifact's document, and every arc.
  * <p>
- * The installation is the seeded graph, with a folder holding a field and a template, and a group, added to it. The
+ * The installation is a freshly seeded graph, with a folder holding a field and a template, and a group, added to it. The
  * import replaces the shared graph, so the graph is rebuilt and seeded again afterwards.
  */
 @Tag("integration")
@@ -72,6 +72,11 @@ class ImpexRoundTripTest {
   @BeforeAll
   static void startTheStores() throws Exception {
     EmbeddedCedarMongo.startAndRedirectEnvironment();
+    // Every class in this JVM shares the graph and the artifact store. A class that empties the store, as
+    // ArtifactServerWipeAllTest does, leaves the graph naming documents that no longer exist. The export writes
+    // those artifacts without a document and the import fails on them, so the round trip starts from a freshly
+    // seeded graph.
+    EmbeddedCedarNeo4j.stopAndReset();
     EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
     cedarConfig = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
     CedarDataServices.initializeMongoClientFactoryForDocuments(cedarConfig.getArtifactServerConfig().getMongoConnection());
