@@ -63,6 +63,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
   private static UserService userService;
   private LinkedDataUtil linkedDataUtil;
+  private int artifactsWithoutDocument;
 
 
   public ImpexExportAll() {
@@ -142,8 +143,16 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
 
     out.info("Exporting resources");
     Path resourceExportPath = exportPath.resolve("resources");
+    artifactsWithoutDocument = 0;
     walkFolder(resourceExportPath, rootFolder, 0);
 
+    // Such an artifact is exported with JSON null as its document, and impex-importAll refuses the export.
+    if (artifactsWithoutDocument > 0) {
+      out.error((artifactsWithoutDocument == 1 ? "1 artifact has" : artifactsWithoutDocument + " artifacts have")
+          + " no document in the artifact store. The rest of the installation was exported, but impex-importAll "
+          + "refuses this export.");
+      return -1;
+    }
     return 0;
   }
 
@@ -208,6 +217,10 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     wrapperDir.toFile().mkdirs();
 
     JsonNode resource = getArtifactServerContent(id, resourceType);
+    if (resource == null) {
+      artifactsWithoutDocument++;
+      out.error("The " + resourceType.getValue() + " " + id + " has no document in the artifact store.");
+    }
     //List<FolderServerArc> outgoingArcs = neo4jGraphSession.getOutgoingArcs(rid);
     List<FolderServerArc> incomingArcs = neo4jGraphSession.getIncomingArcs(rid);
 

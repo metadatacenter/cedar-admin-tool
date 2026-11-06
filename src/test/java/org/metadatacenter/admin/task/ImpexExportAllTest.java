@@ -122,6 +122,48 @@ class ImpexExportAllTest {
         "the template should be exported under its folder: " + templateArchive);
   }
 
+  /**
+   * An artifact whose document is missing from the artifact store is exported with JSON null in its place, which
+   * impex-importAll refuses. The export names the artifact and fails, so the operator learns of it from the export.
+   */
+  @Test
+  void anArtifactWithoutItsDocumentIsNamedAndFailsTheExport() throws Exception {
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    FolderServerFolder folder = new FolderServerFolder();
+    folder.setName("Export Folder Without A Document");
+    folder.setDescription("Exported by ImpexExportAllTest");
+    CedarFolderId folderId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataIdObject(CedarFolderId.class);
+    assertNotNull(folders.createFolderAsChildOfId(folder, folders.findHomeFolderOf().getResourceId(), folderId));
+    String templateId = artifact(folders, folderId, new FolderServerTemplate(), CedarResourceType.TEMPLATE,
+        "Template Without A Document");
+
+    Path exportDir = Path.of(cedarConfig.getImportExportConfig().getExportDir());
+    FileUtils.deleteDirectory(exportDir.toFile());
+    ImpexExportAll export = new ImpexExportAll() {
+      @Override
+      public void init() {
+      }
+    };
+    export.injectConfig(cedarConfig);
+    export.setOutput(new AdminOutput());
+    Console.Run<Integer> run;
+    try {
+      run = Console.run(export::execute);
+    } finally {
+      // Every class in this JVM shares the installation, so the template gets its document whatever happened.
+      templates.createTemplate(document(templateId, "Template Without A Document"));
+    }
+
+    assertEquals(-1, run.result(), run.printed());
+    assertTrue(run.printed().contains("The template " + templateId + " has no document in the artifact store."),
+        run.printed());
+    assertTrue(run.printed().contains("1 artifact has no document in the artifact store."), run.printed());
+    Path templateArchive = archiveOf(exportDir.resolve("resources"),
+        cedarConfig.getLinkedDataUtil().getUUID(templateId, CedarResourceType.TEMPLATE));
+    assertTrue(read(templateArchive).get(ImportExportConstants.CONTENT_SUFFIX).isNull(),
+        "the rest of the installation is still exported, the template with JSON null as its document");
+  }
+
   private static String artifact(FolderServiceSession folders, CedarFolderId parent, FolderServerSchemaArtifact artifact,
                                  CedarResourceType type, String name) {
     artifact.setId(cedarConfig.getLinkedDataUtil().buildNewLinkedDataId(type));

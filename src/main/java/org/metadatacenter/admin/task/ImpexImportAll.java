@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -22,6 +23,7 @@ import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.AdminServiceSession;
 import org.metadatacenter.server.GraphServiceSession;
+import org.metadatacenter.server.neo4j.cypher.NodeProperty;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.server.service.*;
 import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
@@ -37,13 +39,19 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
   public static final String DEFAULT_SORT = "name";
+
+  private static final Set<CedarResourceType> IMPORTED_TYPES = EnumSet.of(CedarResourceType.FOLDER,
+      CedarResourceType.FIELD, CedarResourceType.ELEMENT, CedarResourceType.TEMPLATE, CedarResourceType.INSTANCE);
 
   private GraphServiceSession neo4jGraphSession;
   private ObjectMapper prettyMapper;
@@ -80,6 +88,22 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
     CedarRequestContext administrator = exportedAdministrator(userImportPath);
     if (administrator == null) {
       out.error("The import holds no user with the configured administrator's API key. Nothing was changed.");
+      return -1;
+    }
+
+    // The import empties both stores before it reads an artifact's archive, so an archive it cannot complete would
+    // stop it with the installation half rebuilt. Every resource archive is therefore read first.
+    List<String> incomplete = new ArrayList<>();
+    processFolder(resourceImportPath, p -> {
+      String reason = whyIncomplete(p);
+      if (reason != null) {
+        incomplete.add(p + ": " + reason);
+      }
+    });
+    if (!incomplete.isEmpty()) {
+      incomplete.forEach(out::error);
+      out.error((incomplete.size() == 1 ? "1 resource archive cannot" : incomplete.size() + " resource archives cannot")
+          + " be imported. Nothing was changed.");
       return -1;
     }
 
@@ -220,6 +244,38 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
       }
     }
     return null;
+  }
+
+  /**
+   * Why the import could not complete a resource archive, or null when it can. The archive must hold a graph node
+   * of a type the import creates and, unless the node is a folder, the artifact's document. An export writes an
+   * artifact whose document is missing from the artifact store with JSON null in its place.
+   */
+  private static String whyIncomplete(Path archive) {
+    try (ZipFile zip = new ZipFile(archive.toFile())) {
+      JsonNode node = archivedPart(zip, ImportExportConstants.NODE_SUFFIX);
+      CedarResourceType type = node == null ? null :
+          CedarResourceType.forValue(node.path(NodeProperty.Label.RESOURCE_TYPE).asText());
+      if (type == null || !IMPORTED_TYPES.contains(type)) {
+        return "it holds no graph node of a folder, field, element, template or instance";
+      }
+      if (type != CedarResourceType.FOLDER && !(archivedPart(zip, ImportExportConstants.CONTENT_SUFFIX) instanceof ObjectNode)) {
+        return "it holds no document for its " + type.getValue();
+      }
+      return null;
+    } catch (IOException e) {
+      return "it cannot be read (" + e.getMessage() + ")";
+    }
+  }
+
+  private static JsonNode archivedPart(ZipFile zip, String name) throws IOException {
+    ZipEntry entry = zip.getEntry(name);
+    if (entry == null) {
+      return null;
+    }
+    try (InputStream in = zip.getInputStream(entry)) {
+      return JsonMapper.STRICT_MAPPER.readTree(in);
+    }
   }
 
   private void importUser(Path p) {

@@ -54,7 +54,14 @@ public class UserProfileUpdateAllUpdatePermissions extends AbstractKeycloakReadi
             CedarSuperRole superRole = CedarSuperRole.forValue(realRole);
             if (superRole != null) {
               List<CedarUserRole> roles = CedarUserUtil.getRolesForType(blueprintUserProfile, superRole);
-              user.getRoles().addAll(roles);
+              // A user holds several super roles (normal plus monitorViewer, say) whose lists can overlap.
+              if (roles != null) {
+                for (CedarUserRole role : roles) {
+                  if (!user.getRoles().contains(role)) {
+                    user.getRoles().add(role);
+                  }
+                }
+              }
             }
           }
           CedarUserRolePermissionUtil.expandRolesIntoPermissions(user);

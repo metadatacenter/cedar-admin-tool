@@ -3,6 +3,7 @@ package org.metadatacenter.admin.task;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.util.test.EmbeddedCedarMongo;
+import org.metadatacenter.util.test.EmbeddedCedarNeo4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -43,6 +45,16 @@ class ArtifactServerWipeAllTest {
     cedarConfig = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
     CedarDataServices.initializeMongoClientFactoryForDocuments(cedarConfig.getArtifactServerConfig().getMongoConnection());
     client = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
+  }
+
+  /**
+   * The wipe also deletes the documents of artifacts that other classes in this JVM placed in the shared graph, so
+   * the graph is rebuilt and seeded again, and no longer holds artifacts without a document.
+   */
+  @AfterAll
+  static void rebuildTheSharedGraph() {
+    EmbeddedCedarNeo4j.stopAndReset();
+    EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
   }
 
   @Test
