@@ -73,8 +73,10 @@ class KeycloakReadingTasksTest {
 
     assertEquals(0, Console.run(() -> pointedAtKeycloak(new GraphDbCreateAllUsers()).execute()).result());
 
-    assertNotNull(CedarDataServices.getInstance().getNeoUserService()
-        .findUser(CedarUserId.build(cedarConfig.getLinkedDataUtil().getUserId(newcomer.getId()))));
+    String newcomerId = cedarConfig.getLinkedDataUtil().getUserId(newcomer.getId());
+    assertNotNull(CedarDataServices.getInstance().getNeoUserService().findUser(CedarUserId.build(newcomerId)));
+    assertEquals(1, GraphCounts.everybodyMemberships(cedarConfig, newcomerId), "the newcomer joins Everybody");
+    assertEquals(1, GraphCounts.homeFolders(cedarConfig, newcomerId), "the newcomer gets a home folder");
   }
 
   /**
