@@ -89,9 +89,9 @@ class ImpexRoundTripTest {
     EmbeddedCedarMongo.startAndRedirectEnvironment();
     // Every class in this JVM shares the graph and the artifact store, and the round trip compares the whole
     // installation, so it starts from a freshly seeded graph rather than from whatever an earlier class left.
-    EmbeddedCedarNeo4j.stopAndReset();
     EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
     cedarConfig = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
+    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
     CedarDataServices.initializeMongoClientFactoryForDocuments(cedarConfig.getArtifactServerConfig().getMongoConnection());
     MongoClient client = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
     MongoConfig store = cedarConfig.getArtifactServerConfig();
@@ -106,9 +106,8 @@ class ImpexRoundTripTest {
   }
 
   @AfterAll
-  static void rebuildTheSharedGraph() {
-    EmbeddedCedarNeo4j.stopAndReset();
-    EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
+  static void rebuildTheSharedGraph() throws Exception {
+    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
   }
 
   @Test

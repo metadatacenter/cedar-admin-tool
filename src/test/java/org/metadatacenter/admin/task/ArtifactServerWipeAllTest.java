@@ -52,9 +52,9 @@ class ArtifactServerWipeAllTest {
    * the graph is rebuilt and seeded again, and no longer holds artifacts without a document.
    */
   @AfterAll
-  static void rebuildTheSharedGraph() {
-    EmbeddedCedarNeo4j.stopAndReset();
+  static void rebuildTheSharedGraph() throws Exception {
     EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
+    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
   }
 
   @Test

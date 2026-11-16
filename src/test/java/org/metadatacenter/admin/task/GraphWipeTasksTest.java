@@ -57,10 +57,9 @@ class GraphWipeTasksTest {
   }
 
   @AfterAll
-  static void rebuildTheSharedGraph() {
+  static void rebuildTheSharedGraph() throws Exception {
     keycloak.close();
-    EmbeddedCedarNeo4j.stopAndReset();
-    EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
+    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
   }
 
   @Test
