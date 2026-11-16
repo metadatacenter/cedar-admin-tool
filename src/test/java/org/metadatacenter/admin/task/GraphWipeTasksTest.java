@@ -7,11 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
+import org.metadatacenter.admin.util.TaskRegistry;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.SystemComponent;
+import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
+import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.security.KeycloakUtils;
 import org.metadatacenter.server.security.model.user.CedarSuperRole;
 import org.metadatacenter.server.security.model.user.CedarUser;
@@ -76,6 +79,62 @@ class GraphWipeTasksTest {
 
     assertEquals(0, run(new GraphDbWipeAll(), AbstractCedarAdminTask.CONFIRM));
     assertNull(testUser1(), "every CEDAR node is gone");
+  }
+
+  /**
+   * system-reset runs its eight steps in order: both stores are wiped before anything is rebuilt, and the users
+   * come after the global objects they join. The first step that fails ends the reset with that step's status.
+   */
+  @Test
+  void aResetRunsEveryStepInOrderAndStopsAtTheFirstFailure() throws Exception {
+    List<String> expected = List.of(TaskRegistry.ARTIFACT_SERVER_WIPE_ALL, TaskRegistry.ARTIFACT_SERVER_INIT_DB,
+        TaskRegistry.GRAPH_DB_SERVER_WIPE_ALL, TaskRegistry.GRAPH_DB_SERVER_CREATE_INDICES,
+        TaskRegistry.GRAPH_DB_SERVER_CREATE_GLOBAL_OBJECTS, TaskRegistry.GRAPH_DB_SERVER_CREATE_CADSR_OBJECTS,
+        TaskRegistry.GRAPH_DB_SERVER_CREATE_ALL_USERS, TaskRegistry.SEARCH_REGENERATE_INDEX);
+
+    List<String> ran = new java.util.ArrayList<>();
+    assertEquals(0, run(recordingReset(ran, null), AbstractCedarAdminTask.CONFIRM));
+    assertEquals(expected, ran);
+
+    ran.clear();
+    assertEquals(-7, run(recordingReset(ran, TaskRegistry.GRAPH_DB_SERVER_CREATE_INDICES), AbstractCedarAdminTask.CONFIRM));
+    assertEquals(expected.subList(0, 4), ran, "the steps after the failed one do not run");
+
+    ran.clear();
+    assertEquals(-1, run(recordingReset(ran, null), "no"));
+    assertEquals(List.of(), ran, "a declined reset runs nothing");
+  }
+
+  /** graphDb-createGlobalObjects, which only system-reset runs, rebuilds what an emptied graph needs. */
+  @Test
+  void theGlobalObjectsAreCreatedInAnEmptiedGraph() throws Exception {
+    assertEquals(0, run(new GraphDbWipeAll(), AbstractCedarAdminTask.CONFIRM));
+    assertNull(rootCategory(), "the graph is empty");
+
+    assertEquals(0, run(new GraphDbCreateGlobalObjects()));
+
+    CedarUser admin = TestAuthUtil.getAdminUser(cedarConfig);
+    CedarRequestContext context = CedarRequestContextFactory.fromUser(admin);
+    assertNotNull(rootCategory(), "the root category");
+    assertNotNull(CedarDataServices.getInstance().getNeoUserService().findUser(admin.getResourceId()), "the administrator");
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(context);
+    assertNotNull(folders.findFolderByPath(folders.getRootPath()), "the root folder");
+    assertNotNull(folders.findFolderByPath(folders.getRootPath() + "Users"), "the Users folder");
+    assertEquals(1, GraphCounts.everybodyMemberships(cedarConfig, admin.getId()), "the Everybody group, with the administrator");
+
+    // The other test reads the seeded users, which the wipe removed.
+    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
+  }
+
+  /** A reset whose steps are recorded rather than run; the step named {@code failing} answers -7. */
+  private static SystemReset recordingReset(List<String> ran, String failing) {
+    return new SystemReset() {
+      @Override
+      protected int runStep(String[] command) {
+        ran.add(command[0]);
+        return command[0].equals(failing) ? -7 : 0;
+      }
+    };
   }
 
   private static int run(AbstractKeycloakReadingTask task, String... typed) throws Exception {

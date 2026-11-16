@@ -76,7 +76,9 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     out.info("Name: " + folder.getName());
     out.info("Path: " + folderReport.getPath());
 
-    List<FileSystemResource> allChildArtifacts = folderSession.findAllChildArtifactsOfFolder(fid);
+    // The folder's children include its subfolders, which are not artifacts and keep their content.
+    List<FileSystemResource> allChildArtifacts = folderSession.findAllChildArtifactsOfFolder(fid).stream()
+        .filter(child -> child.getType() != CedarResourceType.FOLDER).toList();
     int totalCount = allChildArtifacts.size();
 
     out.info("Folder child artifact count: " + totalCount);

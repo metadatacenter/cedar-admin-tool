@@ -35,15 +35,18 @@ public class SystemReset extends AbstractKeycloakReadingTask {
     }
 
     for (String[] command : commands) {
-      String taskKey = command[0];
-      Class<? extends ICedarAdminTask> taskClass = TaskRegistry.getTaskClassForKey(taskKey);
-      int result = TaskExecutor.executeOneTask(cedarConfig, taskKey, out, command);
+      int result = runStep(command);
       if (result != 0) {
         return result;
       }
     }
 
     return 0;
+  }
+
+  /** Runs one step of the reset as its own task, and returns that task's status. */
+  protected int runStep(String[] command) {
+    return TaskExecutor.executeOneTask(cedarConfig, command[0], out, command);
   }
 
 }

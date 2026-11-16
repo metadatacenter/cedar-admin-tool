@@ -12,11 +12,16 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.id.CedarFolderId;
+import org.metadatacenter.id.CedarTemplateId;
 import org.metadatacenter.id.CedarUntypedArtifactId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.model.folderserver.basic.FolderServerArtifact;
+import org.metadatacenter.model.folderserver.basic.FolderServerElement;
+import org.metadatacenter.model.folderserver.basic.FolderServerField;
 import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
+import org.metadatacenter.model.folderserver.basic.FolderServerInstance;
+import org.metadatacenter.model.folderserver.basic.FolderServerSchemaArtifact;
 import org.metadatacenter.model.folderserver.basic.FolderServerTemplate;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
@@ -28,6 +33,7 @@ import org.metadatacenter.util.test.EmbeddedCedarNeo4j;
 import org.metadatacenter.util.test.TestAuthUtil;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -78,6 +84,37 @@ class FolderPurgeContentTest {
     assertNotNull(folders.findFolderById(purged), "the folder itself stays");
   }
 
+  /**
+   * The purge removes every kind of artifact the folder holds, each from its own collection, and leaves a subfolder
+   * and what the subfolder holds, which are not the folder's artifacts.
+   */
+  @Test
+  void everyKindOfArtifactGoesAndASubfolderStays() throws Exception {
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    CedarFolderId purged = folder(folders, folders.findHomeFolderOf().getResourceId(), "Mixed Folder");
+    String template = template(folders, purged, "Mixed Template");
+    Map<CedarResourceType, String> inside = new java.util.LinkedHashMap<>();
+    inside.put(CedarResourceType.FIELD, artifact(folders, purged, new FolderServerField(), CedarResourceType.FIELD, "Mixed Field"));
+    inside.put(CedarResourceType.ELEMENT, artifact(folders, purged, new FolderServerElement(), CedarResourceType.ELEMENT,
+        "Mixed Element"));
+    inside.put(CedarResourceType.TEMPLATE, template);
+    inside.put(CedarResourceType.INSTANCE, instance(folders, purged, template, "Mixed Instance"));
+    CedarFolderId subfolder = folder(folders, purged, "Nested Folder");
+    String nested = template(folders, subfolder, "Nested Template");
+
+    assertEquals(0, purge(purged.getId(), true));
+
+    for (Map.Entry<CedarResourceType, String> artifact : inside.entrySet()) {
+      assertNull(folders.findArtifactById(CedarUntypedArtifactId.build(artifact.getValue())),
+          "the graph should have lost the " + artifact.getKey().getValue());
+      assertEquals(0, collection(artifact.getKey()).countDocuments(new org.bson.Document("@id", artifact.getValue())),
+          "the artifact store should have lost the " + artifact.getKey().getValue());
+    }
+    assertNotNull(folders.findFolderById(subfolder), "the subfolder stays");
+    assertNotNull(folders.findArtifactById(CedarUntypedArtifactId.build(nested)), "the subfolder's template stays");
+    assertNotNull(templates.findTemplate(nested), "the subfolder's template keeps its document");
+  }
+
   @Test
   void eachRefusalLeavesTheFolderAsItWas() throws Exception {
     FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
@@ -91,6 +128,39 @@ class FolderPurgeContentTest {
 
     assertNotNull(folders.findArtifactById(CedarUntypedArtifactId.build(kept)));
     assertNotNull(templates.findTemplate(kept));
+  }
+
+  private static com.mongodb.client.MongoCollection<org.bson.Document> collection(CedarResourceType type) {
+    MongoConfig store = cedarConfig.getArtifactServerConfig();
+    return CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient()
+        .getDatabase(store.getDatabaseName()).getCollection(store.getMongoCollectionName(type));
+  }
+
+  /** An artifact of the type, in the folder, with a document in its collection. */
+  private static String artifact(FolderServiceSession folders, CedarFolderId parent, FolderServerSchemaArtifact artifact,
+                                 CedarResourceType type, String name) {
+    artifact.setId(cedarConfig.getLinkedDataUtil().buildNewLinkedDataId(type));
+    artifact.setName(name);
+    artifact.setDescription("Created by FolderPurgeContentTest");
+    artifact.setVersion("1.0.0");
+    artifact.setPublicationStatus("bibo:draft");
+    artifact.setLatestVersion(true);
+    artifact.setLatestDraftVersion(true);
+    artifact.setLatestPublishedVersion(false);
+    String id = folders.createResourceAsChildOfId(artifact, parent).getId();
+    collection(type).insertOne(new org.bson.Document("@id", id).append("schema:name", name));
+    return id;
+  }
+
+  private static String instance(FolderServiceSession folders, CedarFolderId parent, String templateId, String name) {
+    FolderServerInstance instance = new FolderServerInstance();
+    instance.setId(cedarConfig.getLinkedDataUtil().buildNewLinkedDataId(CedarResourceType.INSTANCE));
+    instance.setName(name);
+    instance.setDescription("Created by FolderPurgeContentTest");
+    instance.setIsBasedOn(CedarTemplateId.build(templateId));
+    String id = folders.createResourceAsChildOfId(instance, parent).getId();
+    collection(CedarResourceType.INSTANCE).insertOne(new org.bson.Document("@id", id).append("schema:name", name));
+    return id;
   }
 
   private static int purge(String folderId, boolean confirmed) {
