@@ -67,7 +67,7 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   private List<String> documentsNotWritten;
 
   public ImpexImportAll() {
-    description.add("Imports usres, groups, folders and resources from  a directory structure");
+    description.add("Imports users, groups, folders and resources from a directory structure");
     description.add("The import is executed using the cedar-admin user");
     description.add("The import source is the $CEDAR_HOME/import folder");
   }
