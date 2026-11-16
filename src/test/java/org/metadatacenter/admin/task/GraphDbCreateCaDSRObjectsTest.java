@@ -3,6 +3,7 @@ package org.metadatacenter.admin.task;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * file NCI's categories beneath it. Running it again changes nothing.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class GraphDbCreateCaDSRObjectsTest {
 
   private static CedarConfig cedarConfig;

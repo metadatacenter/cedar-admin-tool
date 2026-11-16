@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -52,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * and the export is checked for every user and group, and for the template's three parts.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class ImpexExportAllTest {
 
   private static CedarConfig cedarConfig;

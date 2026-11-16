@@ -3,6 +3,7 @@ package org.metadatacenter.admin.task;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * writes to the graph, which is real.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class UserProfileTasksTest {
 
   private static CedarConfig cedarConfig;

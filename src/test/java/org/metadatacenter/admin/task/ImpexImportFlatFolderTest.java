@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.metadatacenter.admin.StubHttpServer;
 import org.metadatacenter.admin.task.importflatfolder.ImpexImportFlatFolder;
@@ -40,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * points at a local stand-in.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class ImpexImportFlatFolderTest {
 
   private static StubHttpServer resourceServer;

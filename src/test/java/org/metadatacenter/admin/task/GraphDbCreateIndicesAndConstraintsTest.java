@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
@@ -47,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * through. What the test does not reach is that one APOC call.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class GraphDbCreateIndicesAndConstraintsTest {
 
   private static CedarConfig cedarConfig;

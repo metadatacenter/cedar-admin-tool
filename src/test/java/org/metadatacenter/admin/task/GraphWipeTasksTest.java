@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -28,10 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * The graph's two wipes, and system-reset, which runs a wipe of each store before rebuilding them. Each asks the
  * operator to confirm, and removes nothing without it. The wipes act as Keycloak's administrator, whom a local
  * Keycloak returns.
- * <p>
- * Every other class in this JVM shares the seeded graph, so the graph is rebuilt and seeded again afterwards.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class GraphWipeTasksTest {
 
   private static CedarConfig cedarConfig;
@@ -57,9 +57,8 @@ class GraphWipeTasksTest {
   }
 
   @AfterAll
-  static void rebuildTheSharedGraph() throws Exception {
+  static void stopKeycloak() {
     keycloak.close();
-    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
   }
 
   @Test

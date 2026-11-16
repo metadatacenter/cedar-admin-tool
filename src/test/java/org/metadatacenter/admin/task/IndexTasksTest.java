@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metadatacenter.admin.StubHttpServer;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.config.CedarConfig;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * script or system-reset that runs it stops there. Here the resource server's address points at a local stand-in.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class IndexTasksTest {
 
   private record Case(String key, Supplier<AbstractCedarAdminTaskWithAdminUser> task, String path, Boolean force) {

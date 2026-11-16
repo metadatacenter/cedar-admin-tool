@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoClient;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -35,8 +35,6 @@ import org.metadatacenter.server.service.mongodb.TemplateFieldServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
 import org.metadatacenter.util.json.JsonMapper;
-import org.metadatacenter.util.test.EmbeddedCedarMongo;
-import org.metadatacenter.util.test.EmbeddedCedarNeo4j;
 import org.metadatacenter.util.test.TestAuthUtil;
 import org.metadatacenter.server.neo4j.Neo4jConfig;
 import org.metadatacenter.server.neo4j.cypher.NodeProperty;
@@ -72,10 +70,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * again gives the same export: every user, group, folder and artifact, each artifact's document, and every arc.
  * <p>
  * The installation is a freshly seeded graph, with a folder holding a field, an element, a template and an instance of
- * it, and a group, added to it. The import replaces the shared graph, so the graph is rebuilt and seeded again
- * afterwards.
+ * it, and a group, added to it.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class ImpexRoundTripTest {
 
   private static CedarConfig cedarConfig;
@@ -86,12 +84,9 @@ class ImpexRoundTripTest {
 
   @BeforeAll
   static void startTheStores() throws Exception {
-    EmbeddedCedarMongo.startAndRedirectEnvironment();
-    // Every class in this JVM shares the graph and the artifact store, and the round trip compares the whole
-    // installation, so it starts from a freshly seeded graph rather than from whatever an earlier class left.
-    EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
+    // FreshStores has emptied the graph and the artifact store and seeded the graph again, with the uniqueness rules a
+    // provisioned graph carries, so the round trip compares this class's installation and nothing an earlier class left.
     cedarConfig = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
-    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
     CedarDataServices.initializeMongoClientFactoryForDocuments(cedarConfig.getArtifactServerConfig().getMongoConnection());
     MongoClient client = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
     MongoConfig store = cedarConfig.getArtifactServerConfig();
@@ -103,11 +98,6 @@ class ImpexRoundTripTest {
         store.getMongoCollectionName(CedarResourceType.ELEMENT));
     instances = new TemplateInstanceServiceMongoDB(client, store.getDatabaseName(),
         store.getMongoCollectionName(CedarResourceType.INSTANCE));
-  }
-
-  @AfterAll
-  static void rebuildTheSharedGraph() throws Exception {
-    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
   }
 
   @Test

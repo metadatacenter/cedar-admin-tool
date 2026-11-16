@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
@@ -38,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * each of its refusals must leave everything in place.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class FolderPurgeContentTest {
 
   private static CedarConfig cedarConfig;

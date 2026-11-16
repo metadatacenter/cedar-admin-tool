@@ -3,10 +3,10 @@ package org.metadatacenter.admin.task;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
@@ -15,7 +15,6 @@ import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.util.test.EmbeddedCedarMongo;
-import org.metadatacenter.util.test.EmbeddedCedarNeo4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -31,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * the confirmation. Anything else the operator types leaves the store as it was.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class ArtifactServerWipeAllTest {
 
   private static final List<CedarResourceType> TYPES = List.of(CedarResourceType.FIELD, CedarResourceType.ELEMENT,
@@ -45,16 +45,6 @@ class ArtifactServerWipeAllTest {
     cedarConfig = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
     CedarDataServices.initializeMongoClientFactoryForDocuments(cedarConfig.getArtifactServerConfig().getMongoConnection());
     client = CedarDataServices.getInstance().getMongoClientFactoryForDocuments().getClient();
-  }
-
-  /**
-   * The wipe also deletes the documents of artifacts that other classes in this JVM placed in the shared graph, so
-   * the graph is rebuilt and seeded again, and no longer holds artifacts without a document.
-   */
-  @AfterAll
-  static void rebuildTheSharedGraph() throws Exception {
-    EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
-    EmbeddedCedarNeo4j.resetAndSeed(cedarConfig);
   }
 
   @Test
