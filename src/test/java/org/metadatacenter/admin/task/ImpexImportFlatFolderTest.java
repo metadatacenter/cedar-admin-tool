@@ -20,6 +20,8 @@ import org.metadatacenter.util.json.JsonMapper;
 import org.metadatacenter.util.test.EmbeddedCedarNeo4j;
 import org.metadatacenter.util.test.TestAuthUtil;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -81,6 +83,9 @@ class ImpexImportFlatFolderTest {
     StubHttpServer.Request post = posts.get(0);
     assertEquals(owner.getFirstApiKeyAuthHeader(), post.authorization());
     assertTrue(post.query().startsWith("folder_id="), post.query());
+    assertEquals("folders/" + targetFolderId.substring(targetFolderId.lastIndexOf('/') + 1),
+        URLDecoder.decode(post.query().substring("folder_id=".length()), StandardCharsets.UTF_8),
+        "the artifact is posted into the target folder");
     JsonNode body = JsonMapper.STRICT_MAPPER.readTree(post.body());
     assertFalse(body.has("_id") || body.has("parentId"), "the store's own fields are dropped: " + body);
     assertEquals(owner.getId(), body.get("pav:createdBy").asText(), "the owner becomes the creator");
