@@ -15,17 +15,24 @@ import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.MongoConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.id.CedarFolderId;
+import org.metadatacenter.id.CedarTemplateId;
+import org.metadatacenter.id.CedarUntypedArtifactId;
+import org.metadatacenter.id.CedarUntypedSchemaArtifactId;
 import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.model.folderserver.basic.FolderServerArtifact;
+import org.metadatacenter.model.folderserver.basic.FolderServerElement;
 import org.metadatacenter.model.folderserver.basic.FolderServerField;
 import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
+import org.metadatacenter.model.folderserver.basic.FolderServerInstance;
 import org.metadatacenter.model.folderserver.basic.FolderServerSchemaArtifact;
 import org.metadatacenter.model.folderserver.basic.FolderServerTemplate;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.FolderServiceSession;
+import org.metadatacenter.server.service.mongodb.TemplateElementServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateFieldServiceMongoDB;
+import org.metadatacenter.server.service.mongodb.TemplateInstanceServiceMongoDB;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
 import org.metadatacenter.util.json.JsonMapper;
 import org.metadatacenter.util.test.EmbeddedCedarMongo;
@@ -55,6 +62,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -62,8 +71,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * one promise is that nothing is lost or altered on the way, so an installation exported, imported and exported
  * again gives the same export: every user, group, folder and artifact, each artifact's document, and every arc.
  * <p>
- * The installation is a freshly seeded graph, with a folder holding a field and a template, and a group, added to it. The
- * import replaces the shared graph, so the graph is rebuilt and seeded again afterwards.
+ * The installation is a freshly seeded graph, with a folder holding a field, an element, a template and an instance of
+ * it, and a group, added to it. The import replaces the shared graph, so the graph is rebuilt and seeded again
+ * afterwards.
  */
 @Tag("integration")
 class ImpexRoundTripTest {
@@ -71,6 +81,8 @@ class ImpexRoundTripTest {
   private static CedarConfig cedarConfig;
   private static TemplateServiceMongoDB templates;
   private static TemplateFieldServiceMongoDB fields;
+  private static TemplateElementServiceMongoDB elements;
+  private static TemplateInstanceServiceMongoDB instances;
 
   @BeforeAll
   static void startTheStores() throws Exception {
@@ -87,6 +99,10 @@ class ImpexRoundTripTest {
         store.getMongoCollectionName(CedarResourceType.TEMPLATE));
     fields = new TemplateFieldServiceMongoDB(client, store.getDatabaseName(),
         store.getMongoCollectionName(CedarResourceType.FIELD));
+    elements = new TemplateElementServiceMongoDB(client, store.getDatabaseName(),
+        store.getMongoCollectionName(CedarResourceType.ELEMENT));
+    instances = new TemplateInstanceServiceMongoDB(client, store.getDatabaseName(),
+        store.getMongoCollectionName(CedarResourceType.INSTANCE));
   }
 
   @AfterAll
@@ -105,10 +121,22 @@ class ImpexRoundTripTest {
     CedarFolderId folderId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataIdObject(CedarFolderId.class);
     folders.createFolderAsChildOfId(folder, folders.findHomeFolderOf().getResourceId(), folderId);
     String fieldId = artifact(folders, folderId, new FolderServerField(), CedarResourceType.FIELD, "Round Trip Field");
-    String templateId = artifact(folders, folderId, new FolderServerTemplate(), CedarResourceType.TEMPLATE,
-        "Round Trip Template");
+    String elementId = artifact(folders, folderId, new FolderServerElement(), CedarResourceType.ELEMENT,
+        "Round Trip Element");
+    // The template records an earlier template as its previous version and its source, so that both references make
+    // the trip, and the instance records the template it is based on.
+    String earlierId = artifact(folders, folderId, new FolderServerTemplate(), CedarResourceType.TEMPLATE,
+        "Round Trip Template, Earlier");
+    FolderServerTemplate template = new FolderServerTemplate();
+    template.setPreviousVersion(CedarUntypedSchemaArtifactId.build(earlierId));
+    template.setDerivedFrom(CedarUntypedArtifactId.build(earlierId));
+    String templateId = artifact(folders, folderId, template, CedarResourceType.TEMPLATE, "Round Trip Template");
+    String instanceId = instance(folders, folderId, templateId, "Round Trip Instance");
     fields.createTemplateField(document(fieldId, "Round Trip Field"));
+    elements.createTemplateElement(document(elementId, "Round Trip Element"));
+    templates.createTemplate(document(earlierId, "Round Trip Template, Earlier"));
     templates.createTemplate(document(templateId, "Round Trip Template"));
+    instances.createTemplateInstance(document(instanceId, "Round Trip Instance"));
     CedarDataServices.getInstance().getGroupServiceSession(user1).createGroup("Round Trippers", "A group to keep");
 
     Path exportDir = Path.of(cedarConfig.getImportExportConfig().getExportDir());
@@ -116,6 +144,22 @@ class ImpexRoundTripTest {
     FileUtils.deleteDirectory(importDir.toFile());
     export();
     FileUtils.moveDirectory(exportDir.toFile(), importDir.toFile());
+    Map<String, CedarResourceType> exported = Map.of(fieldId, CedarResourceType.FIELD, elementId,
+        CedarResourceType.ELEMENT, templateId, CedarResourceType.TEMPLATE, instanceId, CedarResourceType.INSTANCE);
+    exported.forEach((id, type) -> archiveOf(importDir.resolve("resources"), cedarConfig.getLinkedDataUtil().getUUID(id, type)));
+
+    // The installation changes between the export and the import, so an import that restores nothing, or that keeps
+    // what the export does not hold, leaves a difference: the template loses its node and document, and a folder and
+    // an instance document the export never saw are added.
+    assertTrue(folders.deleteResourceById(CedarTemplateId.build(templateId)), "the template's node is deleted");
+    templates.deleteTemplate(templateId);
+    FolderServerFolder stray = new FolderServerFolder();
+    stray.setName("Stray");
+    stray.setDescription("Added after the export by ImpexRoundTripTest");
+    CedarFolderId strayFolderId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataIdObject(CedarFolderId.class);
+    folders.createFolderAsChildOfId(stray, folders.findHomeFolderOf().getResourceId(), strayFolderId);
+    String strayInstanceId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataId(CedarResourceType.INSTANCE);
+    instances.createTemplateInstance(document(strayInstanceId, "Stray Instance"));
 
     Console.Run<Integer> imported = Console.run(() -> {
       ImpexImportAll task = new ImpexImportAll();
@@ -126,6 +170,11 @@ class ImpexRoundTripTest {
       return task.execute();
     }, AbstractCedarAdminTask.CONFIRM);
     assertEquals(0, imported.result(), imported.printed());
+    assertNotNull(templates.findTemplate(templateId), "the import restores the template's document");
+    assertNotNull(folders.findArtifactById(CedarTemplateId.build(templateId)), "the import restores the template's node");
+    assertNull(folders.findFolderById(strayFolderId), "the import removes a folder the export does not hold");
+    assertNull(instances.findTemplateInstance(strayInstanceId),
+        "the import removes an instance document the export does not hold");
 
     export();
     Map<String, Map<String, JsonNode>> before = read(importDir);
@@ -255,10 +304,12 @@ class ImpexRoundTripTest {
     return archives;
   }
 
-  private static Path archiveOf(Path dir, String uuid) throws Exception {
+  private static Path archiveOf(Path dir, String uuid) {
     try (Stream<Path> files = Files.walk(dir)) {
       return files.filter(f -> f.getFileName().toString().equals(uuid + ".zip")).findFirst()
           .orElseThrow(() -> new AssertionError("no archive for " + uuid));
+    } catch (java.io.IOException e) {
+      throw new java.io.UncheckedIOException(e);
     }
   }
 
@@ -292,6 +343,15 @@ class ImpexRoundTripTest {
     artifact.setLatestPublishedVersion(false);
     FolderServerArtifact created = folders.createResourceAsChildOfId(artifact, parent);
     return created.getId();
+  }
+
+  private static String instance(FolderServiceSession folders, CedarFolderId parent, String templateId, String name) {
+    FolderServerInstance instance = new FolderServerInstance();
+    instance.setId(cedarConfig.getLinkedDataUtil().buildNewLinkedDataId(CedarResourceType.INSTANCE));
+    instance.setName(name);
+    instance.setDescription("Exported and imported by ImpexRoundTripTest");
+    instance.setIsBasedOn(CedarTemplateId.build(templateId));
+    return folders.createResourceAsChildOfId(instance, parent).getId();
   }
 
   private static JsonNode document(String id, String name) {

@@ -314,12 +314,32 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
   private void importResource(Path p) {
     System.out.println("Import artifact:" + p);
-    JsonNode node = getArchivedFile(p, ImportExportConstants.NODE_SUFFIX);
+    JsonNode node = withPlainReferences(getArchivedFile(p, ImportExportConstants.NODE_SUFFIX));
     FileSystemResource fsNode = importNodeIntoNeo(p, node);
     if (fsNode.getType() != CedarResourceType.FOLDER) {
       JsonNode content = getArchivedFile(p, ImportExportConstants.CONTENT_SUFFIX);
       importResourceIntoMongo(p, content, fsNode.getType());
     }
+  }
+
+  /**
+   * The export writes a node's references to other artifacts as {"id": ...} objects, and the graph stores each as the
+   * identifier itself. Passed on unchanged, an instance's template would be stored as the object's JSON text and a
+   * schema artifact's previous version would be lost.
+   */
+  static JsonNode withPlainReferences(JsonNode node) {
+    if (!(node instanceof ObjectNode object)) {
+      return node;
+    }
+    ObjectNode plain = object.deepCopy();
+    for (NodeProperty property : List.of(NodeProperty.IS_BASED_ON, NodeProperty.DERIVED_FROM,
+        NodeProperty.PREVIOUS_VERSION)) {
+      JsonNode reference = plain.get(property.getValue());
+      if (reference != null && reference.isObject()) {
+        plain.set(property.getValue(), reference.get("id"));
+      }
+    }
+    return plain;
   }
 
   private void importIncomingArcs(Path p) {
