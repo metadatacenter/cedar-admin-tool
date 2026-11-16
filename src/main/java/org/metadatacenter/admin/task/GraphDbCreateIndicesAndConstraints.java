@@ -30,6 +30,7 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
 
   @Override
   public int execute() {
+    refused.clear();
     // Neo4j refuses a uniqueness constraint over data that breaks it, and the schema is removed before any rule is
     // created, so a refused rule would leave the graph with fewer rules than it had. Every rule is therefore checked
     // against the data first, and a violation stops the task before anything changes.
@@ -147,6 +148,12 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     // running server does not create them again until it restarts.
     adminSession.ensureServerSchema();
 
+    if (!refused.isEmpty()) {
+      refused.forEach(out::error);
+      out.error((refused.size() == 1 ? "1 step" : refused.size() + " steps")
+          + " failed. The graph lacks what each one names; run the task again once the cause is resolved.");
+      return -1;
+    }
     return 0;
   }
 
@@ -205,30 +212,42 @@ public class GraphDbCreateIndicesAndConstraints extends AbstractNeo4JAccessTask 
     return Neo4JUtil.escapePropertyName(property.getValue());
   }
 
+  /** The steps the graph refused, each named as the task reports it. */
+  private final List<String> refused = new ArrayList<>();
+
+  private void check(boolean done, String step) {
+    if (!done) {
+      refused.add("Failed: " + step);
+    }
+  }
+
   private void removeAllConstraintsAndIndices(AdminServiceSession adminSession) {
     out.info("Removing all constraints and indices");
-    adminSession.removeAllConstraintsAndIndices();
+    check(adminSession.removeAllConstraintsAndIndices(), "removing all constraints and indices");
   }
 
   private void createIndex(AdminServiceSession adminSession, NodeLabel nodeLabel, NodeProperty property) {
-    out.info("Creating index on: " + nodeLabel.getSimpleLabel() + "." + property.getValue());
-    adminSession.createIndex(nodeLabel, property);
+    String step = "index on " + nodeLabel.getSimpleLabel() + "." + property.getValue();
+    out.info("Creating " + step);
+    check(adminSession.createIndex(nodeLabel, property), "creating the " + step);
   }
 
   private void createUniqueConstraint(AdminServiceSession adminSession, NodeLabel nodeLabel, NodeProperty property) {
-    out.info("Creating unique constraint on: " + nodeLabel.getSimpleLabel() + "." + property.getValue());
-    adminSession.createUniqueConstraint(nodeLabel, property);
+    String step = "unique constraint on " + nodeLabel.getSimpleLabel() + "." + property.getValue();
+    out.info("Creating " + step);
+    check(adminSession.createUniqueConstraint(nodeLabel, property), "creating the " + step);
   }
 
   private void createUniqueConstraint(AdminServiceSession adminSession, NodeLabel nodeLabel,
                                       List<NodeProperty> properties) {
-    out.info("Creating unique constraint on: " + nodeLabel.getSimpleLabel() + "." + properties);
-    adminSession.createUniqueConstraint(nodeLabel, properties);
+    String step = "unique constraint on " + nodeLabel.getSimpleLabel() + "." + properties;
+    out.info("Creating " + step);
+    check(adminSession.createUniqueConstraint(nodeLabel, properties), "creating the " + step);
   }
 
   private void backfillFolderParentIds(AdminServiceSession adminSession) {
     out.info("Backfilling folder parent identifiers");
-    adminSession.backfillFolderParentIds();
+    check(adminSession.backfillFolderParentIds(), "backfilling folder parent identifiers");
   }
 
 }

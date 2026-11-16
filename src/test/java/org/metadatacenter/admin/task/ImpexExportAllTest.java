@@ -166,6 +166,30 @@ class ImpexExportAllTest {
         "the rest of the installation is still exported, the template with JSON null as its document");
   }
 
+  /** An archive the export cannot write fails the export, which names it, rather than leaving it out in silence. */
+  @Test
+  void anArchiveThatCannotBeWrittenFailsTheExport() throws Exception {
+    Path exportDir = Path.of(cedarConfig.getImportExportConfig().getExportDir());
+    FileUtils.deleteDirectory(exportDir.toFile());
+    // A file where the groups' directory belongs, so no group's archive can be written.
+    Files.createDirectories(exportDir);
+    Files.writeString(exportDir.resolve("groups"), "in the way");
+    ImpexExportAll export = new ImpexExportAll() {
+      @Override
+      public void init() {
+      }
+    };
+    export.injectConfig(cedarConfig);
+    export.setOutput(new AdminOutput());
+
+    Console.Run<Integer> run = Console.run(export::execute);
+
+    assertEquals(-1, run.result(), run.printed());
+    assertTrue(run.printed().contains("Could not write " + exportDir.resolve("groups")), run.printed());
+    assertTrue(run.printed().contains("not written, so the export is incomplete."), run.printed());
+    FileUtils.deleteQuietly(exportDir.toFile());
+  }
+
   private static String artifact(FolderServiceSession folders, CedarFolderId parent, FolderServerSchemaArtifact artifact,
                                  CedarResourceType type, String name) {
     artifact.setId(cedarConfig.getLinkedDataUtil().buildNewLinkedDataId(type));

@@ -30,8 +30,10 @@ public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
   @Override
   public int execute() {
     List<UserRepresentation> userRepresentations = listAllUsersFromKeycloak();
+    int failed = 0;
     if (userRepresentations == null) {
-      out.println("Users not found on Keycloak");
+      out.error("Users not found on Keycloak");
+      return -1;
     } else {
       UserService userService = getNeoUserService();
       for (UserRepresentation ur : userRepresentations) {
@@ -80,6 +82,7 @@ public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
                 out.println("Success: user home was created.");
               } else {
                 out.error("Error: user home was not created!");
+                failed++;
               }
             }
 
@@ -87,11 +90,16 @@ public class GraphDbCreateAllUsers extends AbstractKeycloakReadingTask {
             out.println("User created.");
           } catch (Exception e) {
             out.error("Error while creating user: " + ur.getEmail(), e);
+            failed++;
           }
 
           out.printSeparator();
         }
       }
+    }
+    if (failed > 0) {
+      out.error((failed == 1 ? "1 user was" : failed + " users were") + " not created completely.");
+      return -1;
     }
     return 0;
   }

@@ -258,6 +258,78 @@ class ImpexRoundTripTest {
         .findUser(TestAuthUtil.getTestUser1(cedarConfig).getResourceId()) != null, "the graph is untouched");
   }
 
+  /**
+   * A document the artifact store refuses fails the import, which names its archive. Here two archives hold one
+   * document, as two artifacts would that shared one: the store keeps the first and refuses the second.
+   */
+  @Test
+  void aDocumentTheStoreRefusesFailsTheImport() throws Exception {
+    CedarRequestContext user1 = CedarRequestContextFactory.fromUser(TestAuthUtil.getTestUser1(cedarConfig));
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    FolderServerFolder folder = new FolderServerFolder();
+    folder.setName("Twice Imported");
+    folder.setDescription("Exported by ImpexRoundTripTest");
+    CedarFolderId folderId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataIdObject(CedarFolderId.class);
+    folders.createFolderAsChildOfId(folder, folders.findHomeFolderOf().getResourceId(), folderId);
+    String fieldId = artifact(folders, folderId, new FolderServerField(), CedarResourceType.FIELD, "Shared Field");
+    fields.createTemplateField(document(fieldId, "Shared Field"));
+
+    Path exportDir = Path.of(cedarConfig.getImportExportConfig().getExportDir());
+    Path importDir = Path.of(cedarConfig.getImportExportConfig().getImportDir());
+    FileUtils.deleteDirectory(importDir.toFile());
+    export();
+    FileUtils.moveDirectory(exportDir.toFile(), importDir.toFile());
+    Path archive = archiveOf(importDir.resolve("resources"),
+        cedarConfig.getLinkedDataUtil().getUUID(fieldId, CedarResourceType.FIELD));
+    String twinId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataId(CedarResourceType.FIELD);
+    Path twin = archive.resolveSibling(cedarConfig.getLinkedDataUtil().getUUID(twinId, CedarResourceType.FIELD) + ".zip");
+    Map<String, byte[]> parts = new TreeMap<>();
+    try (ZipFile file = new ZipFile(archive.toFile())) {
+      for (var entry : Collections.list(file.entries())) {
+        byte[] part = file.getInputStream(entry).readAllBytes();
+        // The node and its arcs name the twin; the document still names the field.
+        if (!entry.getName().equals(ImportExportConstants.CONTENT_SUFFIX)) {
+          part = new String(part, StandardCharsets.UTF_8).replace(fieldId, twinId).getBytes(StandardCharsets.UTF_8);
+        }
+        parts.put(entry.getName(), part);
+      }
+    }
+    try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(twin))) {
+      for (Map.Entry<String, byte[]> part : parts.entrySet()) {
+        zip.putNextEntry(new ZipEntry(part.getKey()));
+        zip.write(part.getValue());
+        zip.closeEntry();
+      }
+    }
+
+    try {
+      Console.Run<Integer> imported = Console.run(() -> {
+        ImpexImportAll task = new ImpexImportAll();
+        task.setArguments(new String[]{"impex-importAll"});
+        task.injectConfig(cedarConfig);
+        task.setOutput(new AdminOutput());
+        task.init();
+        return task.execute();
+      }, AbstractCedarAdminTask.CONFIRM);
+
+      assertEquals(-1, imported.result(), imported.printed());
+      assertTrue(imported.printed().contains("1 document was not written to the artifact store"), imported.printed());
+      assertTrue(imported.printed().contains(archive.toString()) || imported.printed().contains(twin.toString()),
+          imported.printed());
+    } finally {
+      // One of the two nodes is left without a document, which the other tests' exports would refuse.
+      Neo4jConfig neo4j = Neo4jConfig.fromCedarConfig(cedarConfig);
+      try (Driver driver = GraphDatabase.driver(neo4j.getUri(), AuthTokens.basic(neo4j.getUserName(), neo4j.getUserPassword()));
+           Session session = driver.session()) {
+        session.run("MATCH (n) WHERE n." + Neo4JUtil.escapePropertyName(NodeProperty.ID.getValue()) + " IN $ids DETACH DELETE n",
+            Map.of("ids", List.of(fieldId, twinId))).consume();
+      }
+      if (fields.findTemplateField(fieldId) != null) {
+        fields.deleteTemplateField(fieldId);
+      }
+    }
+  }
+
   private static void export() throws Exception {
     FileUtils.deleteDirectory(Path.of(cedarConfig.getImportExportConfig().getExportDir()).toFile());
     ImpexExportAll export = new ImpexExportAll();

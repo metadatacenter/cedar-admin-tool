@@ -63,6 +63,9 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
   private static TemplateInstanceService<String, JsonNode> templateInstanceService;
 
 
+  /** The archives whose document the import could not write; any fails the import. */
+  private List<String> documentsNotWritten;
+
   public ImpexImportAll() {
     description.add("Imports usres, groups, folders and resources from  a directory structure");
     description.add("The import is executed using the cedar-admin user");
@@ -150,13 +153,17 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
         artifactServerConfig.getMongoCollectionName(CedarResourceType.INSTANCE));
 
     linkedDataUtil = cedarConfig.getLinkedDataUtil();
+    documentsNotWritten = new ArrayList<>();
 
     out.info("Deleting data from MongoDB");
     deleteAllMongoData();
 
     out.info("Deleting everything from Neo4J");
     AdminServiceSession adminSession = CedarDataServices.getInstance().getAdminServiceSession(administrator);
-    adminSession.wipeAllData();
+    if (!adminSession.wipeAllData()) {
+      out.error("Neo4j could not be emptied, so nothing was imported. The artifact store has already been emptied.");
+      return -1;
+    }
 
     neo4jGraphSession = CedarDataServices.getInstance().getGraphServiceSession(administrator);
 
@@ -177,8 +184,16 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
 
     // A folder records its parent's identifier, which the export leaves to the CONTAINS arcs.
     out.info("Recording each folder's parent");
-    adminSession.backfillFolderParentIds();
+    if (!adminSession.backfillFolderParentIds()) {
+      out.error("The folders' parent identifiers could not be recorded.");
+      return -1;
+    }
 
+    if (!documentsNotWritten.isEmpty()) {
+      out.error((documentsNotWritten.size() == 1 ? "1 document was" : documentsNotWritten.size() + " documents were")
+          + " not written to the artifact store, so their artifacts cannot be opened: " + documentsNotWritten);
+      return -1;
+    }
     return 0;
   }
 
@@ -364,10 +379,12 @@ public class ImpexImportAll extends AbstractNeo4JAccessTask {
       } else if (type == CedarResourceType.INSTANCE) {
         templateInstanceService.createTemplateInstance(content);
       } else {
-        System.out.println("Unknown artifact type:" + type);
+        out.error("Unknown artifact type " + type + " in " + p);
+        documentsNotWritten.add(p.toString());
       }
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException | RuntimeException e) {
+      out.error("Could not write the document in " + p, e);
+      documentsNotWritten.add(p.toString());
     }
   }
 

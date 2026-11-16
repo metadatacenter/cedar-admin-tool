@@ -14,6 +14,7 @@ import org.metadatacenter.model.SystemComponent;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.security.model.user.CedarSuperRole;
 import org.metadatacenter.server.security.model.user.CedarUser;
+import org.metadatacenter.server.service.UserService;
 import org.metadatacenter.server.security.model.user.CedarUserUIPreferences;
 import org.metadatacenter.server.security.util.CedarUserUtil;
 import org.metadatacenter.util.json.JsonMapper;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The tasks that bring CEDAR's user records in line with Keycloak, which owns accounts and their
@@ -78,6 +80,49 @@ class UserProfileTasksTest {
     assertEquals(new HashSet<>(CedarUserUtil.getRolesForType(cedarConfig.getBlueprintUserProfile(), CedarSuperRole.BUILT_IN_ADMIN)),
         new HashSet<>(user(admin).getRoles()), "the administrator should hold the administrator's roles");
     assertNull(user(unknown), "a user without a CEDAR role should not be created");
+  }
+
+  /** A Keycloak that answers with no user list, and a user whose creation fails, each fail the task. */
+  @Test
+  void createAllUsersFailsWhenKeycloakGivesNothingOrAUserCannotBeCreated() throws Exception {
+    assertEquals(-1, createAllUsers(null).execute(), "no user list from Keycloak");
+
+    UserRepresentation refused = keycloakUser("Rhea", CedarSuperRole.NORMAL.getValue());
+    UserRepresentation created = keycloakUser("Cleo", CedarSuperRole.NORMAL.getValue());
+    String refusedId = cedarConfig.getLinkedDataUtil().getUserId(refused.getId());
+    GraphDbCreateAllUsers task = new GraphDbCreateAllUsers() {
+      @Override
+      public void init() {
+      }
+
+      @Override
+      protected List<UserRepresentation> listAllUsersFromKeycloak() {
+        return List.of(refused, created);
+      }
+
+      @Override
+      protected UserService getNeoUserService() {
+        UserService users = super.getNeoUserService();
+        return (UserService) java.lang.reflect.Proxy.newProxyInstance(UserService.class.getClassLoader(),
+            new Class<?>[]{UserService.class}, (proxy, method, args) -> {
+              if (method.getName().equals("createUser") && ((CedarUser) args[0]).getId().equals(refusedId)) {
+                throw new IllegalStateException("refused by the test");
+              }
+              try {
+                return method.invoke(users, args);
+              } catch (java.lang.reflect.InvocationTargetException e) {
+                throw e.getCause();
+              }
+            });
+      }
+    };
+    prepare(task, "graphDb-createAllUsers");
+
+    Console.Run<Integer> run = Console.run(task::execute);
+
+    assertEquals(-1, run.result(), run.printed());
+    assertTrue(run.printed().contains("1 user was not created completely."), run.printed());
+    assertNotNull(user(created), "the other user is still created");
   }
 
   /** userProfile-updateAll-updatePermissions rewrites each user's roles from the ones Keycloak now gives. */

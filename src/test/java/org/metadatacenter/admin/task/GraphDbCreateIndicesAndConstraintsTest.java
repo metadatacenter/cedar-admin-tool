@@ -167,6 +167,31 @@ class GraphDbCreateIndicesAndConstraintsTest {
     }
   }
 
+  /** An index or constraint the graph refuses fails the task, which names it, after creating the rest. */
+  @Test
+  void aRefusedIndexFailsTheTaskAndIsNamed() throws Exception {
+    // The graph refuses the template identifier index, as Neo4j's refusal reaches the session: a false result.
+    GraphDbCreateIndicesAndConstraints task = task(session -> (AdminServiceSession) java.lang.reflect.Proxy.newProxyInstance(
+        AdminServiceSession.class.getClassLoader(), new Class<?>[]{AdminServiceSession.class}, (proxy, method, args) -> {
+          if (method.getName().equals("createIndex") && args[0] == NodeLabel.TEMPLATE && args[1] == NodeProperty.ID) {
+            return false;
+          }
+          try {
+            return method.invoke(session, args);
+          } catch (java.lang.reflect.InvocationTargetException e) {
+            throw e.getCause();
+          }
+        }));
+    Console.Run<Integer> run = Console.run(task::execute);
+
+    assertEquals(-1, run.result(), run.printed());
+    assertTrue(run.printed().contains("Failed: creating the index on " + NodeLabel.TEMPLATE.getSimpleLabel() + "."
+        + NodeProperty.ID.getValue()), run.printed());
+    assertTrue(indexNames().contains(NodeLabel.INSTANCE.getSimpleLabel() + "_" + property(NodeProperty.ID)),
+        "the indexes after the refused one are still created");
+    assertEquals(0, task().execute(), "a run the graph accepts provisions it again");
+  }
+
   private static List<String> folderRuleNames() {
     try (Session session = driver.session()) {
       return session.run("SHOW CONSTRAINTS YIELD name, labelsOrTypes WHERE $folder IN labelsOrTypes RETURN name",
@@ -176,6 +201,11 @@ class GraphDbCreateIndicesAndConstraintsTest {
 
   /** The task, with the Keycloak lookup it uses to build its admin replaced by the seeded admin. */
   private static GraphDbCreateIndicesAndConstraints task() {
+    return task(session -> session);
+  }
+
+  /** The task, with its admin session passed through {@code wrap} as well. */
+  private static GraphDbCreateIndicesAndConstraints task(java.util.function.UnaryOperator<AdminServiceSession> wrap) {
     GraphDbCreateIndicesAndConstraints task = new GraphDbCreateIndicesAndConstraints() {
       @Override
       public void init() {
@@ -184,8 +214,8 @@ class GraphDbCreateIndicesAndConstraintsTest {
       @Override
       protected AdminServiceSession createUnconditionalCedarAdminSession(CedarConfig cedarConfig) {
         try {
-          return new SchemaDroppingAdminSession(CedarDataServices.getInstance().getAdminServiceSession(
-              CedarRequestContextFactory.fromUser(TestAuthUtil.getAdminUser(cedarConfig))));
+          return wrap.apply(new SchemaDroppingAdminSession(CedarDataServices.getInstance().getAdminServiceSession(
+              CedarRequestContextFactory.fromUser(TestAuthUtil.getAdminUser(cedarConfig)))));
         } catch (Exception e) {
           throw new IllegalStateException(e);
         }
