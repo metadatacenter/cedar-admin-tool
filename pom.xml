@@ -216,6 +216,19 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <environmentVariables>
+            <!-- The ImpEx tests delete and rewrite ${CEDAR_HOME}/export and ${CEDAR_HOME}/import. A
+                 workstation build inherits the operator's real CEDAR home, so the tests get one of
+                 their own. -->
+            <CEDAR_HOME>${project.build.directory}/cedar-home</CEDAR_HOME>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <configuration>
           <createDependencyReducedPom>true</createDependencyReducedPom>
