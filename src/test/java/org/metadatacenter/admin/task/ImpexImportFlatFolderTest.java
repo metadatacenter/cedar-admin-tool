@@ -3,6 +3,7 @@ package org.metadatacenter.admin.task;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -61,6 +62,12 @@ class ImpexImportFlatFolderTest {
     targetFolderId = CedarDataServices.getInstance()
         .getFolderServiceSession(CedarRequestContextFactory.fromUser(TestAuthUtil.getTestUser1(cedarConfig)))
         .findHomeFolderOf().getId();
+  }
+
+  /** The stand-in serves the whole class, so each test starts with no requests recorded and no answers set. */
+  @BeforeEach
+  void forgetEarlierRequests() {
+    resourceServer.reset();
   }
 
   @AfterAll
