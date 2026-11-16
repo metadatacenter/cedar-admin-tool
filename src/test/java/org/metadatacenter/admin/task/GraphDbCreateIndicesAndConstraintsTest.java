@@ -8,9 +8,12 @@ import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
+import org.metadatacenter.id.CedarFolderId;
 import org.metadatacenter.model.SystemComponent;
+import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.AdminServiceSession;
+import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.UserServiceSession;
 import org.metadatacenter.server.neo4j.NodeLabel;
 import org.metadatacenter.server.neo4j.Neo4jConfig;
@@ -107,6 +110,63 @@ class GraphDbCreateIndicesAndConstraintsTest {
     Set<String> schemaAfterFirstRun = schema();
     assertEquals(0, task().execute());
     assertEquals(schemaAfterFirstRun, schema(), "running the task again should leave the same schema");
+  }
+
+  /**
+   * An installation that ran without a rule can hold data that breaks it. Neo4j refuses such a rule, so the task checks
+   * every rule against the data before it removes the schema, lists the nodes that break one, and changes nothing. One
+   * of the two folders here has not recorded its parent yet, as a folder written before parentFolderId existed, so the
+   * check has to read the parent from the CONTAINS arc as the backfill would.
+   */
+  @Test
+  void dataThatBreaksARuleIsReportedAndNothingChanges() throws Exception {
+    String id = property(NodeProperty.ID);
+    String nameLower = property(NodeProperty.NAME_LOWER);
+    String parentFolderId = property(NodeProperty.PARENT_FOLDER_ID);
+    CedarUser user = TestAuthUtil.getTestUser1(cedarConfig);
+    FolderServiceSession folders = CedarDataServices.getInstance()
+        .getFolderServiceSession(CedarRequestContextFactory.fromUser(user));
+    CedarFolderId home = folders.findHomeFolderOf().getResourceId();
+    // The graph runs without the sibling-name rule, as an installation provisioned before it existed.
+    run("DROP CONSTRAINT `" + folderRuleName() + "`", Map.of());
+    List<String> twins = new java.util.ArrayList<>();
+    for (String name : List.of("Twin A", "Twin B")) {
+      FolderServerFolder folder = new FolderServerFolder();
+      folder.setName(name);
+      folder.setDescription("Created by GraphDbCreateIndicesAndConstraintsTest");
+      CedarFolderId folderId = cedarConfig.getLinkedDataUtil().buildNewLinkedDataIdObject(CedarFolderId.class);
+      folders.createFolderAsChildOfId(folder, home, folderId);
+      twins.add(folderId.getId());
+    }
+    run("MATCH (f {" + id + ": $id}) SET f." + nameLower + " = 'twin a' REMOVE f." + parentFolderId,
+        Map.of("id", twins.get(1)));
+
+    try {
+      Set<String> schemaBefore = schema();
+      Console.Run<Integer> refused = Console.run(() -> task().execute());
+
+      assertEquals(-1, refused.result(), refused.printed());
+      assertTrue(refused.printed().contains("2 nodes hold '" + home.getId() + " / twin a'"), refused.printed());
+      for (String twin : twins) {
+        assertTrue(refused.printed().contains(twin), "the report names " + twin + ": " + refused.printed());
+      }
+      assertTrue(refused.printed().contains("Nothing was changed."), refused.printed());
+      assertEquals(schemaBefore, schema(), "the schema is left as it was");
+      try (Session session = driver.session()) {
+        assertTrue(session.run("MATCH (f {" + id + ": $id}) RETURN f." + parentFolderId + " AS parent",
+            Map.of("id", twins.get(1))).single().get("parent").isNull(), "the data is left as it was");
+      }
+    } finally {
+      run("MATCH (f) WHERE f." + id + " IN $ids DETACH DELETE f", Map.of("ids", twins));
+      assertEquals(0, task().execute(), "with the twins gone the task provisions the graph again");
+    }
+  }
+
+  private static String folderRuleName() {
+    try (Session session = driver.session()) {
+      return session.run("SHOW CONSTRAINTS YIELD name, labelsOrTypes WHERE $folder IN labelsOrTypes RETURN name",
+          Map.of("folder", NodeLabel.FOLDER.getSimpleLabel())).single().get("name").asString();
+    }
   }
 
   /** The task, with the Keycloak lookup it uses to build its admin replaced by the seeded admin. */
