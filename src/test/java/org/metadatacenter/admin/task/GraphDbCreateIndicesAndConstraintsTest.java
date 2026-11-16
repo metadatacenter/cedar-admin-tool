@@ -127,8 +127,11 @@ class GraphDbCreateIndicesAndConstraintsTest {
     FolderServiceSession folders = CedarDataServices.getInstance()
         .getFolderServiceSession(CedarRequestContextFactory.fromUser(user));
     CedarFolderId home = folders.findHomeFolderOf().getResourceId();
-    // The graph runs without the sibling-name rule, as an installation provisioned before it existed.
-    run("DROP CONSTRAINT `" + folderRuleName() + "`", Map.of());
+    // The graph runs without the sibling-name rule, as an installation provisioned before it existed. Whether the
+    // harness's seeded graph carries the rule depends on the test-support library, so it is dropped where present.
+    for (String rule : folderRuleNames()) {
+      run("DROP CONSTRAINT `" + rule + "`", Map.of());
+    }
     List<String> twins = new java.util.ArrayList<>();
     for (String name : List.of("Twin A", "Twin B")) {
       FolderServerFolder folder = new FolderServerFolder();
@@ -162,10 +165,10 @@ class GraphDbCreateIndicesAndConstraintsTest {
     }
   }
 
-  private static String folderRuleName() {
+  private static List<String> folderRuleNames() {
     try (Session session = driver.session()) {
       return session.run("SHOW CONSTRAINTS YIELD name, labelsOrTypes WHERE $folder IN labelsOrTypes RETURN name",
-          Map.of("folder", NodeLabel.FOLDER.getSimpleLabel())).single().get("name").asString();
+          Map.of("folder", NodeLabel.FOLDER.getSimpleLabel())).list(row -> row.get("name").asString());
     }
   }
 
