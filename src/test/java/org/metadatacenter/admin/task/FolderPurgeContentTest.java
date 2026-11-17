@@ -26,6 +26,7 @@ import org.metadatacenter.model.folderserver.basic.FolderServerTemplate;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.FolderServiceSession;
+import org.metadatacenter.server.neo4j.cypher.NodeProperty;
 import org.metadatacenter.server.service.mongodb.TemplateServiceMongoDB;
 import org.metadatacenter.util.json.JsonMapper;
 import org.metadatacenter.util.test.EmbeddedCedarMongo;
@@ -42,7 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * folder-purgeContent permanently deletes every artifact and subfolder under a folder, at any depth, from the graph
  * and from the artifact store, after the operator confirms. It must delete those and nothing else, keep the folder
- * itself, and leave everything in place on each of its refusals.
+ * itself, and leave everything in place on each of its refusals. It refuses the root, system and special folders, and
+ * a folder holding a user's home folder at any depth.
  */
 @Tag("integration")
 @ExtendWith(FreshStores.class)
@@ -145,6 +147,73 @@ class FolderPurgeContentTest {
     assertEquals(-4, purge(folder.getId(), false), "a declined confirmation deletes nothing");
 
     assertNotNull(folders.findArtifactById(CedarUntypedArtifactId.build(kept)));
+    assertNotNull(templates.findTemplate(kept));
+  }
+
+  @Test
+  void theUsersFolderIsRefused() throws Exception {
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    FolderServerFolder users = folders.findFolderByPath(cedarConfig.getFolderStructureConfig().getUsersFolder().getPath());
+    CedarFolderId home = folders.findHomeFolderOf().getResourceId();
+    String kept = template(folders, home, "Kept Under Users");
+
+    assertEquals(-5, purge(users.getId(), true));
+
+    assertNotNull(folders.findFolderById(home), "a home folder under the users folder stays");
+    assertNotNull(folders.findArtifactById(CedarUntypedArtifactId.build(kept)));
+    assertNotNull(templates.findTemplate(kept));
+  }
+
+  @Test
+  void theRootFolderIsRefused() throws Exception {
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    FolderServerFolder root = folders.findFolderByPath(cedarConfig.getFolderStructureConfig().getRootFolder().getPath());
+    String kept = template(folders, folders.findHomeFolderOf().getResourceId(), "Kept Under Root");
+
+    assertEquals(-5, purge(root.getId(), true));
+
+    assertNotNull(templates.findTemplate(kept));
+  }
+
+  /** A user's home folder anywhere under the folder stops the purge before anything is deleted. */
+  @Test
+  void aFolderHoldingAUsersHomeFolderIsRefusedWithNothingDeleted() throws Exception {
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    CedarFolderId purged = folder(folders, folders.findHomeFolderOf().getResourceId(), "Holding A Home");
+    String direct = template(folders, purged, "Direct Template");
+    CedarFolderId nested = folder(folders, purged, "Around A Home");
+    FolderServerFolder homeLike = new FolderServerFolder();
+    homeLike.setName("Someone's Home");
+    homeLike.setDescription("Created by FolderPurgeContentTest");
+    homeLike.setUserHome(true);
+    CedarFolderId home = cedarConfig.getLinkedDataUtil().buildNewLinkedDataIdObject(CedarFolderId.class);
+    assertNotNull(folders.createFolderAsChildOfId(homeLike, nested, home));
+    String insideHome = template(folders, home, "Template In A Home");
+
+    assertEquals(-5, purge(purged.getId(), true));
+
+    for (String id : List.of(direct, insideHome)) {
+      assertNotNull(folders.findArtifactById(CedarUntypedArtifactId.build(id)), "the graph keeps " + id);
+      assertNotNull(templates.findTemplate(id), "the artifact store keeps " + id);
+    }
+    for (CedarFolderId kept : List.of(purged, nested, home)) {
+      assertNotNull(folders.findFolderById(kept), "the folder " + kept.getId() + " stays");
+    }
+  }
+
+  /** A folder the graph marks as special, such as a shared folder, is refused as a target and inside the subtree. */
+  @Test
+  void aSpecialFolderIsRefusedAsTargetAndInsideTheSubtree() throws Exception {
+    FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
+    CedarFolderId outer = folder(folders, folders.findHomeFolderOf().getResourceId(), "Around A Shared Folder");
+    CedarFolderId shared = folder(folders, outer, "Shared Folder");
+    assertNotNull(folders.updateFolderById(shared, Map.of(NodeProperty.SPECIAL_FOLDER, "shared")));
+    String kept = template(folders, shared, "Shared Template");
+
+    assertEquals(-5, purge(shared.getId(), true), "the special folder itself is refused");
+    assertEquals(-5, purge(outer.getId(), true), "a folder holding the special folder is refused");
+
+    assertNotNull(folders.findFolderById(shared));
     assertNotNull(templates.findTemplate(kept));
   }
 

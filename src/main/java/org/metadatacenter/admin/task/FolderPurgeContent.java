@@ -7,6 +7,7 @@ import org.bson.BsonString;
 import org.bson.Document;
 import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.bridge.GraphDbPermissionReader;
+import org.metadatacenter.config.FolderStructureConfig;
 import org.metadatacenter.constant.LinkedData;
 import org.metadatacenter.exception.CedarException;
 import org.metadatacenter.id.CedarArtifactId;
@@ -15,6 +16,7 @@ import org.metadatacenter.model.CedarResourceType;
 import org.metadatacenter.model.folderserver.basic.FileSystemResource;
 import org.metadatacenter.model.folderserver.basic.FolderServerFolder;
 import org.metadatacenter.model.folderserver.currentuserpermissions.FolderServerFolderCurrentUserReport;
+import org.metadatacenter.model.folderserver.extract.FolderServerResourceExtract;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.FolderServiceSession;
@@ -25,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FolderPurgeContent extends AbstractNeo4JAccessTask {
 
@@ -32,6 +36,7 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     description.add("Enumerates the artifacts and subfolders in the folder with the id passed as parameter, at any depth");
     description.add("Deletes those artifacts from Neo4j and their documents from MongoDB");
     description.add("Deletes the subfolders from Neo4j, deepest first, and keeps the folder itself");
+    description.add("Refuses a root, system or special folder, and a folder holding a user's home folder at any depth");
     description.add("*** A reindex should be run manually after this task");
   }
 
@@ -78,8 +83,25 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     out.info("Path: " + folderReport.getPath());
 
     List<FileSystemResource> artifacts = new ArrayList<>();
-    List<CedarFolderId> subfolders = new ArrayList<>();
+    List<FolderServerFolder> subfolders = new ArrayList<>();
     collectSubtree(folderSession, fid, artifacts, subfolders);
+
+    Set<String> specialFolderIds = specialFolderIds(folderSession);
+    String targetRefusal = protectedFolderReason(folder, folderReport.getPath(), specialFolderIds);
+    if (targetRefusal != null) {
+      out.error("Refusing to purge folder '" + folder.getName() + "' (" + folderId + "): it is " + targetRefusal +
+          ". Nothing was deleted.");
+      return -5;
+    }
+    for (FolderServerFolder subfolder : subfolders) {
+      String reason = subfolder.isUserHome() ? "a user's home folder" :
+          protectedFolderReason(subfolder, null, specialFolderIds);
+      if (reason != null) {
+        out.error("Refusing to purge folder '" + folder.getName() + "' (" + folderId + "): it holds folder '" +
+            subfolder.getName() + "' (" + subfolder.getId() + "), which is " + reason + ". Nothing was deleted.");
+        return -5;
+      }
+    }
     int artifactCount = artifacts.size();
     int subfolderCount = subfolders.size();
 
@@ -122,8 +144,8 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
 
     // Each subfolder follows its own subfolders in the list, so each is empty when its turn comes.
     int folderCount = 0;
-    for (CedarFolderId subfolder : subfolders) {
-      if (folderSession.deleteFolderById(subfolder)) {
+    for (FolderServerFolder subfolder : subfolders) {
+      if (folderSession.deleteFolderById(subfolder.getResourceId())) {
         folderCount++;
       }
     }
@@ -147,16 +169,46 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
    * it holds, so deleting the subfolders in list order deletes the deepest first.
    */
   private static void collectSubtree(FolderServiceSession folderSession, CedarFolderId folderId,
-                                     List<FileSystemResource> artifacts, List<CedarFolderId> subfolders) {
+                                     List<FileSystemResource> artifacts, List<FolderServerFolder> subfolders) {
     for (FileSystemResource child : folderSession.findAllChildArtifactsOfFolder(folderId)) {
-      if (child.getType() == CedarResourceType.FOLDER) {
-        CedarFolderId subfolder = CedarFolderId.build(child.getId());
-        collectSubtree(folderSession, subfolder, artifacts, subfolders);
+      if (child instanceof FolderServerFolder subfolder) {
+        collectSubtree(folderSession, subfolder.getResourceId(), artifacts, subfolders);
         subfolders.add(subfolder);
       } else {
         artifacts.add(child);
       }
     }
+  }
+
+  /** The identifiers of the folders the graph marks as special, such as shared folders. */
+  private static Set<String> specialFolderIds(FolderServiceSession folderSession) {
+    int count = Math.toIntExact(folderSession.viewSpecialFoldersCount());
+    if (count == 0) {
+      return Set.of();
+    }
+    return folderSession.viewSpecialFolders(count, 0, List.of("name")).stream()
+        .map(FolderServerResourceExtract::getId).collect(Collectors.toSet());
+  }
+
+  /**
+   * Why the folder may not be purged, or null when it may. A path, when known, is also compared with the root and
+   * users folders the folder structure configuration names.
+   */
+  private String protectedFolderReason(FolderServerFolder candidate, String path, Set<String> specialFolderIds) {
+    FolderStructureConfig structure = cedarConfig.getFolderStructureConfig();
+    if (candidate.isRoot() || (path != null && path.equals(structure.getRootFolder().getPath()))) {
+      return "the root folder";
+    }
+    if (path != null && path.equals(structure.getUsersFolder().getPath())) {
+      return "the users folder";
+    }
+    if (candidate.isSystem()) {
+      return "a system folder";
+    }
+    if (specialFolderIds.contains(candidate.getId())) {
+      return "a special folder";
+    }
+    return null;
   }
 
   protected boolean confirmPurge(String folderName, String folderId, int artifactCount, int subfolderCount) {
