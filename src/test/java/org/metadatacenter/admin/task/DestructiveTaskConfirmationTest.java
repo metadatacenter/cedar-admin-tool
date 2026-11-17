@@ -12,8 +12,8 @@ class DestructiveTaskConfirmationTest {
   void folderPurgeUsesSharedConfirmationWithResolvedTargetAndCount() {
     TestFolderPurgeContent task = new TestFolderPurgeContent(true);
 
-    assertTrue(task.confirm("Project folder", "https://repo.metadatacenter.org/folders/123", 17));
-    assertEquals("Permanently deleting 17 child artifact(s) from folder 'Project folder' " +
+    assertTrue(task.confirm("Project folder", "https://repo.metadatacenter.org/folders/123", 17, 3));
+    assertEquals("Permanently deleting 17 artifact(s) and 3 subfolder(s) from folder 'Project folder' " +
         "(https://repo.metadatacenter.org/folders/123) in Neo4j and MongoDB...", task.confirmationMessage);
   }
 
@@ -21,7 +21,7 @@ class DestructiveTaskConfirmationTest {
   void folderPurgeHonorsRejectedConfirmation() {
     TestFolderPurgeContent task = new TestFolderPurgeContent(false);
 
-    assertFalse(task.confirm("Project folder", "https://repo.metadatacenter.org/folders/123", 17));
+    assertFalse(task.confirm("Project folder", "https://repo.metadatacenter.org/folders/123", 17, 3));
   }
 
   @Test
@@ -48,8 +48,8 @@ class DestructiveTaskConfirmationTest {
       this.confirmationResult = confirmationResult;
     }
 
-    private boolean confirm(String folderName, String folderId, int childArtifactCount) {
-      return confirmPurge(folderName, folderId, childArtifactCount);
+    private boolean confirm(String folderName, String folderId, int artifactCount, int subfolderCount) {
+      return confirmPurge(folderName, folderId, artifactCount, subfolderCount);
     }
 
     @Override

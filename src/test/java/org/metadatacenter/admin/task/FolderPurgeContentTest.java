@@ -40,9 +40,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * folder-purgeContent permanently deletes every artifact in a folder from the graph and from the
- * artifact store, after the operator confirms. It must delete those artifacts and nothing else, and
- * each of its refusals must leave everything in place.
+ * folder-purgeContent permanently deletes every artifact and subfolder under a folder, at any depth, from the graph
+ * and from the artifact store, after the operator confirms. It must delete those and nothing else, keep the folder
+ * itself, and leave everything in place on each of its refusals.
  */
 @Tag("integration")
 @ExtendWith(FreshStores.class)
@@ -85,34 +85,52 @@ class FolderPurgeContentTest {
   }
 
   /**
-   * The purge removes every kind of artifact the folder holds, each from its own collection, and leaves a subfolder
-   * and what the subfolder holds, which are not the folder's artifacts.
+   * The purge removes every kind of artifact at every depth under the folder, each from its own collection, and every
+   * subfolder, deepest first, and keeps the folder itself.
    */
   @Test
-  void everyKindOfArtifactGoesAndASubfolderStays() throws Exception {
+  void everyArtifactAndSubfolderUnderTheFolderGoes() throws Exception {
     FolderServiceSession folders = CedarDataServices.getInstance().getFolderServiceSession(user1);
-    CedarFolderId purged = folder(folders, folders.findHomeFolderOf().getResourceId(), "Mixed Folder");
-    String template = template(folders, purged, "Mixed Template");
-    Map<CedarResourceType, String> inside = new java.util.LinkedHashMap<>();
-    inside.put(CedarResourceType.FIELD, artifact(folders, purged, new FolderServerField(), CedarResourceType.FIELD, "Mixed Field"));
-    inside.put(CedarResourceType.ELEMENT, artifact(folders, purged, new FolderServerElement(), CedarResourceType.ELEMENT,
-        "Mixed Element"));
-    inside.put(CedarResourceType.TEMPLATE, template);
-    inside.put(CedarResourceType.INSTANCE, instance(folders, purged, template, "Mixed Instance"));
-    CedarFolderId subfolder = folder(folders, purged, "Nested Folder");
-    String nested = template(folders, subfolder, "Nested Template");
+    CedarFolderId home = folders.findHomeFolderOf().getResourceId();
+    CedarFolderId purged = folder(folders, home, "Mixed Folder");
+    CedarFolderId nested = folder(folders, purged, "Nested Folder");
+    CedarFolderId deepest = folder(folders, nested, "Deepest Folder");
+    CedarFolderId empty = folder(folders, nested, "Empty Folder");
+    Map<String, CedarResourceType> inside = new java.util.LinkedHashMap<>();
+    for (CedarFolderId parent : List.of(purged, nested, deepest)) {
+      inside.putAll(everyKind(folders, parent, folders.findFolderById(parent).getName()));
+    }
+    String outside = template(folders, home, "Kept Beside");
 
     assertEquals(0, purge(purged.getId(), true));
 
-    for (Map.Entry<CedarResourceType, String> artifact : inside.entrySet()) {
-      assertNull(folders.findArtifactById(CedarUntypedArtifactId.build(artifact.getValue())),
-          "the graph should have lost the " + artifact.getKey().getValue());
-      assertEquals(0, collection(artifact.getKey()).countDocuments(new org.bson.Document("@id", artifact.getValue())),
-          "the artifact store should have lost the " + artifact.getKey().getValue());
+    for (Map.Entry<String, CedarResourceType> artifact : inside.entrySet()) {
+      assertNull(folders.findArtifactById(CedarUntypedArtifactId.build(artifact.getKey())),
+          "the graph should have lost the " + artifact.getValue().getValue() + " " + artifact.getKey());
+      assertEquals(0, collection(artifact.getValue()).countDocuments(new org.bson.Document("@id", artifact.getKey())),
+          "the artifact store should have lost the " + artifact.getValue().getValue() + " " + artifact.getKey());
     }
-    assertNotNull(folders.findFolderById(subfolder), "the subfolder stays");
-    assertNotNull(folders.findArtifactById(CedarUntypedArtifactId.build(nested)), "the subfolder's template stays");
-    assertNotNull(templates.findTemplate(nested), "the subfolder's template keeps its document");
+    for (CedarFolderId subfolder : List.of(nested, deepest, empty)) {
+      assertNull(folders.findFolderById(subfolder), "the graph should have lost the subfolder " + subfolder.getId());
+    }
+    assertNotNull(folders.findFolderById(purged), "the folder itself stays");
+    assertEquals(0, folders.findAllChildArtifactsOfFolder(purged).size(), "the folder is left empty");
+    assertNotNull(folders.findArtifactById(CedarUntypedArtifactId.build(outside)), "an artifact beside the folder stays");
+    assertNotNull(templates.findTemplate(outside), "an artifact beside the folder keeps its document");
+  }
+
+  /** A field, an element, a template and an instance of that template, in the folder. */
+  private static Map<String, CedarResourceType> everyKind(FolderServiceSession folders, CedarFolderId parent, String prefix)
+      throws Exception {
+    Map<String, CedarResourceType> created = new java.util.LinkedHashMap<>();
+    String template = template(folders, parent, prefix + " Template");
+    created.put(artifact(folders, parent, new FolderServerField(), CedarResourceType.FIELD, prefix + " Field"),
+        CedarResourceType.FIELD);
+    created.put(artifact(folders, parent, new FolderServerElement(), CedarResourceType.ELEMENT, prefix + " Element"),
+        CedarResourceType.ELEMENT);
+    created.put(template, CedarResourceType.TEMPLATE);
+    created.put(instance(folders, parent, template, prefix + " Instance"), CedarResourceType.INSTANCE);
+    return created;
   }
 
   @Test
@@ -171,7 +189,7 @@ class FolderPurgeContentTest {
       }
 
       @Override
-      protected boolean confirmPurge(String folderName, String id, int childArtifactCount) {
+      protected boolean confirmPurge(String folderName, String id, int artifactCount, int subfolderCount) {
         return confirmed;
       }
     };

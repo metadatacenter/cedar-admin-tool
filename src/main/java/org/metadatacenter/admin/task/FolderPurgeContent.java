@@ -21,6 +21,7 @@ import org.metadatacenter.server.FolderServiceSession;
 import org.metadatacenter.server.ResourcePermissionServiceSession;
 import org.metadatacenter.server.service.UserService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +29,9 @@ import java.util.Map;
 public class FolderPurgeContent extends AbstractNeo4JAccessTask {
 
   public FolderPurgeContent() {
-    description.add("Enumerates all resources in the folder with the id passed as parameter");
-    description.add("Deletes all resources in that folder from Neo4j");
-    description.add("Deletes all documents from MongoDB with the enumerated ids");
+    description.add("Enumerates the artifacts and subfolders in the folder with the id passed as parameter, at any depth");
+    description.add("Deletes those artifacts from Neo4j and their documents from MongoDB");
+    description.add("Deletes the subfolders from Neo4j, deepest first, and keeps the folder itself");
     description.add("*** A reindex should be run manually after this task");
   }
 
@@ -76,13 +77,15 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     out.info("Name: " + folder.getName());
     out.info("Path: " + folderReport.getPath());
 
-    // The folder's children include its subfolders, which are not artifacts and keep their content.
-    List<FileSystemResource> allChildArtifacts = folderSession.findAllChildArtifactsOfFolder(fid).stream()
-        .filter(child -> child.getType() != CedarResourceType.FOLDER).toList();
-    int totalCount = allChildArtifacts.size();
+    List<FileSystemResource> artifacts = new ArrayList<>();
+    List<CedarFolderId> subfolders = new ArrayList<>();
+    collectSubtree(folderSession, fid, artifacts, subfolders);
+    int artifactCount = artifacts.size();
+    int subfolderCount = subfolders.size();
 
-    out.info("Folder child artifact count: " + totalCount);
-    if (!confirmPurge(folder.getName(), folderId, totalCount)) {
+    out.info("Artifact count in the folder and its subfolders: " + artifactCount);
+    out.info("Subfolder count: " + subfolderCount);
+    if (!confirmPurge(folder.getName(), folderId, artifactCount, subfolderCount)) {
       return -4;
     }
 
@@ -96,7 +99,7 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
     int neoCount = 0;
     int mongoCount = 0;
 
-    for (FileSystemResource r : allChildArtifacts) {
+    for (FileSystemResource r : artifacts) {
       String id = r.getId();
       CedarArtifactId aid = CedarArtifactId.build(id, r.getType());
       boolean deletedFromNeo = folderSession.deleteResourceById(aid);
@@ -112,25 +115,52 @@ public class FolderPurgeContent extends AbstractNeo4JAccessTask {
       }
       i++;
       if (i % 100 == 0) {
-        out.info("Deleted: " + i + " / " + totalCount);
+        out.info("Deleted: " + i + " / " + artifactCount);
       }
 
     }
 
-    out.info("Deleted: " + i + " / " + totalCount);
+    // Each subfolder follows its own subfolders in the list, so each is empty when its turn comes.
+    int folderCount = 0;
+    for (CedarFolderId subfolder : subfolders) {
+      if (folderSession.deleteFolderById(subfolder)) {
+        folderCount++;
+      }
+    }
+
+    out.info("Deleted: " + i + " / " + artifactCount);
     out.info("\n");
     out.info("-- Final report --");
-    out.info("Found in folder using Neo4j: " + totalCount);
-    out.info("Deleted from Neo4j: " + neoCount);
-    out.info("Deleted from MongoDB: " + mongoCount);
+    out.info("Artifacts found in the folder and its subfolders using Neo4j: " + artifactCount);
+    out.info("Artifacts deleted from Neo4j: " + neoCount);
+    out.info("Artifacts deleted from MongoDB: " + mongoCount);
+    out.info("Subfolders found using Neo4j: " + subfolderCount);
+    out.info("Subfolders deleted from Neo4j: " + folderCount);
     out.info("\n");
     out.warn("You should regenerate the search index using 'cedarat search-regenerateIndex' !!!");
 
     return 0;
   }
 
-  protected boolean confirmPurge(String folderName, String folderId, int childArtifactCount) {
-    return getConfirmInput("Permanently deleting " + childArtifactCount + " child artifact(s) from folder '" +
-        folderName + "' (" + folderId + ") in Neo4j and MongoDB...");
+  /**
+   * Lists the artifacts and subfolders under the folder at any depth. Each subfolder is listed after every subfolder
+   * it holds, so deleting the subfolders in list order deletes the deepest first.
+   */
+  private static void collectSubtree(FolderServiceSession folderSession, CedarFolderId folderId,
+                                     List<FileSystemResource> artifacts, List<CedarFolderId> subfolders) {
+    for (FileSystemResource child : folderSession.findAllChildArtifactsOfFolder(folderId)) {
+      if (child.getType() == CedarResourceType.FOLDER) {
+        CedarFolderId subfolder = CedarFolderId.build(child.getId());
+        collectSubtree(folderSession, subfolder, artifacts, subfolders);
+        subfolders.add(subfolder);
+      } else {
+        artifacts.add(child);
+      }
+    }
+  }
+
+  protected boolean confirmPurge(String folderName, String folderId, int artifactCount, int subfolderCount) {
+    return getConfirmInput("Permanently deleting " + artifactCount + " artifact(s) and " + subfolderCount +
+        " subfolder(s) from folder '" + folderName + "' (" + folderId + ") in Neo4j and MongoDB...");
   }
 }
