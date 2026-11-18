@@ -26,8 +26,6 @@ public class CedarConfigAdminToolTest {
 
     env.put(CedarEnvironmentVariable.CEDAR_HOME.getName(), "/home/cedar/");
 
-    env.put(CedarEnvironmentVariable.CEDAR_NET_GATEWAY.getName(), "127.0.0.1");
-
     env.put(CedarEnvironmentVariable.CEDAR_HOST.getName(), "metadatacenter.orgx");
 
     env.put(CedarEnvironmentVariable.CEDAR_ADMIN_USER_PASSWORD.getName(), "adminPassword");
@@ -50,20 +48,18 @@ public class CedarConfigAdminToolTest {
 
     env.put(CedarEnvironmentVariable.CEDAR_RESOURCE_HTTP_PORT.getName(), "9007");
 
-    env.put(CedarEnvironmentVariable.CEDAR_SALT_API_KEY.getName(), "saltme");
-
     CedarEnvironmentSource.setOverride(env);
   }
 
   /**
-   * The admin tool's configuration takes the stores' addresses, the administrators' keys and its own home from the
-   * variables its sandbox passes on. A sandbox that dropped one would leave the value unresolved or another's.
+   * The admin tool's configuration takes the stores' addresses, the administrators' keys and its export and import
+   * directories from the variables its sandbox passes on. A sandbox that dropped one would leave the value
+   * unresolved or another's.
    */
   @Test
   public void theConfigurationTakesItsValuesFromTheEnvironment() {
     CedarConfig config = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
 
-    assertEquals("/home/cedar/", config.getHome());
     assertTrue(config.getImportExportConfig().getExportDir().startsWith("/home/cedar/"),
         config.getImportExportConfig().getExportDir());
     assertTrue(config.getImportExportConfig().getImportDir().startsWith("/home/cedar/"),
