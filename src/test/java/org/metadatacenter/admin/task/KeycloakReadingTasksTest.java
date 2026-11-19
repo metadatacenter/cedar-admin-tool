@@ -1,9 +1,11 @@
 package org.metadatacenter.admin.task;
 
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -30,20 +32,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * in for the real one, and each task is pointed at it after reading its configuration.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class KeycloakReadingTasksTest {
 
   private static CedarConfig cedarConfig;
-  private static StubKeycloak keycloak;
+  private StubKeycloak keycloak;
 
   @BeforeAll
-  static void startTheGraphAndKeycloak() throws Exception {
+  static void startTheGraph() {
     EmbeddedCedarNeo4j.startRedirectAndSeed(SystemComponent.ADMIN_TOOL);
     cedarConfig = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
+  }
+
+  /** Each test has a Keycloak of its own, holding only the users that test adds. */
+  @BeforeEach
+  void startKeycloak() throws Exception {
     keycloak = new StubKeycloak(KeycloakUtils.initKeycloak(cedarConfig).getKeycloakRealmName());
   }
 
-  @AfterAll
-  static void stopKeycloak() {
+  @AfterEach
+  void stopKeycloak() {
     keycloak.close();
   }
 
@@ -73,8 +81,10 @@ class KeycloakReadingTasksTest {
 
     assertEquals(0, Console.run(() -> pointedAtKeycloak(new GraphDbCreateAllUsers()).execute()).result());
 
-    assertNotNull(CedarDataServices.getInstance().getNeoUserService()
-        .findUser(CedarUserId.build(cedarConfig.getLinkedDataUtil().getUserId(newcomer.getId()))));
+    String newcomerId = cedarConfig.getLinkedDataUtil().getUserId(newcomer.getId());
+    assertNotNull(CedarDataServices.getInstance().getNeoUserService().findUser(CedarUserId.build(newcomerId)));
+    assertEquals(1, GraphCounts.everybodyMemberships(cedarConfig, newcomerId), "the newcomer joins Everybody");
+    assertEquals(1, GraphCounts.homeFolders(cedarConfig, newcomerId), "the newcomer gets a home folder");
   }
 
   /**
@@ -115,7 +125,7 @@ class KeycloakReadingTasksTest {
     }
   }
 
-  private static <T extends AbstractKeycloakReadingTask> T pointedAtKeycloak(T task) {
+  private <T extends AbstractKeycloakReadingTask> T pointedAtKeycloak(T task) {
     prepare(task);
     task.kcInfo.setKeycloakBaseURI(keycloak.url());
     return task;

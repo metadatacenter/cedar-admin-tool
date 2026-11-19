@@ -70,6 +70,12 @@ public final class StubHttpServer implements AutoCloseable {
     return matching;
   }
 
+  /** Forgets the requests seen so far and the answers given, so a test sees only what it caused. */
+  public void reset() {
+    requests.clear();
+    routes.clear();
+  }
+
   @Override
   public void close() {
     server.stop(0);

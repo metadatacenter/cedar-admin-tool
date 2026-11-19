@@ -3,8 +3,10 @@ package org.metadatacenter.admin.task;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.metadatacenter.admin.StubHttpServer;
 import org.metadatacenter.admin.task.importflatfolder.ImpexImportFlatFolder;
@@ -20,6 +22,8 @@ import org.metadatacenter.util.json.JsonMapper;
 import org.metadatacenter.util.test.EmbeddedCedarNeo4j;
 import org.metadatacenter.util.test.TestAuthUtil;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -37,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * points at a local stand-in.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class ImpexImportFlatFolderTest {
 
   private static StubHttpServer resourceServer;
@@ -61,6 +66,12 @@ class ImpexImportFlatFolderTest {
         .findHomeFolderOf().getId();
   }
 
+  /** The stand-in serves the whole class, so each test starts with no requests recorded and no answers set. */
+  @BeforeEach
+  void forgetEarlierRequests() {
+    resourceServer.reset();
+  }
+
   @AfterAll
   static void restoreTheEnvironment() {
     CedarEnvironmentSource.setOverride(environmentBefore);
@@ -81,6 +92,9 @@ class ImpexImportFlatFolderTest {
     StubHttpServer.Request post = posts.get(0);
     assertEquals(owner.getFirstApiKeyAuthHeader(), post.authorization());
     assertTrue(post.query().startsWith("folder_id="), post.query());
+    assertEquals("folders/" + targetFolderId.substring(targetFolderId.lastIndexOf('/') + 1),
+        URLDecoder.decode(post.query().substring("folder_id=".length()), StandardCharsets.UTF_8),
+        "the artifact is posted into the target folder");
     JsonNode body = JsonMapper.STRICT_MAPPER.readTree(post.body());
     assertFalse(body.has("_id") || body.has("parentId"), "the store's own fields are dropped: " + body);
     assertEquals(owner.getId(), body.get("pav:createdBy").asText(), "the owner becomes the creator");

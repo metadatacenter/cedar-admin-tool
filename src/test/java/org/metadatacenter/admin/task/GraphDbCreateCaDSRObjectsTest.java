@@ -3,6 +3,7 @@ package org.metadatacenter.admin.task;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -14,11 +15,14 @@ import org.metadatacenter.model.folderserver.basic.FolderServerCategory;
 import org.metadatacenter.rest.context.CedarRequestContext;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.CategoryServiceSession;
+import org.metadatacenter.server.neo4j.cypher.NodeProperty;
+import org.metadatacenter.server.neo4j.util.Neo4JUtil;
 import org.metadatacenter.server.security.model.user.CedarUser;
 import org.metadatacenter.util.test.EmbeddedCedarNeo4j;
 import org.metadatacenter.util.test.TestAuthUtil;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * file NCI's categories beneath it. Running it again changes nothing.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class GraphDbCreateCaDSRObjectsTest {
 
   private static CedarConfig cedarConfig;
@@ -59,6 +64,14 @@ class GraphDbCreateCaDSRObjectsTest {
     FolderServerCategory caDSR = categories.getCategoryByParentAndName(root.getResourceId(),
         cedarConfig.getFolderStructureConfig().getCaDSRRootCategory().getName());
     assertNotNull(caDSR, "the caDSR category should sit under the root category");
+
+    // The second run found everything in place and added nothing.
+    assertEquals(1, GraphCounts.everybodyMemberships(cedarConfig, user.getId()), "one membership of Everybody");
+    assertEquals(1, GraphCounts.homeFolders(cedarConfig, user.getId()), "one home folder");
+    assertEquals(1, GraphCounts.count(cedarConfig, "MATCH (:Category {" + Neo4JUtil.escapePropertyName(
+            NodeProperty.ID.getValue()) + ": $root})-[:CONTAINSCATEGORY]->(c:Category {"
+            + Neo4JUtil.escapePropertyName(NodeProperty.NAME.getValue()) + ": $name}) RETURN count(c)",
+        Map.of("root", root.getId(), "name", caDSR.getName())), "one caDSR category under the root");
   }
 
   @Test

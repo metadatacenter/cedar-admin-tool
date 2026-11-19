@@ -29,7 +29,6 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
   protected String templateFieldsCollectionName;
   protected String templateInstancesCollectionName;
   protected String templatesCollectionName;
-  protected String usersCollectionName;
 
   @Override
   public void setArguments(String[] args) {
@@ -99,7 +98,6 @@ public abstract class AbstractCedarAdminTask implements ICedarAdminTask {
     templateElementsCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.ELEMENT.getValue());
     templatesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.TEMPLATE.getValue());
     templateInstancesCollectionName = cedarConfig.getArtifactServerConfig().getCollections().get(CedarResourceType.INSTANCE.getValue());
-    usersCollectionName = cedarConfig.getUserServerConfig().getCollections().get(CedarResourceType.USER.getValue());
   }
 
 }

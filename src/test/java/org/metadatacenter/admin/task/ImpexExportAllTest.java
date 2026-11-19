@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metadatacenter.admin.task.importexport.ImportExportConstants;
 import org.metadatacenter.admin.util.AdminOutput;
 import org.metadatacenter.bridge.CedarDataServices;
@@ -52,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * and the export is checked for every user and group, and for the template's three parts.
  */
 @Tag("integration")
+@ExtendWith(FreshStores.class)
 class ImpexExportAllTest {
 
   private static CedarConfig cedarConfig;
@@ -162,6 +164,30 @@ class ImpexExportAllTest {
         cedarConfig.getLinkedDataUtil().getUUID(templateId, CedarResourceType.TEMPLATE));
     assertTrue(read(templateArchive).get(ImportExportConstants.CONTENT_SUFFIX).isNull(),
         "the rest of the installation is still exported, the template with JSON null as its document");
+  }
+
+  /** An archive the export cannot write fails the export, which names it, rather than leaving it out in silence. */
+  @Test
+  void anArchiveThatCannotBeWrittenFailsTheExport() throws Exception {
+    Path exportDir = Path.of(cedarConfig.getImportExportConfig().getExportDir());
+    FileUtils.deleteDirectory(exportDir.toFile());
+    // A file where the groups' directory belongs, so no group's archive can be written.
+    Files.createDirectories(exportDir);
+    Files.writeString(exportDir.resolve("groups"), "in the way");
+    ImpexExportAll export = new ImpexExportAll() {
+      @Override
+      public void init() {
+      }
+    };
+    export.injectConfig(cedarConfig);
+    export.setOutput(new AdminOutput());
+
+    Console.Run<Integer> run = Console.run(export::execute);
+
+    assertEquals(-1, run.result(), run.printed());
+    assertTrue(run.printed().contains("Could not write " + exportDir.resolve("groups")), run.printed());
+    assertTrue(run.printed().contains("not written, so the export is incomplete."), run.printed());
+    FileUtils.deleteQuietly(exportDir.toFile());
   }
 
   private static String artifact(FolderServiceSession folders, CedarFolderId parent, FolderServerSchemaArtifact artifact,

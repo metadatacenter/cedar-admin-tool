@@ -3,11 +3,14 @@ package org.metadatacenter.cedar.admintool.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.metadatacenter.config.CedarConfig;
+import org.metadatacenter.config.MongoConnection;
 import org.metadatacenter.config.environment.CedarEnvironmentVariable;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.SystemComponent;
+import org.metadatacenter.server.neo4j.Neo4jConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentSource;
 
 import java.util.HashMap;
@@ -22,8 +25,6 @@ public class CedarConfigAdminToolTest {
     Map<String, String> env = new HashMap<>(CedarEnvironmentSource.getAll());
 
     env.put(CedarEnvironmentVariable.CEDAR_HOME.getName(), "/home/cedar/");
-
-    env.put(CedarEnvironmentVariable.CEDAR_NET_GATEWAY.getName(), "127.0.0.1");
 
     env.put(CedarEnvironmentVariable.CEDAR_HOST.getName(), "metadatacenter.orgx");
 
@@ -47,17 +48,40 @@ public class CedarConfigAdminToolTest {
 
     env.put(CedarEnvironmentVariable.CEDAR_RESOURCE_HTTP_PORT.getName(), "9007");
 
-    env.put(CedarEnvironmentVariable.CEDAR_SALT_API_KEY.getName(), "saltme");
-
     CedarEnvironmentSource.setOverride(env);
   }
 
+  /**
+   * The admin tool's configuration takes the stores' addresses, the administrators' keys and its export and import
+   * directories from the variables its sandbox passes on. A sandbox that dropped one would leave the value
+   * unresolved or another's.
+   */
   @Test
-  public void testGetInstance() throws Exception {
-    SystemComponent systemComponent = SystemComponent.ADMIN_TOOL;
-    Map<String, String> environment = CedarEnvironmentVariableProvider.getFor(systemComponent);
-    CedarConfig instance = CedarConfig.getInstance(environment);
-    assertNotNull(instance);
+  public void theConfigurationTakesItsValuesFromTheEnvironment() {
+    CedarConfig config = CedarConfig.getInstance(CedarEnvironmentVariableProvider.getFor(SystemComponent.ADMIN_TOOL));
+
+    assertTrue(config.getImportExportConfig().getExportDir().startsWith("/home/cedar/"),
+        config.getImportExportConfig().getExportDir());
+    assertTrue(config.getImportExportConfig().getImportDir().startsWith("/home/cedar/"),
+        config.getImportExportConfig().getImportDir());
+
+    assertEquals("1234", config.getAdminUserConfig().getApiKey());
+    assertEquals("adminPassword", config.getAdminUserConfig().getPassword());
+    assertEquals("5678", config.getCaDSRAdminUserConfig().getApiKey());
+
+    MongoConnection mongo = config.getArtifactServerConfig().getMongoConnection();
+    assertEquals("localhost", mongo.getHost());
+    assertEquals(27017, mongo.getPort());
+    assertEquals("cedarUser", mongo.getUser());
+
+    Neo4jConfig neo4j = Neo4jConfig.fromCedarConfig(config);
+    assertTrue(neo4j.getUri().contains("127.0.0.1:7687"), neo4j.getUri());
+    assertEquals("neo4j", neo4j.getUserName());
+
+    assertEquals("127.0.0.1", config.getCacheConfig().getPersistent().getConnection().getHost());
+    assertEquals(6379, config.getCacheConfig().getPersistent().getConnection().getPort());
+
+    assertTrue(config.getServers().getResource().getBase().contains(":9007"), config.getServers().getResource().getBase());
   }
 
 }

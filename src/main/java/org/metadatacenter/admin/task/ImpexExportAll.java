@@ -77,6 +77,9 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     super.init();
   }
 
+  /** The archives the export failed to write; a non-zero count fails the export. */
+  private int archivesNotWritten;
+
   @Override
   public int execute() {
     String exportDir = cedarConfig.getImportExportConfig().getExportDir();
@@ -129,6 +132,7 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
     linkedDataUtil = cedarConfig.getLinkedDataUtil();
 
 
+    archivesNotWritten = 0;
     out.info("Exporting users");
     Path exportPath = Paths.get(exportDir);
     Path userExportPath = exportPath.resolve("users");
@@ -151,6 +155,11 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
       out.error((artifactsWithoutDocument == 1 ? "1 artifact has" : artifactsWithoutDocument + " artifacts have")
           + " no document in the artifact store. The rest of the installation was exported, but impex-importAll "
           + "refuses this export.");
+      return -1;
+    }
+    if (archivesNotWritten > 0) {
+      out.error((archivesNotWritten == 1 ? "1 archive was" : archivesNotWritten + " archives were")
+          + " not written, so the export is incomplete.");
       return -1;
     }
     return 0;
@@ -315,17 +324,15 @@ public class ImpexExportAll extends AbstractNeo4JAccessTask {
   }
 
   private void createZippedContent(Path wrapperDir, String uuid, Map<String, Object> contents) {
-    String fileName = uuid + ".zip";
-    try {
-      FileOutputStream fos = new FileOutputStream(wrapperDir.resolve(fileName).toFile());
-      ZipOutputStream zipOut = new ZipOutputStream(fos);
+    Path archive = wrapperDir.resolve(uuid + ".zip");
+    try (FileOutputStream fos = new FileOutputStream(archive.toFile());
+         ZipOutputStream zipOut = new ZipOutputStream(fos)) {
       for (String suffix : contents.keySet()) {
         addZipJsonExport(zipOut, suffix, contents.get(suffix));
       }
-      zipOut.close();
-      fos.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      out.error("Could not write " + archive, e);
+      archivesNotWritten++;
     }
   }
 
