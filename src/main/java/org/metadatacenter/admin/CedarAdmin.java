@@ -9,6 +9,7 @@ import org.metadatacenter.bridge.CedarDataServices;
 import org.metadatacenter.config.CedarConfig;
 import org.metadatacenter.config.environment.CedarEnvironmentVariableProvider;
 import org.metadatacenter.model.SystemComponent;
+import org.metadatacenter.rest.JaxRsRuntime;
 import org.metadatacenter.rest.context.CedarRequestContextFactory;
 import org.metadatacenter.server.logging.AppLogger;
 import org.metadatacenter.server.logging.AppLoggerQueueService;
@@ -21,6 +22,8 @@ public class CedarAdmin {
   static final AdminOutput out;
 
   static {
+    // The same delegate the servers install, so the libraries they share behave alike here.
+    JaxRsRuntime.useJerseyRuntimeDelegate();
     out = new AdminOutput();
   }
 
