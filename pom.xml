@@ -229,8 +229,9 @@
           <environmentVariables>
             <!-- The ImpEx tests delete and rewrite ${CEDAR_HOME}/export and ${CEDAR_HOME}/import. A
                  workstation build inherits the operator's real CEDAR home, so the tests get one of
-                 their own. -->
-            <CEDAR_HOME>${project.build.directory}/cedar-home</CEDAR_HOME>
+                 their own, and each test JVM gets its own, because Surefire runs several at once
+                 and one class's export would otherwise delete another's. -->
+            <CEDAR_HOME>${project.build.directory}/cedar-home-${surefire.forkNumber}</CEDAR_HOME>
           </environmentVariables>
         </configuration>
       </plugin>
