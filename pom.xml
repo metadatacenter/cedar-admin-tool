@@ -148,10 +148,14 @@
 
     <dependency>
       <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-admin-client-jakarta</artifactId>
-      <!-- Admin operations use JSON only. Match the auth library's exclusions so these unused
-           6.0 providers and their Mime4j dependencies cannot join the managed RESTEasy stack. -->
+      <artifactId>keycloak-admin-client</artifactId>
+      <!-- Admin operations use JSON only. Match the auth library's exclusions for unused
+           YAML, multipart and JAXB providers. -->
       <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+          <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.jboss.resteasy</groupId>
           <artifactId>resteasy-multipart-provider</artifactId>
